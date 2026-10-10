@@ -25,6 +25,12 @@ Playable prototype. Still to come: art, music, a tutorial and human playtesting.
 
 It's a single file. Download `index.html` and open it in any modern browser.
 
+## License
+
+Copyright © 2026 Danny Peña. All rights reserved.
+
+This repository is public so the game can be played and followed, but it is not open source. You may play the game and view the code. You may not copy, modify, redistribute, or reuse the code, art, text, or game design, in whole or in part, without written permission.
+
 ---
 
 Made by Danny Peña · [dannysimgames](https://github.com/dannysimgames)
