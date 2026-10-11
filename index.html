@@ -96,6 +96,8 @@ svg text{fill:var(--fg);font-family:var(--body)}
 svg .nm{font-size:13px;font-weight:600}
 svg .vl{font-family:var(--mono);font-size:12px;fill:var(--muted)}
 svg .fl{font-family:var(--mono);font-size:11px}
+svg .lanehd{font-family:var(--mono);font-size:11px;letter-spacing:.14em;fill:var(--muted);font-weight:600}
+svg .lanediv{opacity:.5}
 .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted);padding:0 14px 12px}
 .legend span::before{content:"";display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle;background:var(--c)}
 .flowstrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:1px;background:var(--line);border-top:1px solid var(--line)}
@@ -480,6 +482,18 @@ html,body{margin:0}
 .trendc svg{width:100%;height:auto;max-height:118px;display:block}
 .trendc .ax{fill:var(--muted);font-family:var(--mono);font-size:10px}
 @media (max-height:759px),(max-width:1099px){ .ctr>.card.trendc{display:none} }
+.newsticker{flex:none;overflow:hidden;border-top:1px solid var(--line);background:var(--panel2);height:18px;display:flex;align-items:center}
+.ntin{display:inline-flex;align-items:center;white-space:nowrap;will-change:transform}
+@media (prefers-reduced-motion:no-preference){ .ntin{animation:ntscroll 70s linear infinite} }
+@keyframes ntscroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ntitem{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);padding:0 4px}
+.ntitem b{font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--muted)}
+.ntitem.live{color:var(--fg)}
+.ntitem.live b{color:var(--amber)}
+.ntitem.live .ic{color:var(--amber)}
+.ntsep{color:var(--line);padding:0 10px}
+@media (max-height:620px){ .newsticker{display:none} }
+@media (max-width:960px) and (orientation:landscape) and (max-height:560px){ .newsticker{display:none} }
 .hd3{flex:none;display:flex;align-items:center;gap:6px 18px;padding:7px 0;border-bottom:1px solid var(--line)}
 .hd3 .helprow{flex:none;gap:10px}
 .hd3 .brand{font-size:24px}
@@ -967,6 +981,7 @@ button.tnode{cursor:pointer}
 @media (max-height:830px){ .cmk{display:none} }
 @media (max-height:780px){ .cfc .cfk{display:none} .crewc{gap:6px} }
 @media (max-height:900px){ .crewc{gap:6px} .cfc{padding:4px 8px} .cmk{display:none} }
+@media (max-height:860px){ .cfac{gap:4px} .cfc{padding:3px 8px} }
 @media (max-height:830px){ .cfc .cfk{display:none} }
 @media (max-width:640px){ .cmk,.cfc .cfk,.cacts .act .d{display:none} .cse{display:none} }
 
@@ -1308,6 +1323,12 @@ button.tnode{cursor:pointer}
 .fgd .ftiles>* .v{grid-column:2;grid-row:1/span 2;font-size:19px;text-align:right;align-self:center}
 .fgd .ftiles>* .s{grid-column:1;font-size:10.5px;line-height:1.2}
 .fgd .ftiles>* .s+.s{display:none}
+.fgd .mkt .ftiles{flex-direction:row;flex-wrap:wrap;gap:5px}
+.fgd .mkt .ftiles>*{flex:1 1 118px;display:flex;flex-direction:column;gap:0;padding:3px 7px}
+.fgd .mkt .ftiles>* .l{font-size:9.5px}
+.fgd .mkt .ftiles>* .v{font-size:14px;text-align:left;grid-row:auto}
+.fgd .mkt .ftiles>* .s{font-size:9px}
+@media (max-height:820px){ .fgdt.mkt h4{display:none} }
 .fs-budget .fbud{grid-template-columns:minmax(0,1fr)}
 @media (max-width:900px){ .fsplit{grid-template-columns:minmax(0,1fr)} }
 @media (max-height:790px){ .fgd .gdb .note{display:none} .fgd .ftiles>*{padding:3px 8px} .fgd .ftiles>* .v{font-size:16px} .fgdt h4{display:none} }
@@ -1371,20 +1392,37 @@ button.tnode{cursor:pointer}
 .dsprod td .bad{color:var(--bad)}
 .dsslate{margin:8px 0 0}
 /* v50 end-of-turn confirmation */
-.cfm{max-width:720px;gap:12px}
+.cfm{max-width:780px;gap:12px}
 .cfh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .cfh h2{margin:0}
 .cfg2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.cfspan{grid-column:1/-1}
 .cfsec{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:10px 12px;min-width:0}
 .cfsec h3{margin:0 0 6px;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
 .cfr{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-size:12.5px;padding:2px 0}
 .cfr span{min-width:0}
+.cfg4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px 12px}
+.cfg4 .cfr{flex-direction:column;align-items:flex-start;gap:1px;padding:0}
+.cfg4 .cfr b{font-size:13.5px}
 .cfdiv{height:1px;background:var(--line);margin:6px 0}
 .cfw{display:flex;flex-direction:column;gap:4px}
 .cfb{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .cfsk{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);cursor:pointer}
 .cfbtn{display:flex;gap:10px;align-items:center;margin-left:auto}
-@media (max-width:640px){ .cfg2{grid-template-columns:minmax(0,1fr)} .cfm{padding:16px} }
+table.cfout{font-size:12px}
+table.cfout th,table.cfout td{padding:4px 6px}
+table.cfout tr.hi td{font-weight:600;color:var(--fg);background:color-mix(in srgb,var(--fg) 4%,transparent)}
+.modal.menu{max-width:420px}
+.menuopts{display:flex;flex-direction:column;gap:8px}
+.menuopt{display:flex;align-items:flex-start;gap:10px;text-align:left;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:10px 12px;color:var(--fg);font:inherit;min-height:44px}
+.menuopt:hover:not(:disabled){border-color:var(--amber)}
+.menuopt:disabled{opacity:.45;cursor:not-allowed}
+.menuopt .ic{flex:none;margin-top:1px;color:var(--amber)}
+.menuopt span{display:flex;flex-direction:column;gap:1px;min-width:0}
+.menuopt b{font-size:14px}
+.menuopt .d{font-size:12px;color:var(--muted)}
+.menubtns{display:flex;justify-content:flex-end;gap:10px}
+@media (max-width:640px){ .cfg2{grid-template-columns:minmax(0,1fr)} .cfg4{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px} .cfm{padding:16px;gap:10px} .cfsec{padding:8px 10px} table.cfout th,table.cfout td{padding:3px 5px} }
 </style>
 
 <div id="app"></div>
@@ -1398,6 +1436,8 @@ const CFG = {
   dilBase:110, dilPer:50, dilMax:3, blendCap:500, blendExp:100,
   upName:200, rel0:.40, relTA:.90, relDec:.05, yield:.9, trainAdd:100,
   pipe:550, loop:250, termPerBerth:300, berths0:2, berthsMax:4, storage0:4, stored0:1, tankAdd:2,
+  // v56 managed pipeline segments: gathering (land fields -> processing complex) and the refinery feed line (processing -> refineries)
+  gather:480, gatherAdd:140, reffeed:90, reffeedAdd:60,
   diffG:12, diffOff:16, diffS:2, dilPrem:5, liftM:8, liftC:6, liftT:14, opexUpg:6, opexExp:3,
   rigBase:2, rigMax:8, rigLease:15, consSlots:3,
   // owned rigs: bought with capex, arrive after 2 turns, cost only crew upkeep, resold at half price
@@ -1528,7 +1568,7 @@ const CFG = {
   dsUnit:25, dsRent:6, dsFuel:40, dsPrem:25, ds0:4, dsMax:8,
   town0:60, townYr:10, townPrice:50, townAppr:40,
   // facility condition (0-100): effective capacity = nameplate x min(1, condition / condFull)
-  condFull:90, cond0:{upgrader:40, power:50, pipe:70, terminal:80, blend:95, gasplant:85},
+  condFull:90, cond0:{upgrader:40, power:50, pipe:70, terminal:80, blend:95, gasplant:85, gather:92, reffeed:88},
   wear:1.5, repairTo:95, patchAdd:15, patchMax:80, condMin:10, tripBelow:40, tripPer:.02, tripCut:.5,
   maint:{min:{cost:0, mult:2, name:"Minimal"}, std:{cost:30, mult:1, name:"Standard"}, full:{cost:60, mult:.5, name:"Full"}},
   // concessions: annual bid round for greenfield blocks
@@ -1540,6 +1580,8 @@ const FAC = {
   upgrader:{name:"Upgrader", node:"upgrader", patch:30},
   power:{name:"Central Paují turbines", node:"power", patch:25, repCost:120, repTurns:2},
   pipe:{name:"Export pipeline", node:"pipe", patch:20, repCost:80, repTurns:2},
+  gather:{name:"Gathering lines", node:"gather", patch:18, repCost:70, repTurns:2},
+  reffeed:{name:"Refinery feed line", node:"reffeed", patch:16, repCost:55, repTurns:2},
   terminal:{name:"Terminal Punta Garza", node:"terminal", patch:15, repCost:60, repTurns:2},
   blend:{name:"Blending station", node:"blend", patch:10, repCost:30, repTurns:1},
   gasplant:{name:"Gas plant", node:"gas", patch:10, repCost:50, repTurns:2}
@@ -1550,10 +1592,11 @@ function accP(f){
   return Math.max(0, A.base + A.condK*Math.max(0,(60-c)/30) + A.skillK*Math.max(0,(50-S.skill)/15) + (A.maint[S.maint]||0))*(hasTech("twin")?.6:1);
 }
 const ACC_KIND = {upgrader:["Fire in a coker drum at the upgrader","fire"], power:["Turbine fire at Central Paují","fire"], pipe:["Rupture and spill on the export pipeline","spill"],
+  gather:["Rupture on a gathering line","spill"], reffeed:["Rupture on the refinery feed line","spill"],
   terminal:["Spill at a loading berth","spill"], blend:["Tank fire at the blending station","fire"], gasplant:["Gas leak and fire at the gas plant","fire"]};
 function accRoll(R){
   const A = CFG.acc; let cost = 0, n = 0; R.acc = [];
-  for (const f of Object.keys(FAC)){
+  for (const f of facShown()){
     if (n>=A.max) break;
     if ((S.acc||[]).some(a=>a.fac===f)) continue;
     if (rng() < accP(f)){
@@ -1618,6 +1661,9 @@ const dsTier = s => S.ds ? S.ds.sites[s].tier : 0;
 const dsBuilding = s => S.projects.some(p=>p.kind==="refinery" && p.site===s) || S.orders.some(o=>o.type==="refinery" && o.site===s);
 const dsNextTier = s => dsTier(s) + 1;
 const dsAnyTier = () => Math.max(dsTier("dom"), dsTier("exp"));
+// v56: the refinery feed line only exists once a refinery is built, under construction, or ordered — hidden before that.
+const reffeedLive = () => dsOn() && (dsAnyTier()>0 || S.projects.some(p=>p.kind==="refinery") || S.orders.some(o=>o.type==="refinery"));
+const facShown = () => Object.keys(FAC).filter(f => f!=="reffeed" || reffeedLive());
 const pcOpen = () => dsAnyTier() >= CFG.ds.pc.need;
 const pcBuilding = k => S.projects.some(p=>p.kind===k) || S.orders.some(o=>o.type===k);
 // yields after technology
@@ -1682,10 +1728,10 @@ const INC = {
   credit:{name:"Strategic infrastructure credit", fee:20},
   accel:{name:"Accelerated depreciation", fee:20}
 };
-const FAST_TYPES = ["blendExp","train","loop","berth","turbine","gasPlant","gasPipe","repair","fieldFac"];
-const CREDIT_TYPES = ["blendExp","train","loop","berth","tank","turbine","gasPlant","gasPipe"];
+const FAST_TYPES = ["blendExp","train","loop","gatherExp","reffeedExp","berth","turbine","gasPlant","gasPipe","repair","fieldFac"];
+const CREDIT_TYPES = ["blendExp","train","loop","gatherExp","reffeedExp","berth","tank","turbine","gasPlant","gasPipe"];
 const COST = {drillSagd:300, pum:380, solar:45, wind:70, batt:40, buyRig:110, sellRig:0, exLicense:20, exSeismic:40, exWildcat:90, drillLake:180, drillCold:120, drillTh:220, convert:140, workover:30, leaseRig:0, releaseRig:0, dilContract:20,
-  blendExp:150, turnaround:80, train:1500, loop:400, berth:350, tank:60, payBonus:150, training:30, incRelief:30, incCredit:20, incAccel:20,
+  blendExp:150, turnaround:80, train:1500, loop:400, gatherExp:220, reffeedExp:160, berth:350, tank:60, payBonus:150, training:30, incRelief:30, incCredit:20, incAccel:20,
   gasWell:60, gasPlant:150, gasPipe:450, turbine:160, rentGen:0, returnGen:0, appraise:40, fieldFac:200};
 const BUYERS = ["Refinería Bahía Norte","Costa Coker Co.","Atlántico Crude Trading","Puerto Sereno Refining","Isla Verde Asphalt","Marlin Bay Refining"];
 const GOALS = {
@@ -1899,7 +1945,7 @@ function newGame(mode){
   applyMode(mode);
   S = {
     seed:(Date.now() % 2147483647)|0, turn:1, approval:CFG.appr0, cash:CFG.cash0,
-    upName:CFG.upName, blendCap:CFG.blendCap, pipeCap:CFG.pipe, berths:CFG.berths0, storageCap:CFG.storage0, stored:CFG.stored0,
+    upName:CFG.upName, blendCap:CFG.blendCap, pipeCap:CFG.pipe, gatherCap:CFG.gather, reffeedCap:CFG.reffeed, berths:CFG.berths0, storageCap:CFG.storage0, stored:CFG.stored0,
     dil:0, dilPending:0, leased:0, leasedPending:0,
     blocks:[
       {id:"moriche", name:"Bloque Moriche", kind:"mature", field:"brown", base:220, start:220, slots:12, lastWO:0},
@@ -1999,7 +2045,7 @@ function costOf(o){
 /* ---- oilfield services ---- */
 const OFS_TYPES = ["lngTrain","refinery","pcComplex","pcOlef","pcFert","drillSagd","pum","solar","wind","batt","exSeismic","exWildcat","drillLake","drillCold","drillTh","convert","workover","blendExp","turnaround","train","loop","berth","tank","gasWell","gasPlant","gasPipe","turbine","appraise","fieldFac","repair"];
 const SLOT_TYPES = ["pum","blendExp","train","loop","berth","tank","turbine","gasPlant","gasPipe","repair","fieldFac"];
-const PROJ_NAMES = {lngTrain:"Offshore gas and LNG train", refinery:"Refinery", pcComplex:"Petrochemical complex", pcOlef:"Olefins and polyethylene line", pcFert:"Fertiliser line", pum:"Partial upgrading module",solar:"Solar block",wind:"Wind block",batt:"Battery block",workover:"Workover",repair:"Repair",fieldFac:"Field facilities",blendExp:"Blending expansion",train:"Upgrader train",loop:"Pipeline loop",berth:"Export berth",tank:"Storage tank",turbine:"Gas turbine block",gasPlant:"Gas plant expansion",gasPipe:"Gas export pipeline"};
+const PROJ_NAMES = {lngTrain:"Offshore gas and LNG train", refinery:"Refinery", pcComplex:"Petrochemical complex", pcOlef:"Olefins and polyethylene line", pcFert:"Fertiliser line", pum:"Partial upgrading module",solar:"Solar block",wind:"Wind block",batt:"Battery block",workover:"Workover",repair:"Repair",fieldFac:"Field facilities",blendExp:"Blending expansion",train:"Upgrader train",loop:"Pipeline loop",gatherExp:"Gathering expansion",reffeedExp:"Refinery feed expansion",berth:"Export berth",tank:"Storage tank",turbine:"Gas turbine block",gasPlant:"Gas plant expansion",gasPipe:"Gas export pipeline"};
 function ofsS(){ return S.ofs || (S.ofs = {tier:"reg", sci:1, salt:(S.seed ^ 0x5bd1e995)|0, due:0, appr:0, local:{}, freeze:0, shock:null, natLock:0}); }
 const ofsTier = () => ofsS().tier;
 function ofsSci(){ const o = ofsS(); let v = o.sci; if (o.shock && o.shock.until>=S.turn) v += o.shock.add; v += evMods().ofsAdd||0; return clamp(v, .6, 1.6); }
@@ -2236,12 +2282,15 @@ function gasPower(F, m){
 function oilChain(ta, xf, uf){
   const m = evMods(), pr0 = production(), xm = (m.xh||1);
   const pr = {mature:pr0.mature*xm*xf, cold:pr0.cold*xm*xf, th:pr0.th*xm*xf, xh:pr0.xh*xm*xf}, xh = pr.xh, lake = (pr0.lake||0)*xf;
+  // v56 gathering lines: the land fields feed the processing complex through gathering lines of finite capacity.
+  // What the lines cannot carry is choked back (shut in) at the wells. Lake crude has its own subsea line and is not gathered here.
+  const gatherCapEff = S.gatherCap*cf("gather"), xhG = Math.min(xh, gatherCapEff), gatherShut = Math.max(0, xh - xhG);
   // downstream: refinery throughput this quarter, capped by the crude split; the domestic complex takes some raw extra-heavy before the upgrader
   const dsx = dsOn() && S.ds && (S.ds.sites.dom.tier || S.ds.sites.exp.tier);
   const capDom = dsx ? dsCapEff("dom")*DSRF.dom : 0, capExp = dsx ? dsCapEff("exp")*DSRF.exp : 0;
-  const feedMax = dsx ? S.ds.split*(xh + lake) : 0;
+  const feedMax = dsx ? S.ds.split*(xhG + lake) : 0;
   let domT = Math.min(capDom, feedMax), expT = Math.min(capExp, Math.max(0, feedMax - domT));
-  const tDom = dsx ? S.ds.sites.dom.tier : 0, xhIn = Math.min(xh, domT*dsXh(tDom)), xhR = xh - xhIn;
+  const tDom = dsx ? S.ds.sites.dom.tier : 0, xhIn = Math.min(xhG, domT*dsXh(tDom)), xhR = xhG - xhIn;
   const napY = tDom ? dsYield(tDom).n : 0;
   const upFull = (ta || m.upOff) ? 0 : S.upName*cf("upgrader"), upEff = upFull*uf;
   const blendCap = S.blendCap*cf("blend"), pipeCap = S.pipeCap*cf("pipe")*(hasTech("dra")?1.1:1);
@@ -2256,11 +2305,18 @@ function oilChain(ta, xf, uf){
   const xhPU = Math.max(0, xhUp - Math.min(xhUp, upEff)); xhUp -= xhPU;
   const shut = xhR-xhUp-xhPU-xhBl;
   const dil = xhBl/ratio, blend = xhBl+dil, sco = xhUp*CFG.yield*(hasTech("catalyst")?.93/.9:1) + xhPU*CFG.tech.pumYield, made = blend+sco+lake;
-  // the domestic complex takes its crude at the camp, before the pipeline; the export refinery takes it at the coast, before the terminal
-  const domCrude = Math.min(Math.max(0, domT - xhIn), made), domFeed = xhIn + domCrude;
+  // the domestic complex takes its crude at the camp, before the pipeline; the export refinery takes it at the coast, before the terminal.
+  // v56 refinery feed line: the made crude the refineries draw rides a feed line of finite capacity (the raw extra-heavy prefeed,
+  // xhIn, is a short tie-in at the complex and does not). What the line cannot carry stays in the crude stream and exports instead.
+  const reffeedCapEff = dsx ? S.reffeedCap*cf("reffeed") : Infinity;
+  const domCrudeWant = Math.min(Math.max(0, domT - xhIn), made);
+  const domCrude = Math.min(domCrudeWant, reffeedCapEff), domFeed = xhIn + domCrude;
+  const reffeedLeft = Math.max(0, reffeedCapEff - domCrude);
   const madeP = made - domCrude;
   const piped = Math.min(madeP, pipeCap*(m.pipe||1)), pipeLoss = madeP-piped;
-  const expFeed = Math.min(expT, piped), toTerm = piped - expFeed;
+  const expFeedWant = Math.min(expT, piped), expFeed = Math.min(expFeedWant, reffeedLeft), toTerm = piped - expFeed;
+  const refShort = dsx ? Math.max(0, (domCrudeWant - domCrude) + (expFeedWant - expFeed)) : 0;
+  const reffeedUse = domCrude + expFeed;
   const dilFrac = made>0 ? dil/made : 0;
   let term = S.berths*CFG.termPerBerth*(m.term||1)*cf("terminal"); const k = CFG.days/1000;
   let exported, stored = S.stored, overflow = 0, SHP = null;
@@ -2296,11 +2352,13 @@ function oilChain(ta, xf, uf){
   const net = exported - expDil;
   let neck = null;
   const worn = f => cf(f)<.999 ? ` (condition ${f0(condEff(f))}%${tripped(f)?", tripped":""} limits it)` : "";
-  if (shut>0.5) neck = ratio*dilCap < blendCap*ratio/(ratio+1) ? {node:"blend", why:"Upgrader is full and diluent supply caps blending"} : {node:"blend", why:`Upgrader and blending capacity are both full${worn("upgrader")||worn("blend")}`};
+  if (gatherShut>0.5) neck = {node:"gather", why:`Gathering lines are full${worn("gather")}: ${f0(gatherShut)} kb/d choked back at the wells`};
+  else if (shut>0.5) neck = ratio*dilCap < blendCap*ratio/(ratio+1) ? {node:"blend", why:"Upgrader is full and diluent supply caps blending"} : {node:"blend", why:`Upgrader and blending capacity are both full${worn("upgrader")||worn("blend")}`};
   else if (pipeLoss>0.5) neck = {node:"pipe", why:m.pipe?"Pipeline capacity is cut by the leak":`Pipeline capacity is full${worn("pipe")}`};
   else if (overflow>0.5) neck = {node:"terminal", why: SHP && SHP.shutC>=SHP.ovf ? `Weather closed the terminal for ${SHP.d} days and the tanks filled` : SHP && SHP.liftShort ? "Not enough tankers: crude backed up into full tanks" : `Terminal and storage are full${worn("terminal")}`};
-  return {...pr, xhFull:pr0.xh*xm, upFull, upEff, blendCapEff:blendCap, pipeCapEff:pipeCap, ratio, dilCap, xhUp, xhBl, shut, dil, blend, sco, made, piped, pipeLoss, term, exported, stored, overflow,
-    xhPU, puCap, expB, expS, expL, lake, lakeFull:(pr0.lake||0), net, dom, lost:shut+pipeLoss+overflow, neck, ds:D, ship:SHP};
+  else if (refShort>0.5) neck = {node:"reffeed", why:`Refinery feed line is full${worn("reffeed")}: ${f0(refShort)} kb/d sold as crude instead of refined`};
+  return {...pr, xhG, xhFull:pr0.xh*xm, gatherCapEff, gatherShut, upFull, upEff, blendCapEff:blendCap, pipeCapEff:pipeCap, reffeedCapEff:(dsx?reffeedCapEff:0), reffeedUse, refShort, ratio, dilCap, xhUp, xhBl, shut, dil, blend, sco, made, piped, pipeLoss, term, exported, stored, overflow,
+    xhPU, puCap, expB, expS, expL, lake, lakeFull:(pr0.lake||0), net, dom, lost:shut+pipeLoss+overflow+gatherShut, neck, ds:D, ship:SHP};
 }
 
 // downstream barrels: sales volumes, domestic market, petrochemical feed; adds refined barrels to net output
@@ -2394,7 +2452,7 @@ function orderLabel(o){
   if (o.type==="lngTrain") return `Offshore gas and LNG train (${money(o.pay||0)} a quarter for ${CFG.ship.lng.turns} quarters)`;
   return ({pcComplex:"Petrochemical complex", pcOlef:"Olefins and polyethylene line", pcFert:"Fertiliser line (ammonia and urea)", drillCold:`Cold pad, ${bn(o.block)}`, drillTh:`Thermal pad, ${bn(o.block)}`, convert:`Thermal conversion, pad #${o.pad}`,
     workover:`Workover, ${bn(o.block)}`, solar:"Solar block (50 MW)", wind:"Wind block (50 MW)", batt:"Battery block (25 MW)", leaseRig:"Lease a rig (arrives next turn)", buyRig:"Buy a rig (arrives in 2 turns)", sellRig:"Sell an owned rig", exLicense:`Licence: ${exLead(o.lead)?.name}`, exSeismic:`Seismic: ${exLead(o.lead)?.name}`, exWildcat:`Wildcat well: ${exLead(o.lead)?.name}`, drillLake:`Lake well, ${bn(o.block)}`, drillSagd:`SAGD well pair, ${bn(o.block)}`, pum:"Partial upgrading module", releaseRig:"Release a leased rig", dilContract:"Diluent supply contract",
-    blendExp:"Blending expansion", turnaround:"Upgrader turnaround (offline this turn)", train:"New upgrader train", loop:"Pipeline loop",
+    blendExp:"Blending expansion", turnaround:"Upgrader turnaround (offline this turn)", train:"New upgrader train", loop:"Pipeline loop", gatherExp:"Gathering expansion", reffeedExp:"Refinery feed expansion",
     berth:"Export berth", tank:"Storage tank", payBonus:"Pay production bonus", training:"Crew training programme",
     incRelief:"Apply: extra-heavy royalty relief", incCredit:"Apply: infrastructure credit", incAccel:"Apply: accelerated depreciation", gasWell:"Gas well, Campo Yagrumo", patch:`Patch: ${FAC[o.fac]?.name}`, repair:`Repair: ${FAC[o.fac]?.name}`, appraise:`Appraisal well, ${bn(o.block)}`, fieldFac:`Field facilities, ${bn(o.block)}`, bid:`Bid for ${S.round?.offers.find(x=>x.id===o.offer)?.name||"block"} (${o.pads} pad commitment)`, gasPlant:"Gas plant expansion", gasPipe:"Gas export pipeline to Corales", turbine:"Gas turbine block (+100 MW)", rentGen:"Rent a diesel generator set (arrives next turn)", returnGen:"Return a diesel generator set"})[o.type];
 }
@@ -2467,6 +2525,8 @@ function endTurn(){
       case "blendExp": S.projects.push({kind:"blendExp", left:2, slot:true}); break;
       case "train": S.projects.push({kind:"train", left:6, slot:true}); break;
       case "loop": S.projects.push({kind:"loop", left:4, slot:true}); break;
+      case "gatherExp": S.projects.push({kind:"gatherExp", left:4, slot:true}); break;
+      case "reffeedExp": S.projects.push({kind:"reffeedExp", left:3, slot:true}); break;
       case "berth": S.projects.push({kind:"berth", left:4, slot:true}); break;
       case "tank": S.projects.push({kind:"tank", left:1, slot:true}); break;
       case "shipBuy": shipS().yard.push({cls:o.cls, left:CFG.ship.cls[o.cls].turns}); break;
@@ -2686,7 +2746,7 @@ function endTurn(){
     else if (L.status==="licensed" && L.exp && t>=L.exp){ L.status="lapsed"; R.events.push(`The licence for ${L.name} lapsed: no wildcat was drilled.`); } });
   if (S.ownedPending && S.ownedPending.length){ S.ownedPending = S.ownedPending.map(x=>x-1); const arr = S.ownedPending.filter(x=>x<=0).length; if (arr){ S.owned = (S.owned||0)+arr; R.completed.push(`${arr} owned rig${arr>1?"s":""} delivered`); } S.ownedPending = S.ownedPending.filter(x=>x>0); }
   // wear: every facility loses condition each turn; the maintenance programme scales it
-  for (const f of Object.keys(S.cond)) S.cond[f] = Math.max(CFG.condMin, S.cond[f] - (f==="upgrader"&&ta ? 0 : wearOf(f)));
+  for (const f of Object.keys(S.cond)) S.cond[f] = Math.max(CFG.condMin, S.cond[f] - ((f==="upgrader"&&ta)||(f==="reffeed"&&!reffeedLive()) ? 0 : wearOf(f)));
   if (ta) S.cond.upgrader = CFG.repairTo;
   const renew = (f, oldCap, add) => { S.cond[f] = (S.cond[f]*oldCap + 100*add)/(oldCap+add); };
   S.apprWells.forEach(w=>{ w.left--; if (w.left<=0){ const b=blk(w.block); b.known=true; if (CFG.ofsOn) ofsDone(w, R, y, null);
@@ -2700,6 +2760,8 @@ function endTurn(){
     if (p.kind==="blendExp"){ renew("blend", S.blendCap, CFG.blendExp); S.blendCap+=CFG.blendExp; R.completed.push(`Blending capacity now ${f0(S.blendCap)} kb/d`); }
     if (p.kind==="train"){ renew("upgrader", S.upName, CFG.trainAdd); S.upName+=CFG.trainAdd; R.completed.push(`New upgrader train: nameplate ${f0(S.upName)} kb/d`); }
     if (p.kind==="loop"){ renew("pipe", S.pipeCap, CFG.loop); S.pipeCap+=CFG.loop; R.completed.push(`Pipeline loop complete: ${f0(S.pipeCap)} kb/d`); }
+    if (p.kind==="gatherExp"){ renew("gather", S.gatherCap, CFG.gatherAdd); S.gatherCap+=CFG.gatherAdd; R.completed.push(`Gathering lines now ${f0(S.gatherCap)} kb/d`); }
+    if (p.kind==="reffeedExp"){ renew("reffeed", S.reffeedCap, CFG.reffeedAdd); S.reffeedCap+=CFG.reffeedAdd; R.completed.push(`Refinery feed line now ${f0(S.reffeedCap)} kb/d`); }
     if (p.kind==="berth"){ renew("terminal", S.berths, 1); S.berths++; R.completed.push(`New export berth: terminal ${f0(S.berths*CFG.termPerBerth)} kb/d`); }
     if (p.kind==="refinery"){ const X = dsS().sites[p.site], first = !X.tier; X.tier = p.rt; if (first){ X.cond = 95; X.ta = S.turn + CFG.ds.ta; }
       R.completed.push(`${DS_SITES[p.site]}: ${CFG.ds.tiers[p.rt].name} online, ${f0(CFG.ds.tiers[p.rt].cap)} kb/d${first && p.site==="dom" ? ". It now supplies the domestic fuel market" : ""}`); }
@@ -2945,7 +3007,9 @@ function finRow(R){
     tax:R.tax, pretax:R.pretax, allowance:R.allowance, capex:R.capex, ceiling:R.ceiling, distr:R.distr, cash:S.cash,
     // price exposure: $M of pre-tax cash per $1/bbl on Atlantic Light (crude sales after royalty, less diluent and diesel bought at oil-linked prices)
     sens: (1-R.rRate)*CFG.days/1000*(R.F.expB+R.F.expS+(R.F.expL||0)) - CFG.days/1000*R.F.dil - R.F.dsGen*CFG.dsFuel*CFG.days/1e6,
-    lost: R.F.lost, gas: R.F.gasRaw, assets: finAssets(R.F), ovr: R.ofs ? R.ofs.ovr : 0, idx: R.ofs ? R.ofs.idx : 0, sci: R.ofs ? R.ofs.sci : 1});
+    lost: R.F.lost, gas: R.F.gasRaw, assets: finAssets(R.F), ovr: R.ofs ? R.ofs.ovr : 0, idx: R.ofs ? R.ofs.idx : 0, sci: R.ofs ? R.ofs.sci : 1,
+    // v53: crude storage at quarter end, so the outlook can show inventories too
+    stored: R.F.stored, storageCap: S.storageCap, overflow: R.F.overflow});
 }
 // field output by block this quarter (kb/d at the wellhead, after event cuts and power shedding)
 function finAssets(F){
@@ -3047,7 +3111,14 @@ function finYear(y){
 /* ============ persistence ============ */
 const KEY="crudo-prototype-v7";
 function save(){ if (S && S.demo) return; try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }   // the demo camp is never written over a real campaign
-function loadSaved(){ try{ const s=localStorage.getItem(KEY); return s?JSON.parse(s):null; }catch(e){ return null; } }
+function hydrateSave(s){
+  // v56: fill fields added after this save was written, so the new pipeline segments don't read as NaN
+  if (s.cond){ if (s.cond.gather==null) s.cond.gather = CFG.cond0.gather; if (s.cond.reffeed==null) s.cond.reffeed = CFG.cond0.reffeed; }
+  if (s.gatherCap==null) s.gatherCap = CFG.gather;
+  if (s.reffeedCap==null) s.reffeedCap = CFG.reffeed;
+  return s;
+}
+function loadSaved(){ try{ const s=localStorage.getItem(KEY); const o = s?JSON.parse(s):null; return o?hydrateSave(o):null; }catch(e){ return null; } }
 function clearSaved(){ try{ localStorage.removeItem(KEY); }catch(e){} }
 
 /* ============ icons ============ */
@@ -3077,12 +3148,13 @@ const IC = {
   alert:"M12 3L2 20h20zM12 9v5M12 17v.5",
   flame:"M12 3c1 3 5 5.5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-5 0 2 1 3 2 3.5C11 9 11.5 6 12 3z",
   bolt:"M13 2L4 14h7l-1 8 9-12h-7z",
-  trend:"M3 17l6-6 4 4 8-9M15 6h6v6"
+  trend:"M3 17l6-6 4 4 8-9M15 6h6v6",
+  menu:"M4 7h16M4 12h16M4 17h16"
 };
 const ic = (n,sz=16)=>`<svg class="ic" width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IC[n]}"/></svg>`;
 const icMap = (n,x,y,c)=>`<g transform="translate(${x} ${y}) scale(.833)" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IC[n]}"/></g>`;
-const NODEIC = {explore:"target",moriche:"derrick",araguaney:"derrick",saman:"derrick",upgrader:"column",blend:"flask",pipe:"pipe",terminal:"anchor",crews:"people",gas:"flame",power:"bolt"};
-const ACTIC = {shipBuy:"anchor",shipSell:"anchor",shipTc:"anchor",lngTrain:"flame",refinery:"column",pcComplex:"column",pcOlef:"flask",pcFert:"flask",dsDefer:"wrench",drillSagd:"derrick",pum:"column",solar:"bolt",wind:"bolt",batt:"bolt",buyRig:"derrick",sellRig:"derrick",exLicense:"doc",exSeismic:"target",exWildcat:"derrick",drillLake:"derrick",drillCold:"derrick",drillTh:"derrick",convert:"derrick",workover:"wrench",leaseRig:"derrick",releaseRig:"derrick",dilContract:"drop",blendExp:"flask",turnaround:"wrench",train:"column",loop:"pipe",berth:"anchor",tank:"tank",payBonus:"coins",training:"people",incRelief:"percent",incCredit:"percent",incAccel:"percent",gasWell:"flame",gasPlant:"flame",gasPipe:"pipe",turbine:"bolt",rentGen:"bolt",returnGen:"bolt"};
+const NODEIC = {explore:"target",moriche:"derrick",araguaney:"derrick",saman:"derrick",upgrader:"column",blend:"flask",gather:"pipe",reffeed:"pipe",pipe:"pipe",terminal:"anchor",crews:"people",gas:"flame",power:"bolt"};
+const ACTIC = {shipBuy:"anchor",shipSell:"anchor",shipTc:"anchor",lngTrain:"flame",refinery:"column",pcComplex:"column",pcOlef:"flask",pcFert:"flask",dsDefer:"wrench",drillSagd:"derrick",pum:"column",solar:"bolt",wind:"bolt",batt:"bolt",buyRig:"derrick",sellRig:"derrick",exLicense:"doc",exSeismic:"target",exWildcat:"derrick",drillLake:"derrick",drillCold:"derrick",drillTh:"derrick",convert:"derrick",workover:"wrench",leaseRig:"derrick",releaseRig:"derrick",dilContract:"drop",blendExp:"flask",turnaround:"wrench",train:"column",loop:"pipe",gatherExp:"pipe",reffeedExp:"pipe",berth:"anchor",tank:"tank",payBonus:"coins",training:"people",incRelief:"percent",incCredit:"percent",incAccel:"percent",gasWell:"flame",gasPlant:"flame",gasPipe:"pipe",turbine:"bolt",rentGen:"bolt",returnGen:"bolt"};
 
 /* ============ help: tips, glossary, tour ============ */
 const TIPS = {
@@ -3101,6 +3173,9 @@ const TIPS = {
   services:["Oilfield services","Who builds your capital projects. The tier you pick applies to every capital order this turn: drilling, workovers, construction, repairs and the turnaround. Premier costs more but rarely slips and trains your crews; national contractors are cheapest and earn local-content approval, but slip more, cannot build the upgrader train or the gas export pipeline, and take at most 2 construction projects at once. Overruns are billed when a job finishes and take funding-ceiling room the next quarter."],
   sci:["Service cost index","What rigs, crews and contractors cost against normal (1.00). It follows the oil price with a lag: each quarter it closes 30% of the gap to Atlantic Light divided by $70, between 0.80 and 1.35. The arrow shows next quarter's value from this quarter's price. National contractors feel half of it. Leased rigs cost the index times their normal rate."],
   finance:["Finance view","Your quarters as a CFO sees them: actuals from each quarterly report, against the yearly budget and against investor targets. The budget is drafted in Q1 from the committed outlook, scaled to your guidance, with a capex envelope you set; it locks when Q1 ends. Variance is green when favourable."],
+  gather:["Gathering lines","The flowlines and trunk lines carrying raw extra-heavy crude from the land fields to the upgrader and blending station. They have a finite capacity; whatever they cannot carry is choked back at the wells and lost, just as a full upgrader or pipeline would shut barrels in. Capacity follows condition, wears each quarter and can trip. Expand the lines as you expand the fields. Lake crude has its own subsea line and is not gathered here."],
+  reffeed:["Refinery feed line","The line that carries made crude from the processing complex to the domestic and export refineries. It has a finite capacity; crude it cannot carry is not lost, but it is sold as crude instead of being refined, so you forgo the refining margin. The raw extra-heavy prefeed to the domestic complex is a short tie-in at the complex and does not use this line. Capacity follows condition, wears each quarter and can trip."],
+  market:["Market","Where Atlantic Light sits today, how it compares with last year, and whether any world event is in force (see the news ticker and World news for detail). Below that, the Street: how the three covering houses are split between Buy, Hold and Sell, their average price target, and the share price those targets imply. Updates once a quarter, after the quarterly report."],
   bridge:["Operating cash flow bridge","How you got from the budgeted operating cash flow to the actual one. Oil price is the change in Atlantic Light times your price exposure that quarter. Bottlenecks values the barrels lost to full facilities, the pipeline, the terminal or power shedding at your actual margin per barrel. Volume and mix is the rest of the change in crude and gas margin. Each cost line is budget minus actual. The steps add up exactly."],
   unit:["Unit economics","Every line of the income and cash statement divided by the barrels of net crude you sold, so you can compare quarters of different size. Crude sales per barrel run above Atlantic Light because blended barrels carry the diluent you bought, which shows as a cost below."],
   breakeven:["Free cash breakeven","The Atlantic Light price at which this period's operating cash flow before tax would just cover capital spending. Below it you are funding capex from cash or the ceiling; above it the business pays for itself."],
@@ -3206,9 +3281,11 @@ function offerHTML(){
 }
 const TOUR = [
   {sel:".hd3", title:"Your scoreboard", text:"Left to right: the quarter and oil price; the net crude you are exporting against the guidance you promised; investor approval and its grade; the funding ceiling, which is what investors will pay for this turn; your cash reserve and what was paid out; and, at top right, the sound, music and glossary buttons. The analyst rating and your progress toward the export target are in the bar at the bottom. Tap any ? for a plain-language explanation."},
-  {sel:"#t-map", title:"The network", text:"Oil flows left to right: three fields, then the upgrader or blending, then the pipeline, terminal and tankers. Line thickness is volume in kb/d. Below it, the gas and power row: gas feeds your turbines, and the power they make runs the whole network, because there is no public grid. A red outline marks the bottleneck. The rail on the right (the Status button on a phone) lists flows, power and gas, facility condition and warnings. Tap any box to manage it. On a phone, swipe the map sideways or turn the phone."},
-  {sel:".tabs", title:"Your controls", text:"Contracts: buyer offers with bonuses. Build: the construction queue. Crews: condition and upkeep. Services: who builds it. Upstream, Midstream, Downstream: order work along the chain. Power: your turbines and diesel sets. The Finance · History box at the top right opens the budget, results, history and investors. Glossary sits at the top right. Crews sits under Build."},
+  {sel:"#t-map", title:"The network", text:"Oil flows left to right through three lanes. Upstream: the fields. Midstream: the upgrader and blending, then the pipeline, terminal and tankers. Downstream: the refineries and petrochemicals. Two pipeline segments carry crude between the lanes, each with its own capacity and condition — the gathering lines from the fields to the complex, and the refinery feed line into the refineries. Line thickness is volume in kb/d; a red outline marks the bottleneck. Below sits the gas and power lane: its turbines run the whole network, because there is no public grid. Tap any box to manage it; the right rail (Status on a phone) lists flows, condition and warnings."},
+  {sel:".tabs", title:"Your controls", text:"Contracts: buyer offers with bonuses. Build: the construction queue. Crews: condition and upkeep. Services: who builds it. Upstream, Midstream, Downstream: order work along the chain — the gathering lines and refinery feed line live under Midstream. Power: your turbines and diesel sets. The Finance · History box at the top right opens the budget, results, history and investors. Glossary sits at the top right. Crews sits under Build."},
   {sel:".budget", pos:()=>window.innerWidth<1100?"top":"bot", title:"Orders and funding", text:"Orders are plans, not actions. This meter shows the capex you have queued against the funding ceiling, with each order as a chip you can undo. Stay inside it: going over costs 4 approval. Below it in the rail: the camp status, warnings and your yearly guidance."},
+  {sel:".finbar", enter:()=>{ UI.fov="fin"; UI.fs={fin:"budget"}; }, title:"Finance: the CFO's view", text:"The Finance box opens this. Six tabs run across the top. Budget and outlook: the committed plan against the yearly budget you set. Statement: the full income and cash statement, quarter and year. Charts: trends and a cash-flow bridge. Inventories: crude in your tanks through the year. Investors: the analyst notes in full. Tax: royalty and income tax, with effective rates. Every number carries a ? ."},
+  {sel:".fgd", enter:()=>{ UI.fov="fin"; UI.fs={fin:"budget"}; }, pos:"bot", title:"Finance: the left rail", text:"This rail stays put on every tab. At the top, the production and capex guidance you commit to for the year — raise or cut it here, and investors judge you against it. Below, the live effect of your orders on the full-year outlook. At the bottom, the Market block: today's Atlantic Light price against last year, and where the Street stands — the analyst consensus, the Buy/Hold/Sell split and their average price target."},
   {sel:".endbtn", pos:"top", title:"End turn", text:"Runs one quarter: production, sales, royalty and tax, and the investor review. A report then explains what changed and why, and may announce an event: you must pick a response before the next End turn."},
   {center:true, title:"Your first turn", text:"A checklist will sit at the top of the panel: set guidance to 330, order two cold pads at Moriche, order an upgrader turnaround, patch the pipeline, check the funding bar stays green, then End turn. The report that follows will explain itself."}
 ];
@@ -3293,6 +3370,56 @@ function finTile(label, unit, a, b, t, sub){
   const v = finVar(a, b, t);
   return `<div class="ftile"><div class="l">${label}</div><div class="v num">${a==null?"—":t==="vol"?f0(a):money(a)}${t==="vol"?` <small>${unit}</small>`:""}</div>
     <div class="s num">Budget ${b==null?"—":t==="vol"?f0(b):money(b)} · <span class="${v.cls}">${v.txt||"—"}</span></div>${sub?`<div class="s">${sub}</div>`:""}</div>`;
+}
+// v53: crude storage, now and through the rest of the year. Refined products and gas have no stockpile mechanic
+// (they're matched to demand each quarter), so this tab is crude-only for now.
+function finStockHTML(D){
+  const cap = S.storageCap, st = S.stored, pct = cap>0 ? st/cap : 0;
+  const net = flows(taOrdered()).net, days = net>0.5 ? st*1000/net : null;
+  const status = pct>=.92 ? {cls:"bad", t:"Tanks nearly full", s:"Little room left to absorb a shipping delay before crude is shut in."}
+    : pct<=.08 ? {cls:"bad", t:"Tanks nearly empty", s:"Little buffer left if exports slip behind production."}
+    : pct>=.7 ? {cls:"good", t:"Comfortable buffer", s:"Healthy room on both sides."}
+    : {cls:"", t:"Normal range", s:"Healthy room on both sides."};
+  const tile = (l,v,sub,cls="") => `<div class="ftile"><div class="l">${l}</div><div class="v num ${cls}">${v}</div>${sub?`<div class="s">${sub}</div>`:""}</div>`;
+  const tiles = `<div class="ftiles">
+    ${tile("Crude in storage", `${f1(st)} <small>of ${f0(cap)} MMbbl</small>`, `${f0(pct*100)}% full`, pct>=.92||pct<=.08?"fb":"")}
+    ${tile("Days of cover", days==null?"—":`${f0(days)} <small>days</small>`, "At this quarter's net crude rate")}
+    ${tile("Status", status.t, status.s, status.cls==="bad"?"fb":status.cls==="good"?"fg":"")}
+  </div>`;
+  const rows = D.fy.map((r,i)=>{ const q=i+1;
+    if (!r) return `<tr><td>Q${q}</td><td colspan="3" class="muted num">—</td></tr>`;
+    const isAct = !!D.act.find(x=>x.q===q), capv = r.storageCap!=null ? r.storageCap : cap;
+    const pctv = r.stored!=null && capv>0 ? r.stored/capv : null, ovf = r.overflow||0;
+    return `<tr${isAct?"":' class="bud"'}><td>Q${q}${isAct?"":` <span class="muted">(outlook)</span>`}</td>
+      <td class="r num">${r.stored!=null?f1(r.stored):"—"}</td>
+      <td class="r num">${pctv!=null?f0(pctv*100)+"%":"—"}</td>
+      <td class="r num ${ovf>.5?"bad":""}">${ovf>.5?f1(ovf)+" lost":"—"}</td></tr>`; }).join("");
+  const missing = D.act.some(r=>r.stored==null);
+  return `<div class="fpnl">${tiles}
+    <div class="tblwrap"><table class="t fin-t"><thead><tr><th>Year ${D.y}</th><th class="r">Stored</th><th class="r">% full</th><th class="r">Overflow</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="note">MMbbl of crude in tanks only. Gasoline, diesel, jet, fuel oil and gas are matched to demand each quarter and aren’t stockpiled here yet.${missing?" Earlier quarters predate inventory tracking and show as —.":""}</p></div>`;
+}
+// v55: a compact "Market" block for the finance aside, below the "Effect on..." tiles — the benchmark
+// price (already tracked everywhere else in the game) plus the analyst-coverage system's own numbers
+// (AN_HOUSES ratings/targets, already computed once a quarter by analystNote()), read-only here and
+// never recomputed, so this adds no new simulation surface. Built from the same .fgdt/.ftile pieces as
+// the tiles block above it, so it inherits that block's own height-squeeze CSS for free: the aside
+// column is only 292px wide and the finance overlay already has no room to spare vertically.
+function marketHTML(){
+  const y = yearOf(Math.min(S.turn, CFG.turns)), live = price() + (wxMods().px||0), py = y>1 ? pricePath(y-1) : null;
+  const dlt = py==null ? null : live-py;
+  const tile = (l,v,sub,cls="") => `<div class="ftile"><div class="l">${l}</div><div class="v num ${cls}">${v}</div>${sub?`<div class="s">${sub}</div>`:""}</div>`;
+  const pxTile = tile("Atlantic Light", `$${f0(live)} <small>/bbl</small>`, dlt==null ? "First year" : `${dlt>=0?"+":"−"}$${f0(Math.abs(dlt))} vs last year`, dlt==null?"":dlt>=0?"fg":"fb");
+  const a = anS(), A = CFG.an, haveAn = !!(A && A.on && Object.keys(a.rt||{}).length);
+  let stTile = tile("Street", "—", "Coverage starts after Q1's report");
+  if (haveAn){
+    const ratings = AN_HOUSES.map(h=>a.rt[h.id]).filter(Boolean);
+    const buys = ratings.filter(r=>r==="Buy").length, sells = ratings.filter(r=>r==="Sell").length, holds = ratings.length-buys-sells;
+    const cons = buys>sells && buys>=holds ? "Buy" : sells>buys && sells>=holds ? "Sell" : "Hold";
+    const tgs = AN_HOUSES.map(h=>a.tg[h.id]).filter(v=>v!=null), avgTg = tgs.length ? tgs.reduce((s,v)=>s+v,0)/tgs.length : null;
+    stTile = tile("Street", cons, `${buys}B·${holds}H·${sells}S${avgTg!=null?` · target $${avgTg.toFixed(1)}`:""}`, cons==="Buy"?"fg":cons==="Sell"?"fb":"");
+  }
+  return `<div class="fgdt mkt"><h4>Market${tip("market")}</h4><div class="ftiles">${pxTile}${stTile}</div></div>`;
 }
 // grouped bar chart: budget vs actual (or outlook) by quarter, optional target ticks
 function finChart(id, title, unit, D, key, ref){
@@ -3556,15 +3683,16 @@ function finCardHTML(F){
   const ychips = years.map(v=>`<button class="chip" aria-pressed="${v===y}" data-finyear="${v}">Year ${v}</button>`).join("");
   const ctog = `<div class="seg fcolseg" role="group" aria-label="Column group">${[["q","Quarter"],["ytd","Year to date"],["fy","Full year"]].map(([k,l])=>`<button class="chip" aria-pressed="${col===k}" data-fincol="${k}">${l}</button>`).join("")}</div>`;
   const fsec = (UI.fs&&UI.fs.fin) || "budget";
-  const SECS = [["budget","Budget and outlook"],["stmt","Statement"],["ana","Charts and analysis"],["inv","Investors"],["tax","Tax"]];
-  const needY = ["budget","stmt","ana"].includes(fsec);
+  const SECS = [["budget","Budget and outlook"],["stmt","Statement"],["ana","Charts and analysis"],["stock","Inventories"],["inv","Investors"],["tax","Tax"]];
+  const needY = ["budget","stmt","ana","stock"].includes(fsec);
   const bar = `<div class="finbar"><div class="subtabs fsecs" role="tablist">${SECS.map(([k,l])=>`<button class="chip" role="tab" aria-pressed="${fsec===k}" data-fsec="fin:${k}">${l}</button>`).join("")}</div>${needY?`<div class="seg ychips">${ychips}</div>`:""}${fsec==="stmt"?ctog:""}<button class="btn ghost sm finclose" data-finov="0">Close ✕</button></div>`;
   const content = fsec==="budget" ? `${banner?`<div class="fbud">${banner}</div>`:""}<div class="fduo fout">${finTargets(cy)}${finRolling()}</div>`
     : fsec==="stmt" ? table
     : fsec==="ana" ? finStep2(D, `<div class="fcol">${legend}${charts}</div>`)
+    : fsec==="stock" ? finStockHTML(D)
     : fsec==="inv" ? investorsHTML(F)
     : `<div class="ftax">${fiscalHTML()}</div>`;
-  return `<div class="fincard"><div class="fsplit"><aside class="fgd" aria-label="Guidance and live results">${gdBlockHTML()}<div class="fgdt"><h4>Effect on ${basis.toLowerCase()}</h4>${tiles}</div></aside><div class="finin">${bar}<div class="fsecbody fs-${fsec}">${content}</div></div></div></div>`;
+  return `<div class="fincard"><div class="fsplit"><aside class="fgd" aria-label="Guidance and live results">${gdBlockHTML()}<div class="fgdt"><h4>Effect on ${basis.toLowerCase()}</h4>${tiles}</div>${marketHTML()}</aside><div class="finin">${bar}<div class="fsecbody fs-${fsec}">${content}</div></div></div></div>`;
 }
 
 /* ============ 3D camp view (three.js r128, loaded on demand; reads the same live state as the tactical SVG) ============ */
@@ -4069,7 +4197,7 @@ function render(){
   const F = flows(taOrdered());
   const oldMap = document.getElementById("t-map"), keepX = oldMap && oldMap.dataset.view===(UI.view||"strat") ? oldMap.scrollLeft : null;
   const wide = false, mv = UI.mview==="panel" ? "panel" : "map";
-  app.innerHTML = `<div class="wrap">${topHTML(F)}${UI.fov?finOverlayHTML(F):`<div class="m3 mv-${mv}">${panelHTML(F)}<div class="ctr">${railStripHTML(F)}${mapCardHTML(F)}${buildQueueHTML()}${trendHTML()}</div>${railHTML(F)}</div>`}</div>${endbarHTML(F, wide)}${UI.modal==="report"?reportHTML():""}${UI.modal==="help"?helpHTML():""}${UI.modal==="event"?eventModalHTML():""}${UI.modal==="gloss"?glossModalHTML():""}${UI.modal==="letter"?letterHTML():""}${UI.modal==="bid"?bidModalHTML():""}${UI.modal==="confirm"?confirmHTML(F):""}${UI.offer?offerHTML():""}${tipSheet()}${tourHTML()}`;
+  app.innerHTML = `<div class="wrap">${topHTML(F)}${UI.fov?finOverlayHTML(F):`<div class="m3 mv-${mv}">${panelHTML(F)}<div class="ctr">${railStripHTML(F)}${mapCardHTML(F)}${buildQueueHTML()}${trendHTML()}</div>${railHTML(F)}</div>${newsTickerHTML()}`}</div>${endbarHTML(F, wide)}${UI.modal==="report"?reportHTML():""}${UI.modal==="help"?helpHTML():""}${UI.modal==="event"?eventModalHTML():""}${UI.modal==="gloss"?glossModalHTML():""}${UI.modal==="letter"?letterHTML():""}${UI.modal==="bid"?bidModalHTML():""}${UI.modal==="confirm"?confirmHTML(F):""}${UI.modal==="menu"?menuHTML():""}${UI.offer?offerHTML():""}${tipSheet()}${tourHTML()}`;
   if (UI.modal==="report" && !UI.ledger) rpFit();
   const nm = document.getElementById("t-map");
   if (nm){ nm.dataset.view = UI.view||"strat"; if (nm.scrollWidth>nm.clientWidth) nm.scrollLeft = keepX!=null ? keepX : (UI.view==="tac" ? (nm.scrollWidth-nm.clientWidth)/2 : 0); }
@@ -4122,6 +4250,43 @@ function finOverlayHTML(F){
   }
   return `<div class="finov one"><section class="card fovl" aria-label="Finance">${finCardHTML(F)}</section></div>`;
 }
+// v54: a breaking-news ribbon. Real, dated oil & gas headlines for atmosphere, mixed with this
+// campaign's own live world events (the WX system, already driving price/discount modifiers)
+// surfaced here as "breaking" so a mechanic that used to be buried in the quarterly report is visible as it happens.
+const REAL_NEWS = [
+  {d:"2014", t:"OPEC declines to cut output as prices slide, squeezing US shale producers"},
+  {d:"DEC 2016", t:"OPEC and Russia agree their first joint production cut since 2001"},
+  {d:"DEC 2019", t:"Saudi Aramco’s IPO raises $25.6 billion, the largest share sale in history"},
+  {d:"APR 2020", t:"OPEC+ agrees record production cuts as pandemic demand collapses"},
+  {d:"NOV 2022", t:"Washington grants Chevron a limited licence to resume oil operations in Venezuela"},
+  {d:"FEB 2022", t:"Russia’s invasion of Ukraine sends Brent crude above $100 a barrel"},
+  {d:"OCT 2023", t:"US eases Venezuela oil sanctions after the Barbados electoral agreement"},
+  {d:"OCT 2023", t:"ExxonMobil agrees to buy Pioneer Natural Resources for $59.5 billion"},
+  {d:"OCT 2023", t:"Chevron agrees to buy Hess Corporation for $53 billion"},
+  {d:"JUN 2024", t:"OPEC+ extends its production cuts into 2025"},
+  {d:"2024", t:"US crude output climbs to record levels, past 13 million barrels a day"},
+  {d:"MAR 2025", t:"Washington revokes Chevron’s Venezuela oil licence, reversing course"},
+  {d:"2026", t:"A new OFAC licence winds down Chevron’s remaining Venezuela operations"},
+  {d:"2026", t:"A separate OFAC licence allows earthquake relief shipments into Venezuela"},
+  {d:"2020s", t:"Venezuela’s oil output falls to its lowest level in decades amid sanctions and under-investment"}
+];
+const NT_DUR = 70; // seconds, must match .ntin's CSS animation-duration below
+const NT_T0 = Date.now(); // fixed epoch so the marquee's position can be computed from real elapsed time
+function newsTickerHTML(){
+  if (UI.screen!=="game" || !S) return "";
+  const live = wxOn().map(w=>{ const X = WX[w.id]; return {tag:"live", lab:"BREAKING", t:X.title}; });
+  const hist = REAL_NEWS.map(n=>({tag:"hist", lab:n.d, t:n.t}));
+  const items = live.concat(hist);
+  const chip = it => `<span class="ntitem ${it.tag}">${it.tag==="live"?ic("alert",12):""}<b>${esc(it.lab)}</b>${esc(it.t)}</span>`;
+  const seq = items.map(chip).join(`<span class="ntsep">•</span>`);
+  // render() replaces the whole page's innerHTML on almost every click, which destroys and recreates
+  // this element every time — a fresh CSS animation would otherwise restart from 0% on every single
+  // interaction, making the ticker visibly jump/reset whenever the player picks an option. Fix: give
+  // the recreated element a negative animation-delay equal to how far into the loop real elapsed time
+  // already is, so playback always looks continuous no matter how often the DOM node is rebuilt.
+  const off = -(((Date.now()-NT_T0)/1000) % NT_DUR);
+  return `<div class="newsticker" role="marquee" aria-label="Oil and gas industry news"><div class="ntin" style="animation-delay:${off.toFixed(2)}s">${seq}<span class="ntsep">•</span>${seq}<span class="ntsep">•</span></div></div>`;
+}
 function topHTML(F){
   const t = Math.min(S.turn, CFG.turns), g = gradeOf(S.approval), y = yearOf(t), q = qOf(t);
   const arrow = S.last ? (S.last.after>S.last.before+0.05?"▲":S.last.after<S.last.before-0.05?"▼":"■") : "■";
@@ -4135,7 +4300,7 @@ function topHTML(F){
   const fbox = mkbox("fin","Finance / Investors","Finance",finMini(hist), lastH?`Op. cash <b class="${lastH.ocf<0?"bad":""}">${money(lastH.ocf)}</b> · Cash <b>${money(S.cash)}</b>`:`Cash <b>${money(S.cash)}</b> · results after Q1`, unpaidN);
   const hbox = mkbox("hist","History","History",histMini(hist), lastH?`Net <b>${f0(lastH.net)}</b> kb/d · Approval <b>${f1(S.approval)}</b>`:`Quarterly results appear here`, 0);
   const hctl = `<div class="hctl"><button class="chip hbtn ${SND.on?"":"off"}" data-sound="1" aria-label="Sound effects ${SND.on?"on":"off"}" title="Sound effects ${SND.on?"on":"off"}">♪<span class="hl">${SND.on?" Sound":" Sound ✕"}</span></button><button class="chip hbtn ${MUS.track==="off"?"off":""}" data-music="1" aria-label="Music: ${MUS.track==="off"?"off":mName(MUS.track)}. Tap to change" title="Music: ${MUS.track==="off"?"off":mName(MUS.track)}">♫<span class="hl">${MUS.track==="off"?" Music ✕":" "+esc(mName(MUS.track))}</span></button><button class="chip hbtn" data-gloss="1" aria-label="Glossary" title="Glossary">${ic("book",13)}<span class="hl"> Glossary</span></button></div>`;
-  return `<header class="hd3"><div class="helprow"><span style="color:var(--amber)">${ic("derrick",26)}</span><div class="brand">CRUDO<small>Orinoco Belt · MVP</small></div><button class="kl modechip" data-tip="mode" aria-label="Difficulty and scenario: ${esc(modeLabel(S.mode))}">${esc(modeLabel(S.mode))}</button><button class="btn ghost sm" data-help="1" aria-label="Help and tour">${ic("help",14)} Help</button></div>
+  return `<header class="hd3"><div class="helprow"><span style="color:var(--amber)">${ic("derrick",26)}</span><div class="brand">CRUDO<small>Orinoco Belt · MVP</small></div><button class="kl modechip" data-tip="mode" aria-label="Difficulty and scenario: ${esc(modeLabel(S.mode))}">${esc(modeLabel(S.mode))}</button><button class="btn ghost sm" data-menu="1" aria-label="Game menu: save, load, restart or main menu">${ic("menu",14)} Menu</button><button class="btn ghost sm" data-help="1" aria-label="Help and tour">${ic("help",14)} Help</button></div>
   <div class="kps">
     ${kp("calendar","Turn","turn",`Q${q} Y${y} · ${t}/36`,`Year ${y} of 9`)}
     ${kp("dollar","Atlantic Light","price",`$${price()+(wxMods().px||0)}/bbl`, wxMods().px?`World news ${wxMods().px>0?"+":"−"}$${Math.abs(wxMods().px)}`:pp==null?"Starting price":`Last year $${pp}`)}
@@ -4154,8 +4319,9 @@ function cbar(x,y,wd,f){ const c=condEff(f), col=c>=70?"var(--good)":c>=45?"var(
 function gasPowerSvg(F, cls){
   const wells = S.gasWells.filter(x=>x.status==="online").length, pwOk = F.shed<0.5 && F.upShed<0.5;
   return `
-    <line x1="10" y1="452" x2="790" y2="452" stroke="var(--line)" stroke-dasharray="2 4"/>
-    <text class="fl" x="12" y="468" style="fill:var(--muted)">GAS AND POWER · no public grid</text>
+    <line x1="10" y1="452" x2="890" y2="452" stroke="var(--line)" stroke-dasharray="2 4"/>
+    <text class="lanehd" x="14" y="468">GAS &amp; POWER</text>
+    <text class="fl" x="150" y="468" style="fill:var(--muted)">no public grid · these turbines run the whole network</text>
     <path class="flowpath" d="M150 535 H200" stroke="var(--gas)" stroke-width="${wg(F.gasRaw)}" fill="none"/>
     <path d="M90 478 V500" stroke="var(--gas)" stroke-width="2" stroke-dasharray="3 3" fill="none"/>
     <text class="fl" x="96" y="494" style="fill:var(--gas)">${f0(F.gasAssoc)} assoc.</text>
@@ -4590,7 +4756,7 @@ function railInner(F, opt){
   opt = opt || {};
   const row = (l,v,c="") => `<div class="rr"><span>${l}</span><b class="num ${c}">${v}</b></div>`;
   const sup = F.gtCap+F.dsCap, ratio = sup>0 ? clamp(F.demand/sup*100,0,100) : 100;
-  const fac = Object.keys(FAC).map(f=>{ const c = condEff(f), col = c>=70?"var(--good)":c>=45?"var(--amber)":"var(--bad)";
+  const fac = facShown().map(f=>{ const c = condEff(f), col = c>=70?"var(--good)":c>=45?"var(--amber)":"var(--bad)";
     const _a = accDrop(f);
     return `<div class="rf"${_a?` title="Incident: −${_a} until it clears"`:""}><span>${_a?"⚠ ":""}${({upgrader:"Upgrader",power:"Turbines",pipe:"Pipeline",terminal:"Terminal",blend:"Blending",gasplant:"Gas plant"})[f]||FAC[f].name}</span><div class="rbar"><i style="width:${c}%;background:${col}"></i></div><b class="num" style="color:${col}">${f0(c)}%${tripped(f)?"⚠":""}</b></div>`; }).join("");
   const W = warnList(F, capexOrders(), ceilingNow());
@@ -4703,19 +4869,27 @@ function dsStratSvg(F, cls){
      <text class="nm" x="${x+10}" y="${y+16}" style="font-size:12px">${esc(nm)}</text>${icMap("column",x+w-26,y+4,col)}
      <text class="vl" x="${x+10}" y="${y+30}" style="font-size:10.5px">${l1}</text>
      ${l2?`<text class="vl" x="${x+10}" y="${y+h-5}" style="font-size:10px">${l2}</text>`:""}</g>`;
-  for (const [st,y,nm] of [["dom",268,"Domestic refinery"],["exp",320,"Export refinery"]]){
+  // v56: the refinery feed line is the managed gateway from midstream into the downstream lane. Hidden until a refinery exists.
+  if (reffeedLive()){
+    const rUse = F.reffeedUse||0, rEff = F.reffeedCapEff||S.reffeedCap;
+    out.push(`<path class="flowpath" d="M600 206 H646 V60 H670" stroke="var(--amber)" stroke-width="${w(rUse)}" fill="none"/>
+      <g class="${cls("reffeed")}" data-node="reffeed" role="button" tabindex="0" aria-label="Refinery feed line">
+        <rect x="670" y="40" width="210" height="40" rx="20"/>
+        <text class="nm" x="684" y="59">Refinery feed</text>${icMap("pipe",852,44,"var(--muted)")}
+        <text class="vl" x="684" y="73">${f0(rUse)} of ${f0(rEff)} kb/d</text>${cbar(772,76,98,"reffeed")}
+      </g>
+      <path class="flowpath" d="M775 80 V96" stroke="var(--amber)" stroke-width="${w(rUse)}" fill="none"/>`);
+  }
+  for (const [st,y,nm] of [["dom",96,"Domestic refinery"],["exp",166,"Export refinery"]]){
     const t = dsTier(st), Y = X.sites[st], b = S.projects.find(p=>p.kind==="refinery"&&p.site===st);
     const feed = st==="dom" ? D.domFeed : D.expFeed, cap = t ? dsCapEff(st) : 0;
     const l1 = t ? `${esc(CFG.ds.tiers[t].name)} · ${f0(feed||0)} of ${f0(cap)} kb/d` : b ? "Under construction" : "Not built";
-    const l2 = b ? `Building ${esc(CFG.ds.tiers[b.rt].name.toLowerCase())}: ${b.left} turn${b.left>1?"s":""}` : t ? `Condition ${f0(Y.cond)}%${Y.cutLeft>0?" · fire damage":""}` : "Tap to plan";
-    out.push(node("ref-"+st, 440, y, 190, 46, nm, l1, l2, !!t, !t&&!b, "var(--amber)"));
+    const l2 = b ? `Building ${esc(CFG.ds.tiers[b.rt].name.toLowerCase())}: ${b.left} turn${b.left>1?"s":""}` : t ? `Condition ${f0(Y.cond)}%${Y.cutLeft>0?" · fire damage":""}${st==="dom"&&D.domSold!=null?` · home fuel ${f0(D.domSold)}/${f0(D.dem)}`:""}` : "Tap to plan";
+    out.push(node("ref-"+st, 670, y, 210, 58, nm, l1, l2, !!t, !t&&!b, "var(--amber)"));
   }
-  out.push(`<path class="flowpath" d="M430 291 H440" stroke="var(--amber)" stroke-width="${w(D.domFeed||0)}" fill="none"/>
-     <path class="flowpath" d="M630 343 H650" stroke="var(--amber)" stroke-width="${w(D.expFeed||0)}" fill="none"/>`);
   const C = X.pc, pb = ["pcComplex","pcOlef","pcFert"].find(k=>pcBuilding(k));
   const l1 = !pcOpen() ? "Locked: needs hydrocracking" : !C.complex ? (pb?"Complex under construction":"Complex not built") : `${C.olef?`olefins ${f0(D.olFeed||0)} kb/d`:"no olefins"} · ${C.fert?`urea ${f0(D.feFeed||0)} MMcfd`:"no urea"}`;
-  out.push(node("pc", 440, 372, 190, 40, "Petrochemicals", l1, "", !!C.complex, !C.complex && !pb, "var(--naphtha)"));
-  out.push(`<text class="fl" x="445" y="262" style="fill:var(--amber);font-size:10.5px">${D.domSold!=null&&dsTier("dom")?`Home fuel ${f0(D.domSold)} of ${f0(D.dem)} kb/d`:"Refineries"}</text>`);
+  out.push(node("pc", 670, 238, 210, 52, "Petrochemicals", l1, "", !!C.complex, !C.complex && !pb, "var(--naphtha)"));
   return out.join("");
 }
 function mapCardHTML(F){
@@ -4739,18 +4913,40 @@ function mapCardHTML(F){
       ${bh>=50?`<text class="vl" x="22" y="${y+(bh<64?50:58)}" style="font-size:10.5px;${b.field==="green"&&!b.ready?"fill:var(--amber)":""}">${b.field==="green"&&!b.ready?"no facilities yet":`${padsIn(b.id)}/${b.slots} pads${b.field==="green"?" · new":""}`}</text>`:""}
       ${icMap("derrick",118,y+6,b.field==="green"?"var(--good)":"var(--xh)")}
     </g>`).join("");
+  // v56: Lake Maracaibo stacks below the land blocks, in the same upstream column, instead of being
+  // wedged into the old midstream area. Its crude needs no upgrading or blending, so its flow path
+  // still bypasses the upgrader/blend column to join the pipeline directly.
+  const lakeY = trunkEnd+16, lakeH = Math.min(70, Math.max(50, bh+4)), lakeMidY = lakeY+lakeH/2;
+  const lakeSvg = lakeB.length ? `<path class="flowpath" d="M150 ${lakeMidY} H268 V205 H450" stroke="var(--lake)" stroke-width="${w(F.lake||0)}" fill="none"/>
+     <g class="${cls(lakeB[0].id)}" data-node="${lakeB[0].id}" role="button" tabindex="0" aria-label="Lake Maracaibo blocks">
+       <rect x="10" y="${lakeY}" width="140" height="${lakeH}" rx="5" stroke-dasharray="${lakeB.some(b=>b.ready)?"":"5 3"}"/>
+       <text class="nm" x="22" y="${lakeY+18}">Lake Maracaibo</text>${icMap("derrick",118,lakeY+6,"var(--lake)")}
+       <text class="vl" x="22" y="${lakeY+34}">${f0(F.lake||0)} kb/d light</text>
+       ${lakeH>=58?`<text class="vl" x="22" y="${lakeY+48}" style="font-size:10.5px;${lakeB.some(b=>b.ready)?"":"fill:var(--amber)"}">${lakeB.some(b=>b.ready)?`${lakeB.length} block${lakeB.length>1?"s":""} · direct to pipeline`:"no platform yet"}</text>`:""}
+     </g>` : "";
   return `<section class="card" aria-label="Network map">
    <div class="cardh"><h2>Orinoco network${tip("map")}</h2><div class="seg" role="group" aria-label="Map view"><button class="chip" aria-pressed="${!tac&&!v3&&!tn}" data-view="strat">Strategy</button><button class="chip" aria-pressed="${tac}" data-view="tac">Tactical</button><button class="chip" aria-pressed="${v3}" data-view="3d">3D</button>${townOn()?`<button class="chip" aria-pressed="${tn}" data-view="town">Town</button>`:""}${tn?tip("town"):tip("tactical")}</div></div>
-   <div class="mapwrap" id="t-map">${v3?t3HTML():tn?townHTML(F):tac?tacticalSvg(F):`<svg class="map" viewBox="0 0 800 620" role="img" aria-label="Flow of crude from fields through upgrader and blending to the export terminal, and of gas to power and sales">
+   <div class="mapwrap" id="t-map">${v3?t3HTML():tn?townHTML(F):tac?tacticalSvg(F):`<svg class="map" viewBox="0 0 900 650" role="img" aria-label="Flow left to right: upstream fields, midstream upgrading and export infrastructure, downstream refineries; gas to power and sales below">
+     <text class="lanehd" x="14" y="20">UPSTREAM</text>
+     <text class="lanehd" x="276" y="20">MIDSTREAM</text>
+     <text class="lanehd" x="674" y="20">DOWNSTREAM</text>
+     <path class="lanediv" d="M262 28 V438" stroke="var(--line)" stroke-dasharray="2 5"/>
+     <path class="lanediv" d="M660 28 V438" stroke="var(--line)" stroke-dasharray="2 5"/>
      <path d="M205 ${bl[0].y+bh/2} V${Math.max(300,trunkEnd)}" stroke="var(--xh)" stroke-width="3" fill="none" opacity=".6"/>
      ${blocksSvg}
+     ${lakeSvg}
+     <g class="${cls("gather")}" data-node="gather" role="button" tabindex="0" aria-label="Gathering lines">
+       <rect x="160" y="186" width="92" height="48" rx="24"/>
+       <text class="nm" x="173" y="207">Gathering</text>
+       <text class="vl" x="173" y="224">${f0(F.xhG!=null?F.xhG:0)} of ${f0(F.gatherCapEff||S.gatherCap)}</text>${cbar(173,228,66,"gather")}
+     </g>
      <path class="flowpath" d="M205 120 H280" stroke="var(--xh)" stroke-width="${w(F.xhUp)}" fill="none"/>
      <path class="flowpath" d="M205 300 H280" stroke="var(--xh)" stroke-width="${w(F.xhBl)}" fill="none"/>
      <text class="fl" x="212" y="112" fill="var(--xh)">${f0(F.xhUp)}</text>
      <text class="fl" x="212" y="292" fill="var(--xh)">${f0(F.xhBl)}</text>
      ${F.shut>0.5?`<text class="fl" x="168" y="398" style="fill:var(--bad)">${f0(F.shut)} kb/d shut in</text>`:""}
-     <path class="flowpath" d="M400 120 H430 V215 H470" stroke="var(--teal)" stroke-width="${w(F.sco)}" fill="none"/>
-     <path class="flowpath" d="M400 300 H430 V235 H470" stroke="var(--amber)" stroke-width="${w(F.blend)}" fill="none"/>
+     <path class="flowpath" d="M400 120 H424 V196 H450" stroke="var(--teal)" stroke-width="${w(F.sco)}" fill="none"/>
+     <path class="flowpath" d="M400 300 H424 V214 H450" stroke="var(--amber)" stroke-width="${w(F.blend)}" fill="none"/>
      <text class="fl" x="404" y="112" style="fill:var(--teal)">${f0(F.sco)} SCO</text>
      <text class="fl" x="404" y="292" style="fill:var(--amber)">${f0(F.blend)} blend</text>
      <g class="${cls("upgrader")}" data-node="upgrader" role="button" tabindex="0" aria-label="Mejorador Cardonal">
@@ -4765,40 +4961,32 @@ function mapCardHTML(F){
        <text class="vl" x="292" y="304">${f0(F.blend)} of ${f0(F.blendCapEff)}</text>
        <text class="vl" x="292" y="322">${S.offSpec?"4:1 off-spec":"3:1 Garza 16"}</text>${cbar(292,329,96,"blend")}
      </g>
-     <path class="flowpath" d="M600 225 H650" stroke="var(--fg)" stroke-width="${w(F.piped)}" fill="none" opacity=".75"/>
-     ${lakeB.length?`<path class="flowpath" d="M535 150 V200" stroke="var(--lake)" stroke-width="${w(F.lake||0)}" fill="none"/>
-     <g class="${cls(lakeB[0].id)}" data-node="${lakeB[0].id}" role="button" tabindex="0" aria-label="Lake Maracaibo blocks">
-       <rect x="460" y="70" width="150" height="80" rx="5" stroke-dasharray="${lakeB.some(b=>b.ready)?"":"5 3"}"/>
-       <text class="nm" x="472" y="92">Lake Maracaibo</text>${icMap("derrick",580,78,"var(--lake)")}
-       <text class="vl" x="472" y="110">${f0(F.lake||0)} kb/d light</text>
-       <text class="vl" x="472" y="126" style="font-size:10.5px">${lakeB.length} block${lakeB.length>1?"s":""} · ${lakeB.reduce((a,b)=>a+S.pads.filter(p=>p.block===b.id&&p.status==="online").length,0)} wells</text>
-       <text class="vl" x="472" y="141" style="font-size:10.5px;${lakeB.some(b=>b.ready)?"":"fill:var(--amber)"}">${lakeB.some(b=>b.ready)?"to the export line":"no platform yet"}</text>
-     </g>`:""}
+     <rect x="450" y="30" width="150" height="66" rx="5" fill="var(--panel2)" stroke="var(--line)"/>
+     <text class="nm" x="462" y="54">Tankers</text>${icMap("ship",568,38,"var(--muted)")}
+     <text class="vl" x="462" y="72">${f0(F.exported)} kb/d${shipOn()?` · ${shipCount()} ships`:" out"}</text>${shipOn()&&F.ship&&F.ship.d>=CFG.ship.wx.fm?`<text class="fl" x="452" y="24" style="fill:var(--bad)">Swell: closed ${f0(F.ship.d)} days</text>`:""}
+     <text class="vl" x="462" y="88" style="fill:var(--amber)">${f0(F.net)} net crude</text>
+     ${shipOn()&&(shipS().lng||S.projects.some(p=>p.kind==="lngTrain"))?`<g role="img" aria-label="Offshore gas and LNG"><rect x="450" y="104" width="150" height="66" rx="5" fill="var(--panel2)" stroke="var(--line)"/><text class="nm" x="462" y="128">LNG train</text>${icMap("flame",568,112,"var(--gas)")}<text class="vl" x="462" y="146">${shipS().lng?`${f0(F.lngFeed||0)} of ${f0(lngFeedCap())} MMcfd`:`building: ${S.projects.find(p=>p.kind==="lngTrain").left} left`}</text><text class="vl" x="462" y="162" style="fill:var(--amber)">${shipFixed("lng")} carrier${shipFixed("lng")===1?"":"s"}</text></g>`:""}
+     <path class="flowpath" d="M525 228 V240" stroke="var(--fg)" stroke-width="${w(F.piped)}" fill="none" opacity=".75"/>
+     <path d="M615 240 V96" stroke="var(--fg)" stroke-width="${w(F.exported)}" fill="none" opacity=".75"/>
      <g class="${cls("pipe")}" data-node="pipe" role="button" tabindex="0" aria-label="Export pipeline">
-       <rect x="470" y="200" width="130" height="50" rx="25"/>
-       <text class="nm" x="490" y="221">Pipeline</text>${icMap("pipe",570,208,"var(--muted)")}
-       <text class="vl" x="490" y="237">${f0(F.piped)} of ${f0(F.pipeCapEff)}</text>${cbar(490,241,90,"pipe")}
+       <rect x="450" y="182" width="150" height="46" rx="23"/>
+       <text class="nm" x="466" y="203">Pipeline</text>${icMap("pipe",568,188,"var(--muted)")}
+       <text class="vl" x="466" y="220">${f0(F.piped)} of ${f0(F.pipeCapEff)}</text>${cbar(466,224,86,"pipe")}
      </g>
-     <path class="flowpath" d="M710 190 V110" stroke="var(--fg)" stroke-width="${w(F.exported)}" fill="none" opacity=".75"/>
-     <rect x="650" y="40" width="120" height="66" rx="5" fill="var(--panel2)" stroke="var(--line)"/>
-     <text class="nm" x="662" y="64">Tankers</text>${icMap("ship",738,48,"var(--muted)")}
-     <text class="vl" x="662" y="82">${f0(F.exported)} kb/d${shipOn()?` · ${shipCount()} ships`:" out"}</text>${shipOn()&&F.ship&&F.ship.d>=CFG.ship.wx.fm?`<text class="fl" x="652" y="34" style="fill:var(--bad)">Swell: closed ${f0(F.ship.d)} days</text>`:""}
-     ${shipOn()&&(shipS().lng||S.projects.some(p=>p.kind==="lngTrain"))?`<g role="img" aria-label="Offshore gas and LNG"><rect x="490" y="40" width="130" height="66" rx="5" fill="var(--panel2)" stroke="var(--line)"/><text class="nm" x="502" y="64">LNG train</text>${icMap("flame",590,48,"var(--gas)")}<text class="vl" x="502" y="82">${shipS().lng?`${f0(F.lngFeed||0)} of ${f0(lngFeedCap())} MMcfd`:`building: ${S.projects.find(p=>p.kind==="lngTrain").left} left`}</text><text class="vl" x="502" y="98" style="fill:var(--amber)">${shipFixed("lng")} carrier${shipFixed("lng")===1?"":"s"}</text></g><path d="M620 73 H650" stroke="var(--gas)" stroke-width="2" fill="none" stroke-dasharray="4 3"/>`:""}
-     <text class="vl" x="662" y="98" style="fill:var(--amber)">${f0(F.net)} net crude</text>
      <g class="${cls("terminal")}" data-node="terminal" role="button" tabindex="0" aria-label="Terminal Punta Garza">
-       <rect x="650" y="190" width="120" height="70" rx="5"/>
-       <text class="nm" x="662" y="214">Terminal</text>${icMap("anchor",738,198,"var(--muted)")}
-       <text class="vl" x="662" y="232">${S.berths} berths</text>
-       <text class="vl" x="662" y="249">${f0(F.term)} kb/d</text>${cbar(662,252,96,"terminal")}
+       <rect x="440" y="240" width="170" height="70" rx="5"/>
+       <text class="nm" x="452" y="264">Terminal</text>${icMap("anchor",578,248,"var(--muted)")}
+       <text class="vl" x="452" y="282">${S.berths} berths</text>
+       <text class="vl" x="452" y="299">${f0(F.term)} kb/d</text>${cbar(452,302,96,"terminal")}
      </g>
-     <path d="M710 260 V300" stroke="var(--muted)" stroke-width="2" fill="none" stroke-dasharray="3 3"/>
+     <path d="M525 310 V320" stroke="var(--muted)" stroke-width="2" fill="none" stroke-dasharray="3 3"/>
      <g class="${cls("terminal")}" data-node="terminal" role="button" tabindex="-1" aria-label="Storage">
-       <rect x="650" y="300" width="120" height="56" rx="5"/>
-       <text class="nm" x="662" y="322">Tank farm</text>${icMap("tank",738,308,"var(--muted)")}
-       <text class="vl" x="662" y="342">${f1(F.stored)} / ${f0(S.storageCap)} MMbbl</text>
+       <rect x="440" y="320" width="170" height="56" rx="5"/>
+       <text class="nm" x="452" y="342">Tank farm</text>${icMap("tank",578,328,"var(--muted)")}
+       <text class="vl" x="452" y="362">${f1(F.stored)} / ${f0(S.storageCap)} MMbbl</text>
      </g>
-     <path d="M690 356 V420 H340 V340" stroke="var(--naphtha)" stroke-width="${w(F.dil)}" fill="none" stroke-dasharray="7 5"/>
-     <text class="fl" x="420" y="438" style="fill:var(--naphtha)">Naphtha diluent in: ${f0(F.dil)} of ${f0(F.dilCap)} kb/d</text>
+     <path d="M525 376 V420 H340 V340" stroke="var(--naphtha)" stroke-width="${w(F.dil)}" fill="none" stroke-dasharray="7 5"/>
+     <text class="fl" x="330" y="434" style="fill:var(--naphtha)">Naphtha diluent in: ${f0(F.dil)} of ${f0(F.dilCap)} kb/d</text>
      ${dsStratSvg(F, cls)}
      ${gasPowerSvg(F, cls)}
    </svg>`}</div>
@@ -4903,7 +5091,7 @@ function dsSiteCard(s, F){
 }
 function dsHTML(F){
   const X = dsS(), D = F.ds, P0 = price() + (evMods().price||0) + (S.fwd||0), sp = dsSpread(), Dl = CFG.ds.dial[X.dial], C = CFG.ds.pc, pc = X.pc;
-  const any = dsAnyTier() > 0, field = F.xh + (F.lake||0), cap = D ? D.capDom + D.capExp : 0, feedMax = X.split*field;
+  const any = dsAnyTier() > 0, field = (F.xhG!=null?F.xhG:F.xh) + (F.lake||0), cap = D ? D.capDom + D.capExp : 0, feedMax = X.split*field;
   const last = S.last && S.last.DS;
   const names = {g:"Gasoline", d:"Diesel", j:"Jet fuel", fo:"Fuel oil", n:"Naphtha"};
   const sum = any ? `Refining <b>${f0(D.domFeed+D.expFeed)}</b> kb/d of your crude (limit ${f0(feedMax)}). ${dsTier("dom") ? `Home market: ${f0(D.domSold)} of ${f0(D.dem)} kb/d supplied${D.imp>0.5?`, ${f0(D.imp)} imported`:""}${D.shortV>0.5?`, <span class="bad">${f0(D.shortV)} short</span>`:""}.` : "The domestic complex is not built, so the home market is supplied by nobody and has no effect on approval."}${last&&last.rev>0?` Last quarter: ${money(last.rev)} of sales, ${money(last.cost)} of costs.`:""}`
@@ -4989,8 +5177,8 @@ function condHTML(f){
     ${f!=="upgrader"?act(`Repair`,`Restores ${CFG.repairTo}% after ${fac.repTurns} turn${fac.repTurns>1?"s":""}; keeps running meanwhile. Uses a construction slot.${tip("repair")}`,fac.repCost, !rep && slotFree>0, rep?"Repair already under way.":"No construction slot free.", `data-order="repair" data-fac="${f}"`):""}
   </div>`;
 }
-function nodeGroupOf(id){ return id==="power" ? "power" : id==="crews" ? "crews" : /^(ref|pc)/.test(id) ? "downstream" : ["upgrader","blend","pipe","terminal","gas"].includes(id) ? "midstream" : "upstream"; }
-const PROJ_NAME = {workover:"Workover",repair:"Repair",fieldFac:"Field facilities",blendExp:"Blending expansion",train:"Upgrader train",loop:"Pipeline loop",berth:"Export berth",tank:"Storage tank",turbine:"Gas turbine block",gasPlant:"Gas plant expansion",gasPipe:"Gas export pipeline"};
+function nodeGroupOf(id){ return id==="power" ? "power" : id==="crews" ? "crews" : (id==="gather"||id==="reffeed") ? "midstream" : /^(ref|pc)/.test(id) ? "downstream" : ["upgrader","blend","pipe","terminal","gas"].includes(id) ? "midstream" : "upstream"; }
+const PROJ_NAME = {workover:"Workover",repair:"Repair",fieldFac:"Field facilities",blendExp:"Blending expansion",train:"Upgrader train",loop:"Pipeline loop",gatherExp:"Gathering expansion",reffeedExp:"Refinery feed expansion",berth:"Export berth",tank:"Storage tank",turbine:"Gas turbine block",gasPlant:"Gas plant expansion",gasPipe:"Gas export pipeline"};
 function buildQueueHTML(){
   if (S.turn>CFG.turns || S.over) return "";
   const free = slotsMax()-slotsBusy(), items = S.projects.map(p=>{ const b = p.block && S.blocks.find(x=>x.id===p.block);
@@ -5007,7 +5195,7 @@ function upstreamSummary(){
 }
 const rigsOpen = () => UI.rigsOpen==null ? innerHeight>=900 : UI.rigsOpen;
 function buildHTML(F, grp){
-  const all = [...S.blocks.map(b=>[b.id,b.name.replace("Bloque ","")]),...(CFG.ex&&CFG.ex.on?[["explore","Exploration"]]:[]),["upgrader","Upgrader"],["blend","Blending"],["pipe","Pipeline"],["terminal","Terminal"],["gas","Gas"],["crews","Crews & upkeep"],["power","Power"]];
+  const all = [...S.blocks.map(b=>[b.id,b.name.replace("Bloque ","")]),...(CFG.ex&&CFG.ex.on?[["explore","Exploration"]]:[]),["gather","Gathering"],["upgrader","Upgrader"],["blend","Blending"],["pipe","Pipeline"],...(reffeedLive()?[["reffeed","Refinery feed"]]:[]),["terminal","Terminal"],["gas","Gas"],["crews","Crews & upkeep"],["power","Power"]];
   const exOn = !!(CFG.ex&&CFG.ex.on), ups = (UI.ups==="expl" && exOn) ? "expl" : "prod";
   const nodes = grp ? all.filter(([id])=>nodeGroupOf(id)===grp && (grp!=="upstream" || ((id==="explore") === (ups==="expl")))) : [];
   const NODE = !grp ? null : (nodes.some(n=>n[0]===UI.node) ? UI.node : (nodes[0]||[null])[0]);
@@ -5124,10 +5312,30 @@ function buildHTML(F, grp){
       <div class="stat"><div class="l">Flow this turn</div><div class="v">${f0(F.piped)} kb/d</div></div></div>
     ${condHTML("pipe")}
     <div class="acts">${act("Pipeline loop","+250 kb/d after 4 turns.",COST.loop, slotFree>0, "No construction slot free.", `data-order="loop"`)}</div>`;
+  } else if (NODE==="gather"){
+    const gBuild = S.projects.filter(p=>p.kind==="gatherExp");
+    h += `<h3 style="font-size:22px">${ic("pipe",22)}Gathering lines${tip("gather")}</h3>
+    <div class="stats"><div class="stat"><div class="l">Nameplate</div><div class="v">${f0(S.gatherCap)} kb/d XH</div></div>
+      <div class="stat"><div class="l">Effective now</div><div class="v">${f0(F.gatherCapEff||0)} kb/d</div></div>
+      <div class="stat"><div class="l">Delivered this turn</div><div class="v">${f0(F.xhG!=null?F.xhG:0)} kb/d</div></div>
+      ${F.gatherShut>0.5?`<div class="stat"><div class="l">Choked at wells</div><div class="v bad">${f0(F.gatherShut)} kb/d</div></div>`:""}</div>
+    <p class="note">The flowlines and trunk lines that bring raw extra-heavy from the land fields to the upgrader and blending station. Lake crude uses its own line and is not gathered here. Whatever the lines cannot carry is choked back at the wells and lost.</p>
+    ${condHTML("gather")}
+    <div class="acts">${act("Gathering expansion",`+${CFG.gatherAdd} kb/d after 4 turns.${gBuild.length?` ${gBuild.length} in progress (${gBuild.map(p=>p.left).join(", ")} left).`:""}`,COST.gatherExp, slotFree>0, "No construction slot free.", `data-order="gatherExp"`)}</div>`;
+  } else if (NODE==="reffeed"){
+    const rBuild = S.projects.filter(p=>p.kind==="reffeedExp"), anyRef = dsAnyTier && dsAnyTier()>0;
+    h += `<h3 style="font-size:22px">${ic("pipe",22)}Refinery feed line${tip("reffeed")}</h3>
+    <div class="stats"><div class="stat"><div class="l">Nameplate</div><div class="v">${f0(S.reffeedCap)} kb/d</div></div>
+      <div class="stat"><div class="l">Effective now</div><div class="v">${f0(F.reffeedCapEff||0)} kb/d</div></div>
+      <div class="stat"><div class="l">Feed this turn</div><div class="v">${f0(F.reffeedUse||0)} kb/d</div></div>
+      ${F.refShort>0.5?`<div class="stat"><div class="l">Short to refineries</div><div class="v bad">${f0(F.refShort)} kb/d</div></div>`:""}</div>
+    <p class="note">Carries made crude from the processing complex to the domestic and export refineries.${anyRef?"":" No refinery is built yet, so it carries nothing."} The raw extra-heavy prefeed to the domestic complex is a short tie-in and does not use this line. Crude the line cannot carry is not lost: it is sold as crude instead of being refined, so you forgo the refining margin.</p>
+    ${condHTML("reffeed")}
+    <div class="acts">${act("Refinery feed expansion",`+${CFG.reffeedAdd} kb/d after 3 turns.${rBuild.length?` ${rBuild.length} in progress (${rBuild.map(p=>p.left).join(", ")} left).`:""}`,COST.reffeedExp, slotFree>0, "No construction slot free.", `data-order="reffeedExp"`)}</div>`;
   } else if (NODE==="crews"){
     const tr = ordersOf("training").length, next = clamp(S.skill - CFG.skillDecay + CFG.crewTrain*tr, 0, 100);
     const band = S.skill>=CFG.skillHi ? "Upgrader wears 3 pts a turn" : S.skill<CFG.skillLo ? "Upgrader wears 7 pts a turn; pads take +1 turn" : "Upgrader wears 5 pts a turn";
-    const M = CFG.maint[S.maint], facs = Object.keys(FAC);
+    const M = CFG.maint[S.maint], facs = facShown();
     h += `<div class="crewc"><h3 style="font-size:20px;margin:0">${ic("people",20)}Crews and maintenance</h3>
     <div class="cskill"><div class="csr"><span>Crew skill${tip("skill")} <b class="num">${f0(S.skill)}</b> <span class="muted">→ ${f0(next)} next turn</span></span><span class="muted cse">${band}</span></div>
       <div class="skillbar" role="img" aria-label="Crew skill ${f0(S.skill)} of 100"><i style="width:${S.skill}%"></i><span class="mk" style="left:${CFG.skillLo}%"></span><span class="mk" style="left:${CFG.creditSkill}%"></span><span class="mk" style="left:${CFG.skillHi}%"></span></div>
@@ -5187,7 +5395,7 @@ function buildHTML(F, grp){
     </div>`;
     h += secTabs("tm",[["st","Status",tA+tB],["ord","Orders",tD]]);
   }
-  const projects = S.projects.length ? `<div class="tblwrap"><table class="t"><thead><tr><th>Under construction</th><th class="r">Turns left</th></tr></thead><tbody>${S.projects.map(p=>`<tr><td>${p.tier&&CFG.ofsOn?`<span class="pill" title="${esc(CFG.ofs.tiers[p.tier].name)}">${p.tier==="pre"?"Premier":p.tier==="nat"?"National":"Regional"}</span> `:""}${({workover:"Workover",repair:"Repair",fieldFac:"Field facilities",blendExp:"Blending expansion",train:"Upgrader train",loop:"Pipeline loop",berth:"Export berth",tank:"Storage tank",turbine:"Gas turbine block",gasPlant:"Gas plant expansion",gasPipe:"Gas export pipeline"})[p.kind]}${p.fac?": "+FAC[p.fac].name:""}${p.block?", "+esc(S.blocks.find(b=>b.id===p.block).name):""}</td><td class="r num">${p.left}</td></tr>`).join("")}</tbody></table></div>` : "";
+  const projects = S.projects.length ? `<div class="tblwrap"><table class="t"><thead><tr><th>Under construction</th><th class="r">Turns left</th></tr></thead><tbody>${S.projects.map(p=>`<tr><td>${p.tier&&CFG.ofsOn?`<span class="pill" title="${esc(CFG.ofs.tiers[p.tier].name)}">${p.tier==="pre"?"Premier":p.tier==="nat"?"National":"Regional"}</span> `:""}${PROJ_NAME[p.kind]||PROJ_NAMES[p.kind]||p.kind}${p.fac?": "+FAC[p.fac].name:""}${p.block?", "+esc(S.blocks.find(b=>b.id===p.block).name):""}</td><td class="r num">${p.left}</td></tr>`).join("")}</tbody></table></div>` : "";
   const slotsNote = `<p class="note slotsn">Construction slots free: ${slotFree} of ${slotsMax()}.</p>`;
   if (grp==="upstream") return `<div class="ups"><div class="subtabs" role="tablist" aria-label="Upstream sections">${exOn?`<button class="chip" role="tab" aria-pressed="${ups==="expl"}" data-ups="expl">${ic("target",14)} Exploration</button>`:""}<button class="chip" role="tab" aria-pressed="${ups==="prod"}" data-ups="prod">${ic("derrick",14)} Production</button></div>${picker}${h}</div>`;
   if (grp==="midstream") return `${picker}${h}${slotsNote}`;
@@ -5281,13 +5489,29 @@ function bidBannerHTML(){
 function confirmHTML(F){
   const t = Math.min(S.turn, CFG.turns), y = yearOf(t), q = qOf(t);
   const capex = capexOrders(), ceil = ceilingNow(), over = capex > ceil + 1e-6;
-  const rows = outlookRows(), nx = rows && rows[1];
+  const rows = outlookRows(), yrRows = rows.filter(r=>r.year===y);
   const ords = S.orders.map(o=>`<div class="cfr"><span>${esc(orderLabel(o))}</span><b class="num">${(o.pay??o.cost)?money(o.pay??o.cost):"\u2014"}</b></div>`).join("");
   const W = warnList(F, capex, ceil);
   const line = (l,v,c="") => `<div class="cfr"><span>${l}</span><b class="num ${c}">${v}</b></div>`;
   const gdLock = qOf(S.turn)===1 && !S.guidanceLocked;
+  // v51: the previous quarter's actuals, so a decision is read against what really happened, not just the plan
+  const last = S.hist.length ? S.hist[S.hist.length-1] : null;
+  const lastGr = last && S.guidance>0 ? last.net/S.guidance : null;
+  const lastSec = last ? `<section class="cfsec cfspan"><h3>Last quarter \u00b7 Q${last.q} Y${last.year}</h3>
+    <div class="cfg4">
+      ${line("Net crude", `${f0(last.net)} kb/d`, lastGr!=null&&lastGr<.9?"bad":"")}
+      ${line("Vs guidance", lastGr!=null?`${f0(lastGr*100)}%`:"\u2014", lastGr!=null&&lastGr<.9?"bad":"")}
+      ${line("Operating cash", money(last.ocf), last.ocf<0?"bad":"")}
+      ${line("Investor approval", `${f1(last.approval)} \u00b7 ${last.grade}`, last.grade==="D"||last.grade==="F"?"bad":"")}
+    </div></section>` : "";
+  // v51: outlook now runs through the rest of the year, not just one quarter ahead
+  const outlookTbl = yrRows.length ? `<div class="tblwrap"><table class="t cfout"><thead><tr><th>Quarter</th><th class="r">Net crude</th><th class="r">Vs guidance</th><th class="r">Op. cash</th></tr></thead><tbody>
+      ${yrRows.map(r=>{ const bad = S.guidance>0 && r.net<S.guidance*.9;
+        return `<tr${r.q===q?' class="hi"':''}><td>Q${r.q}${r.q===q?" (this one)":""}</td><td class="r num">${f0(r.net)} kb/d</td><td class="r num ${bad?"bad":""}">${S.guidance>0?`${f0(r.net/S.guidance*100)}%`:"\u2014"}</td><td class="r num ${r.ocf<0?"bad":""}">${money(r.ocf)}</td></tr>`; }).join("")}
+    </tbody></table></div>` : `<p class="note" style="margin:0">Outlook unavailable.</p>`;
   return `<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="cfh"><div class="modal cfm">
     <div class="cfh"><h2 id="cfh">End turn ${t}</h2><span class="muted">Q${q} Y${y} \u00b7 ${CFG.turns-t} quarters left</span></div>
+    ${lastSec}
     <div class="cfg2">
       <section class="cfsec"><h3>Orders this quarter</h3>
         ${ords || `<p class="note" style="margin:0">Nothing ordered. The quarter runs on what is already built.</p>`}
@@ -5298,10 +5522,9 @@ function confirmHTML(F){
         ${gdLock?`<div class="cfdiv"></div>${line(`Guidance for year ${y} locks at`, `${f0(S.guidance)} kb/d`, "")}
           <p class="note" style="margin:4px 0 0">It cannot be lowered again until next year. You may revise it once in Q3.</p>`:""}
       </section>
-      <section class="cfsec"><h3>What that leaves you</h3>
-        ${line("Net crude next quarter", nx?`${f0(nx.net)} kb/d`:"\u2014", nx&&S.guidance>0&&nx.net<S.guidance*.9?"bad":"")}
-        ${line("Against guidance", nx&&S.guidance>0?`${f0(nx.net/S.guidance*100)}%`:"\u2014", nx&&S.guidance>0&&nx.net<S.guidance*.9?"bad":"")}
-        ${line("Operating cash next quarter", nx?money(nx.ocf):"\u2014", nx&&nx.ocf<0?"bad":"")}
+      <section class="cfsec"><h3>Outlook for the rest of Year ${y}</h3>
+        ${outlookTbl}
+        <div class="cfdiv"></div>
         ${line("Cash in hand now", money(S.cash), S.cash<0?"bad":"")}
         <div class="cfdiv"></div>
         <h3 style="margin-top:2px">Still open</h3>
@@ -5313,6 +5536,32 @@ function confirmHTML(F){
       <label class="cfsk"><input type="checkbox" data-noconfirm="1" ${S.skipConfirm?"checked":""}> Don\u2019t ask again this campaign</label>
       <div class="cfbtn"><button class="btn ghost" data-close="1">Cancel</button>
         <button class="btn endbtn" data-endgo="1">End turn ${t}</button></div>
+    </div>
+  </div></div>`;
+}
+// v52: the in-game menu. Save/load/restart/main-menu, reachable without ending the turn.
+// Anything destructive asks first, inside the same modal (no window.confirm — it never fires in the published page).
+function menuHTML(){
+  const mc = UI.menuConfirm;
+  const askBody = (title, body, okLabel) => `<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="mnh"><div class="modal menu">
+      <h2 id="mnh">${title}</h2>
+      <p class="note" style="margin:0">${body}</p>
+      <div class="menubtns">
+        <button class="btn ghost" data-menuback="1">Cancel</button>
+        <button class="btn endbtn" data-menudo="1">${okLabel}</button>
+      </div>
+    </div></div>`;
+  if (mc==="restart") return askBody("Restart this campaign?", `This throws away everything since turn 1 of this campaign (${esc(modeLabel(S.mode))}) and starts over from scratch. It can’t be undone.`, "Yes, restart");
+  if (mc==="new") return askBody("Go to the main menu?", "You’ll choose a difficulty and scenario there. This campaign stays saved — pick “Continue” from the main menu to come back to it.", "Go to main menu");
+  if (mc==="load") return askBody("Reload your last save?", "CRUDO saves automatically every time you act, so this normally changes nothing. Use it only if the screen looks stuck or wrong.", "Reload");
+  const saved = S && !S.demo ? loadSaved() : null;
+  return `<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="mnh"><div class="modal menu">
+    <div class="cfh"><h2 id="mnh">Menu</h2><button class="btn ghost sm" data-close="1">Resume ✕</button></div>
+    <div class="menuopts">
+      <button class="menuopt" data-menusave="1">${ic("doc",16)}<span><b>Save game</b><span class="d">${UI.menuSaved?"Saved just now.":"Writes your progress to this browser now."}</span></span></button>
+      <button class="menuopt" data-menuask="load" ${saved?"":"disabled"}>${ic("clock",16)}<span><b>Load game</b><span class="d">${saved?`Reload the save from turn ${saved.turn}.`:"No save found yet."}</span></span></button>
+      <button class="menuopt" data-menuask="restart">${ic("flag",16)}<span><b>Restart campaign</b><span class="d">Same settings, back to turn 1.</span></span></button>
+      <button class="menuopt" data-menuask="new">${ic("help",16)}<span><b>Main menu</b><span class="d">Change difficulty or scenario, or start a different campaign.</span></span></button>
     </div>
   </div></div>`;
 }
@@ -5505,8 +5754,8 @@ function warnList(F, capex, ceil){
   }
   S.obligations.filter(b=>!b.paid && S.turn>=b.due && !S.orders.some(o=>o.type==="payBonus"&&o.ob===b.id)).forEach(b=>
     W.push({bad:S.turn>b.due?1:0, t:S.turn>b.due?`Production bonus overdue: −5 approval again unless you pay ${money(b.amount)}.`:`Production bonus of ${money(b.amount)} is due this turn: pay it or lose 5 approval next turn.`}));
-  Object.keys(FAC).forEach(f=>{ if (tripped(f)) W.push({bad:1, t:`${FAC[f].name} has tripped: half capacity this turn. A patch (${money(FAC[f].patch)}) clears it.`}); });
-  const worn = Object.keys(FAC).filter(f=>!tripped(f) && condEff(f)<CFG.tripBelow+5 && !repairing(f));
+  facShown().forEach(f=>{ if (tripped(f)) W.push({bad:1, t:`${FAC[f].name} has tripped: half capacity this turn. A patch (${money(FAC[f].patch)}) clears it.`}); });
+  const worn = facShown().filter(f=>!tripped(f) && condEff(f)<CFG.tripBelow+5 && !repairing(f));
   if (worn.length) W.push({bad:0, t:`Worn and may trip: ${worn.map(f=>`${FAC[f].name} ${f0(condEff(f))}%`).join(", ")}. Patch or repair.`});
   greenBlocks().forEach(b=>{ if (b.commit && S.turn>=b.commit.by-1){ const q=S.orders.filter(o=>o.block===b.id&&(o.type==="drillCold"||o.type==="drillTh")).length, miss=b.commit.pads-b.commit.done-q;
     if (miss>0) W.push({bad:S.turn===b.commit.by?1:0, t:`${b.name}: ${miss} more pad${miss>1?"s":""} needed by turn ${b.commit.by} to meet the work commitment.`}); }
@@ -5901,7 +6150,7 @@ function ledgerHTML(){
       <div class="drv"><span>Drift toward neutral</span><span class="num">${sgn(R.drift)}</span></div>
       ${R.mult<1?`<div class="drv"><span>Slow to forgive: gains counted at half</span><span class="num">×0.5</span></div>`:""}</div>`,
     cond: `<div class="lgrp">${H3("Facility condition (next turn)")}
-        ${Object.keys(FAC).map(f=>kv(FAC[f].name, `${f0(S.cond[f])}%${S.trip[f]?" · tripped":""}`, S.cond[f]<45||S.trip[f]?"bad":"")).join("")}
+        ${facShown().map(f=>kv(FAC[f].name, `${f0(S.cond[f])}%${S.trip[f]?" · tripped":""}`, S.cond[f]<45||S.trip[f]?"bad":"")).join("")}
         ${kv("Crew skill",`${f0(R.skillStart)} → ${f0(R.skillEnd)}`)}</div>`,
     news: `${(R.wx&&R.wx.length)||(R.wxOn&&R.wxOn.length)?`<div class="an"><div class="anh"><h3>${ic("trend",16)}World news${tip("worldnews")}</h3></div>${(R.wx||[]).map(w=>`<p class="anp"><b>New: ${esc(w.title)}.</b> ${esc(w.text)} <span class="muted">From next quarter, for ${w.q} quarters: ${esc(w.fx)}.</span></p>`).join("")}${(R.wxOn||[]).length?`<p class="note" style="margin:0">In force this quarter: ${R.wxOn.map(w=>`${esc(w.title)}${w.left>0?` (${w.left} more)`:" (ended)"}`).join("; ")}.</p>`:""}</div>`:""}
       ${R.gdCard?gdCardHTML(R.gdCard):""}
@@ -6147,9 +6396,23 @@ document.addEventListener("click", e=>{
     else if (d.tour==="next"){ UI.tour++; }
     else if (d.tour==="back"){ UI.tour=Math.max(0,UI.tour-1); }
     else { UI.tour=null; window.scrollTo(0,0); }
-    if (UI.tour!=null && TOUR[UI.tour] && TOUR[UI.tour].sel){ const ss = TOUR[UI.tour].sel; if (ss===".tabs") UI.mview="panel"; else if (ss==="#t-map") UI.mview="map"; }
+    // v56: a tour step may need a particular view open (e.g. the finance overlay). Reset the overlay each
+    // step, then let the step's enter() hook set up whatever state it highlights.
+    if (d.tour!=="skip" && d.tour!=="done" && d.tour!=="end") UI.fov = false;
+    if (UI.tour!=null && TOUR[UI.tour]){ const st = TOUR[UI.tour]; if (st.enter) st.enter(); if (st.sel){ if (st.sel===".tabs") UI.mview="panel"; else if (st.sel==="#t-map") UI.mview="map"; } }
     render(); return; }
   if (d.demo){ S = JSON.parse(JSON.stringify(DEMO_SAVE)); S.demo = true; applyMode(S.mode); UI = {tab:"build", node:"upgrader", modal:null, screen:"game", view:"3d"}; render(); window.scrollTo(0,0); return; }
+  if (d.menu){ UI.modal="menu"; UI.menuConfirm=null; UI.menuSaved=false; UI.status=false; UI.tip=null; render(); return; }
+  if (d.menusave){ save(); UI.menuSaved=true; render(); return; }
+  if (d.menuask){ UI.menuConfirm=d.menuask; render(); return; }
+  if (d.menuback){ UI.menuConfirm=null; render(); return; }
+  if (d.menudo){
+    const mc = UI.menuConfirm;
+    if (mc==="load"){ const s = loadSaved(); if (s){ S=s; applyMode(S.mode); } UI.modal=null; UI.menuConfirm=null; render(); return; }
+    if (mc==="restart"){ const pk = {diff:S.mode.diff, scen:S.mode.scen}; clearSaved(); newGame(pk); UI={tab:"build", node:"moriche", modal:null, screen:"game", offer:true}; save(); render(); window.scrollTo(0,0); return; }
+    if (mc==="new"){ UI.screen="intro"; UI.pick = Object.assign({}, S.mode||{}); savePick(); UI.modal=null; UI.menuConfirm=null; render(); window.scrollTo(0,0); return; }
+    return;
+  }
   if (d.intro){ UI.screen="intro"; UI.pick = Object.assign({}, S.mode||{}); savePick(); render(); window.scrollTo(0,0); return; }
   if (d.pdiff){ UI.pick = Object.assign({}, UI.pick||loadPick(), {diff:d.pdiff}); savePick(); render(); return; }
   if (d.pscen){ UI.pick = Object.assign({}, UI.pick||loadPick(), {scen:d.pscen}); savePick(); render(); return; }
@@ -6160,7 +6423,7 @@ document.addEventListener("click", e=>{
   if (d.tsel){ UI.tsel = UI.tsel===d.tsel ? null : d.tsel; render(); return; }
   if (d.tprio){ S.town = S.town||{}; S.town.prio = d.tprio; save(); render(); return; }
   if (d.tgo){ UI.tab = d.tgo; UI.mview = "panel"; render(); return; }
-  if (d.node && /^(ref|pc)/.test(d.node)){ UI.node=d.node; UI.tab="downstream"; UI.mview="panel"; UI.status=false; render(); return; }
+  if (d.node && /^(ref|pc)/.test(d.node) && d.node!=="reffeed"){ UI.node=d.node; UI.tab="downstream"; UI.mview="panel"; UI.status=false; render(); return; }
   if (d.node){ UI.node=d.node; UI.tab=nodeGroupOf(d.node); if (UI.tab==="upstream") UI.ups = d.node==="explore" ? "expl" : "prod"; UI.mview="panel"; UI.status=false; render(); return; }
   if (d.route){ S.upFirst = d.route==="up"; save(); render(); return; }
   if (d.pw){ S.pwFirst = d.pw; save(); render(); return; }
@@ -6197,7 +6460,8 @@ document.addEventListener("click", e=>{
 });
 document.addEventListener("keydown", e=>{
   if (e.key==="Escape" && UI.fov && !UI.tip && !UI.modal){ UI.fov=false; render(); return; }
-  if (e.key==="Escape" && (UI.tip || ["help","event","gloss","letter","bid","confirm"].includes(UI.modal))){ UI.tip=null; if (["help","event","gloss","letter","bid","confirm"].includes(UI.modal)){ UI.modal=null; UI.letter=null; } render(); return; }
+  if (e.key==="Escape" && UI.modal==="menu" && UI.menuConfirm){ UI.menuConfirm=null; render(); return; }
+  if (e.key==="Escape" && (UI.tip || ["help","event","gloss","letter","bid","confirm","menu"].includes(UI.modal))){ UI.tip=null; if (["help","event","gloss","letter","bid","confirm","menu"].includes(UI.modal)){ UI.modal=null; UI.letter=null; } render(); return; }
   if ((e.key==="Enter"||e.key===" ") && e.target.matches?.("g[data-node]")){ e.preventDefault(); UI.node=e.target.dataset.node; UI.tab=nodeGroupOf(e.target.dataset.node); render(); }
 });
 document.addEventListener("change", e=>{ if (e.target.id==="guid") { commitGuidance(); render(); }
