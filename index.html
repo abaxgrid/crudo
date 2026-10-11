@@ -3142,7 +3142,7 @@ function finYear(y){
 
 /* ============ persistence ============ */
 const KEY="crudo-prototype-v7";
-const VERSION="0.64";   // user-facing build; pre-1.0, so labelled beta. Bump here when publishing.
+const VERSION="0.65";   // user-facing build; pre-1.0, so labelled beta. Bump here when publishing.
 const VLABEL=`Beta · v${VERSION}`;
 /* ============ i18n — Spanish (Venezuelan / Faja terminology). Stage 1: UI shell. ============
    Core glossary: upgrader→mejorador · blending→mezcla · diluent→diluente(nafta) · extra-heavy→extrapesado
@@ -3171,7 +3171,7 @@ const T = {
   "end.sbtitle":{en:"Sandbox complete", es:"Modo libre completado"},
   "end.sbwhy":{en:"You built this operation from bare fields over eighteen years. No score, no target — just what you made of it.", es:"Construiste esta operación desde campos vírgenes a lo largo de dieciocho años. Sin puntaje ni meta: solo lo que lograste con ella."},
   "end.exported":{en:"Net crude exported", es:"Crudo neto exportado"}, "end.peaknet":{en:"Peak net crude", es:"Crudo neto máximo"}, "end.endappr":{en:"Final approval", es:"Aprobación final"}, "end.distributed":{en:"Total distributed", es:"Total distribuido"},
-  "mnu.demo":{en:"Demo camp", es:"Campo demo"}, "mnu.howto":{en:"How to play", es:"Cómo jugar"}, "mnu.turn":{en:"turn", es:"turno"},
+  "mnu.demo":{en:"Demo camp", es:"Campo demo"}, "mnu.howto":{en:"How to play", es:"Cómo jugar"}, "mnu.turn":{en:"turn", es:"turno"}, "mnu.credits":{en:"Credits", es:"Créditos"},
   "mnu.disclaimer":{en:"Fictional companies, places and people. Numbers are scaled for play.", es:"Empresas, lugares y personas ficticias. Las cifras están ajustadas para el juego."},
   "mnu.lang":{en:"Español", es:"English"},   // the toggle shows the language you switch TO
   "hdr.menu":{en:"Menu", es:"Menú"}, "hdr.help":{en:"Help", es:"Ayuda"},
@@ -3476,8 +3476,23 @@ function helpHTML(){
   const es = LANG==="es";
   const confLbl = es ? `Confirmar antes de terminar un turno: ${S&&S.skipConfirm?"no":"sí"}` : `Confirm before ending a turn: ${S&&S.skipConfirm?"off":"on"}`;
   return `<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="ht"><div class="modal"><h2 id="ht">${es?"Ayuda":"Help"}</h2>
-    <div style="display:flex;flex-wrap:wrap;gap:10px"><button class="btn" data-tour="start">${es?"Repetir el recorrido":"Replay the tour"}</button><button class="btn ghost" data-tab="gloss">${es?"Abrir el glosario":"Open the Glossary"}</button><button class="btn ghost" data-askend="1">${confLbl}</button></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px"><button class="btn" data-tour="start">${es?"Repetir el recorrido":"Replay the tour"}</button><button class="btn ghost" data-tab="gloss">${es?"Abrir el glosario":"Open the Glossary"}</button><button class="btn ghost" data-credits="1">${TR("mnu.credits")}</button><button class="btn ghost" data-askend="1">${confLbl}</button></div>
     ${phoneTipsHTML()}<button class="btn ghost" data-close="1" style="align-self:flex-start">${es?"Cerrar":"Close"}</button></div></div>`;
+}
+function creditsHTML(){
+  const es = LANG==="es";
+  return `<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="crt"><div class="modal" style="max-width:560px;align-items:center;text-align:center">
+    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;gap:10px"><h2 id="crt" style="margin:0">${es?"Créditos":"Credits"}</h2><button class="btn ghost sm" data-credits="0">${es?"Cerrar":"Close"} ✕</button></div>
+    <div class="hero" style="font-size:44px;line-height:1">CRUDO</div>
+    <p class="sub" style="margin:0">${es?"Barriles de Venezuela":"Barrels of Venezuela"} · ${VLABEL}</p>
+    <div style="display:flex;flex-direction:column;gap:16px;margin-top:4px;align-items:center">
+      <div><div class="note">${es?"Creado por":"Created by"}</div><div style="font-size:21px;font-weight:600;margin-top:2px">Danny Peña</div></div>
+      <div><div class="note">${es?"Diseñado y construido con":"Designed and built with"}</div><div style="font-weight:600;margin-top:2px">Claude · Anthropic</div></div>
+      <p class="note" style="margin:0;max-width:460px">${es?"Terminología del sector petrolero y de la Faja del Orinoco tomada del uso venezolano de la industria. Las empresas, lugares y personas son ficticios; las cifras están ajustadas para el juego.":"Oil-sector and Faja del Orinoco terminology drawn from Venezuelan industry usage. Companies, places and people are fictional; figures are scaled for play."}</p>
+      <p style="margin:0;font-style:italic;font-size:15px;max-width:460px">${es?"Dedicado a Venezuela — a su gente trabajadora, honesta y resiliente.":"Dedicated to Venezuela — to its hardworking, honest, and resilient people."}</p>
+      <div class="note">© 2026</div>
+    </div>
+  </div></div>`;
 }
 function offerHTML(){
   return `<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="ot"><div class="modal"><h2 id="ot">${TR("tour.offerT")}</h2>
@@ -4431,7 +4446,7 @@ function render(){
   const F = flows(taOrdered());
   const oldMap = document.getElementById("t-map"), keepX = oldMap && oldMap.dataset.view===(UI.view||"strat") ? oldMap.scrollLeft : null;
   const wide = false, mv = UI.mview==="panel" ? "panel" : "map";
-  app.innerHTML = `<div class="wrap">${topHTML(F)}${UI.fov?finOverlayHTML(F):`<div class="m3 mv-${mv}">${panelHTML(F)}<div class="ctr">${railStripHTML(F)}${mapCardHTML(F)}${buildQueueHTML()}${trendHTML()}</div>${railHTML(F)}</div>${newsTickerHTML()}`}</div>${endbarHTML(F, wide)}${UI.modal==="report"?reportHTML():""}${UI.modal==="help"?helpHTML():""}${UI.modal==="event"?eventModalHTML():""}${UI.modal==="gloss"?glossModalHTML():""}${UI.modal==="letter"?letterHTML():""}${UI.modal==="bid"?bidModalHTML():""}${UI.modal==="confirm"?confirmHTML(F):""}${UI.modal==="menu"?menuHTML():""}${UI.offer?offerHTML():""}${tipSheet()}${tourHTML()}`;
+  app.innerHTML = `<div class="wrap">${topHTML(F)}${UI.fov?finOverlayHTML(F):`<div class="m3 mv-${mv}">${panelHTML(F)}<div class="ctr">${railStripHTML(F)}${mapCardHTML(F)}${buildQueueHTML()}${trendHTML()}</div>${railHTML(F)}</div>${newsTickerHTML()}`}</div>${endbarHTML(F, wide)}${UI.modal==="report"?reportHTML():""}${UI.modal==="help"?helpHTML():""}${UI.modal==="event"?eventModalHTML():""}${UI.modal==="gloss"?glossModalHTML():""}${UI.modal==="credits"?creditsHTML():""}${UI.modal==="letter"?letterHTML():""}${UI.modal==="bid"?bidModalHTML():""}${UI.modal==="confirm"?confirmHTML(F):""}${UI.modal==="menu"?menuHTML():""}${UI.offer?offerHTML():""}${tipSheet()}${tourHTML()}`;
   if (UI.modal==="report" && !UI.ledger) rpFit();
   const nm = document.getElementById("t-map");
   if (nm){ nm.dataset.view = UI.view||"strat"; if (nm.scrollWidth>nm.clientWidth) nm.scrollLeft = keepX!=null ? keepX : (UI.view==="tac" ? (nm.scrollWidth-nm.clientWidth)/2 : 0); }
@@ -6468,9 +6483,9 @@ function introHTML(){
       <div class="i2btns">
         ${canContinue?`<button class="btn endbtn" data-continue="1">${TR("mnu.continue")} · ${TR("mnu.turn")} ${saved.turn}</button><button class="btn ghost endbtn" data-new="1">${TR("mnu.newgame")}</button>`:`<button class="btn endbtn" data-new="1">${TR("mnu.start")}</button>`}
       </div>
-      <div class="i2row"><button class="btn ghost sm" data-lang="1" aria-label="${LANG==="es"?"Cambiar a English":"Switch to Español"}"><b style="font-family:var(--mono);font-size:11px;opacity:.6">${LANG==="es"?"ES":"EN"}</b> → ${TR("mnu.lang")}</button><button class="btn ghost sm" data-demo="1">${TR("mnu.demo")}</button><button class="btn ghost sm" data-howto="1">${TR("mnu.howto")}</button><button class="btn ghost sm" data-sound="1" aria-pressed="${SND.on}" aria-label="Sound effects ${SND.on?"on":"off"}">${SND.on?"♪":"♪ ✕"}</button><button class="btn ghost sm" data-music="1" aria-label="Music: ${MUS.track==="off"?"off":mName(MUS.track)}. Tap to change">${MUS.track==="off"?"♫ ✕":"♫ "+mName(MUS.track)}</button></div>
+      <div class="i2row"><button class="btn ghost sm" data-lang="1" aria-label="${LANG==="es"?"Cambiar a English":"Switch to Español"}"><b style="font-family:var(--mono);font-size:11px;opacity:.6">${LANG==="es"?"ES":"EN"}</b> → ${TR("mnu.lang")}</button><button class="btn ghost sm" data-demo="1">${TR("mnu.demo")}</button><button class="btn ghost sm" data-howto="1">${TR("mnu.howto")}</button><button class="btn ghost sm" data-credits="1">${TR("mnu.credits")}</button><button class="btn ghost sm" data-sound="1" aria-pressed="${SND.on}" aria-label="Sound effects ${SND.on?"on":"off"}">${SND.on?"♪":"♪ ✕"}</button><button class="btn ghost sm" data-music="1" aria-label="Music: ${MUS.track==="off"?"off":mName(MUS.track)}. Tap to change">${MUS.track==="off"?"♫ ✕":"♫ "+mName(MUS.track)}</button></div>
       <p class="note">${TR("mnu.disclaimer")}</p>
-    </div>${UI.howto?howtoHTML():""}</div>`;
+    </div>${UI.howto?howtoHTML():""}${UI.credits?creditsHTML():""}</div>`;
 }
 
 /* ============ v62 star ratings — shared store via the db capability ============ */
@@ -6685,6 +6700,7 @@ document.addEventListener("click", e=>{
   const d = el.dataset;
   if (!d.music) musicKick();
   if (d.howto!=null && d.howto!==""){ UI.howto = d.howto==="1"; render(); return; }
+  if (d.credits!=null && d.credits!==""){ const open = d.credits==="1"; if (UI.screen==="intro"){ UI.credits = open; } else { UI.modal = open ? "credits" : null; } render(); return; }
   if (d.music){ musicNext(); sfx("click"); render(); return; }
   if (d.sound){ setSound(!SND.on); sfx("good"); render(); return; }
   if (!d.end && !el.disabled) sfx(d.order ? "order" : d.undo ? "undo" : (d.new||d.continue||d.demo) ? "good" : (d.tab||d.node||d.pdiff||d.pscen||d.psandbox) ? "tick" : "click");
@@ -6789,7 +6805,7 @@ document.addEventListener("click", e=>{
 document.addEventListener("keydown", e=>{
   if (e.key==="Escape" && UI.fov && !UI.tip && !UI.modal){ UI.fov=false; render(); return; }
   if (e.key==="Escape" && UI.modal==="menu" && UI.menuConfirm){ UI.menuConfirm=null; render(); return; }
-  if (e.key==="Escape" && (UI.tip || ["help","event","gloss","letter","bid","confirm","menu"].includes(UI.modal))){ UI.tip=null; if (["help","event","gloss","letter","bid","confirm","menu"].includes(UI.modal)){ UI.modal=null; UI.letter=null; } render(); return; }
+  if (e.key==="Escape" && (UI.tip || ["help","event","gloss","credits","letter","bid","confirm","menu"].includes(UI.modal))){ UI.tip=null; if (["help","event","gloss","credits","letter","bid","confirm","menu"].includes(UI.modal)){ UI.modal=null; UI.letter=null; } render(); return; }
   if ((e.key==="Enter"||e.key===" ") && e.target.matches?.("g[data-node]")){ e.preventDefault(); UI.node=e.target.dataset.node; UI.tab=nodeGroupOf(e.target.dataset.node); render(); }
 });
 document.addEventListener("change", e=>{ if (e.target.id==="guid") { commitGuidance(); render(); }
