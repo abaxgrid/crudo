@@ -147,7 +147,7 @@ table.t td.r,table.t th.r{text-align:right}
 .offer{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center}
 .offer .btn{grid-row:1/span 2;grid-column:2}
 .gtag{font-family:var(--mono);font-size:11px;padding:1px 6px;border-radius:3px;color:#14110e;margin-right:6px}
-.gG{background:var(--amber)} .gS{background:var(--teal)}
+.gG{background:var(--amber)} .gS{background:var(--teal)} .gP{background:transparent;color:var(--amber);border:1px solid var(--amber)}
 .bar{height:8px;background:var(--bg);border-radius:4px;overflow:hidden;margin-top:6px}
 .bar i{display:block;height:100%;background:var(--teal)}
 
@@ -1243,6 +1243,24 @@ button.tnode{cursor:pointer}
 @media (max-width:900px){ .ftax .incs{grid-template-columns:minmax(0,1fr)} .etrt{grid-template-columns:repeat(2,minmax(0,1fr))} }
 @media (max-width:900px){ .ftax{grid-template-columns:minmax(0,1fr)} .ftax .stats{grid-template-columns:repeat(2,minmax(0,1fr))} }
 .fs-stmt .fpnl table.fin-t td,.fs-stmt .fpnl table.fin-t th{padding:1px 5px;font-size:11.5px;line-height:1.25}
+/* v66 export walk-through: compact rows so the tallest case (every step non-zero) fits the card without scrolling */
+.stockseg{display:flex}
+/* v67 export pipeline routes */
+.xprs{display:flex;flex-direction:column;gap:10px;min-width:0}
+.xpr{border:1px solid var(--line);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.xpr.locked{opacity:.72}
+.xpr .note{margin:0}
+.xps{font-size:12.5px;color:var(--muted);line-height:1.35}
+.xpn button{padding:2px 8px;font-size:12px;min-height:0}
+.xps{overflow-wrap:anywhere}
+.xph b{min-width:0}
+.xpr{gap:2px;padding:4px 10px}
+.xprs{gap:6px}
+.xph{display:flex;justify-content:space-between;gap:4px 10px;flex-wrap:wrap;align-items:baseline}
+.xph .good{color:var(--good)} .xph .bad{color:var(--bad)}
+.fs-stock .fpnl.walk table.fin-t td,.fs-stock .fpnl.walk table.fin-t th{padding:1px 6px;font-size:11.5px;line-height:1.25}
+.fs-stock .fpnl.walk{min-height:0;overflow-y:auto}
+.fs-stock .fpnl.walk table.fin-t td:first-child{min-width:0}
 .fs-stmt .fpnl>p.note{display:none}
 @media (max-height:900px){ .fs-stmt tr.memo,.fs-stmt tr.hd:has(+ tr.memo){display:none} }
 @media (max-height:980px){ .ftax .inc>span.note:first-of-type{display:none} }
@@ -1454,6 +1472,19 @@ const CFG = {
   rescue:{on:true, max:1, appr:46, ceil:.6, turns:4, pen:6},
   // v62 sandbox: a long, relaxed free-build game. Lean starting assets (bare fields, minimal midstream/power), 72 turns, no export target and no approval game-over.
   sandbox:{turns:72, cash0:520, upName:60, blendCap:0, pipe:160, gather:120, reffeed:0, berths0:1, storage0:2, gtMW:60, gasPlant0:60, gasField0:20},
+  // v67 export pipeline routes: crude leaves the processing complex by pipeline instead of the main line, terminal and ships.
+  // Unlocked by year. Each has a capacity, a build cost paid over its build quarters, a price (flat discount to the marker, or the
+  // grade price less a tariff), a take-or-pay floor (share of capacity; the shortfall is billed per barrel) and a disruption risk per quarter.
+  // v68 prepayment deals: a trader advances cash now against crude delivered later. The advance values the barrels at today's grade price
+  // less a financing discount; delivered barrels then bring in no cash. Missing the deadline repays the undelivered share plus a penalty.
+  pp:{on:true, chance:.4, minTurn:2, vol:[6,14], turns:[4,7], disc:[.10,.16], discD:.04, missPen:.15, cancelPen:.10, appr:1},
+  xp:{on:true, routes:{
+    partner:{name:"Partner refinery line", nameEs:"Línea a la refinería socia", short:"Partner refinery", shortEs:"Refinería socia", dest:"the partner refinery at Isla Coralina", destEs:"la refinería socia de Isla Coralina",
+      unlockY:2, cap:60, cost:420, turns:3, top:.75, pen:4, flat:8, risk:.02, cutQ:1},
+    port:{name:"Branch line to Puerto Jaspe", nameEs:"Ramal a Puerto Jaspe", short:"Puerto Jaspe branch", shortEs:"Ramal Puerto Jaspe", dest:"Puerto Jaspe, where buyers lift cargoes on their own ships", destEs:"Puerto Jaspe, donde los compradores cargan en sus propios buques",
+      unlockY:4, cap:100, cost:650, turns:4, top:.6, pen:2, tariff:2.5, wxK:.5, risk:.035, discAmt:5, discQ:3},
+    border:{name:"Cross-border crude line", nameEs:"Oleoducto fronterizo", short:"Cross-border line", shortEs:"Línea fronteriza", dest:"the neighbouring state refiner across the border", destEs:"la refinadora estatal vecina al otro lado de la frontera",
+      unlockY:6, cap:150, cost:1100, turns:6, top:.8, pen:3, tariff:4, risk:.06, cutQ:2, discAmt:7, discQ:3}}},
   // v20: difficulty ladder and scenarios, applied on top of these defaults when a campaign starts or loads
   modes:{
     diff:{
@@ -1656,7 +1687,7 @@ function techTick(R){
 }
 /* ---- downstream ---- */
 const DS_SITES = {dom:"Domestic complex", exp:"Export refinery"};
-const DS_PAY = ["refinery","pcComplex","pcOlef","pcFert","lngTrain"];
+const DS_PAY = ["refinery","pcComplex","pcOlef","pcFert","lngTrain","xpBuild"];
 const dsOn = () => !!(CFG.ds && CFG.ds.on);
 function dsS(){ return S.ds || (S.ds = {split:CFG.ds.split0, dial:"market", z:0, sites:{dom:{tier:0, cond:95, ta:0, defer:false, cut:0, cutLeft:0}, exp:{tier:0, cond:95, ta:0, defer:false, cut:0, cutLeft:0}}, pc:{complex:false, olef:false, fert:false}, last:null}); }
 const dsTier = s => S.ds ? S.ds.sites[s].tier : 0;
@@ -1723,6 +1754,52 @@ function dsSpread(){ const z = S.ds ? S.ds.z : 0, M = CFG.ds.sp, V = CFG.ds.spVo
 const dsValue = (y, sp) => Object.keys(y).reduce((a,k)=>a + y[k]*sp[k], 0);
 // money still owed on downstream projects this quarter (progress payments)
 const dsDue = () => S.projects.filter(p=>p.payLeft>0).reduce((a,p)=>a+p.pay,0);
+/* ---- v67 export pipeline routes ---- */
+const XP_IDS = ["partner","port","border"];
+const xpOn = () => !!(CFG.xp && CFG.xp.on);
+function xpS(){ if (!S.xp) S.xp = {}; XP_IDS.forEach(id=>{ if (!S.xp[id]) S.xp[id] = {st:"none", nom:1, dis:null}; }); return S.xp; }
+const xpR = id => CFG.xp.routes[id];
+const xpName = id => loc(xpR(id), "name");
+const xpUnlocked = id => yearOf(Math.min(S.turn, CFG.turns)) >= xpR(id).unlockY;
+const xpState = id => (S.xp && S.xp[id]) ? S.xp[id].st : "none";
+const xpOrdered = id => S.orders.some(o=>o.type==="xpBuild" && o.xp===id);
+const xpAnyOnline = () => xpOn() && XP_IDS.some(id=>xpState(id)==="online");
+// a disruption is announced at the end of a quarter and applies from the next one
+const xpDis = id => { const d = S.xp && S.xp[id] && S.xp[id].dis; return d && d.from<=S.turn ? d : null; };
+// price per barrel on a route this quarter: a flat discount to the marker (partner refinery), or the grade price less the route tariff; less any sanction discount
+function xpPrice(id, F, P, dA){
+  const Rt = xpR(id), x = F.XP && F.XP[id], disc = x ? x.disc : 0;
+  if (Rt.flat!=null) return P - Rt.flat - disc;
+  const m = F.made>0 ? {b:F.blend/F.made, s:F.sco/F.made, l:(F.lake||0)/F.made} : {b:1, s:0, l:0};
+  return m.b*(P-(S.offSpec?CFG.diffOff:CFG.diffG)-dA) + m.s*(P-CFG.diffS-.6*dA) + m.l*(P-CFG.lake.diff-.6*dA) - (Rt.tariff||0) - disc;
+}
+// revenue and take-or-pay bills for the quarter. The floor is a share of capacity, excused for weather-closed days and while a route is cut.
+function xpCash(F, P, dA, R){
+  const o = {rev:0, pen:0, rows:[]}; if (!F.XP) return o; const k = CFG.days/1000;
+  for (const id of XP_IDS){ const x = F.XP[id]; if (!x) continue; const Rt = xpR(id);
+    const px = xpPrice(id, F, P, dA), rev = k*x.fl*px;
+    const floor = x.cut ? 0 : Rt.top*Rt.cap*x.open, short = Math.max(0, floor - x.fl), pen = k*short*Rt.pen;
+    o.rev += rev; o.pen += pen; o.rows.push({id, fl:x.fl, px, rev, floor, short, pen, cut:x.cut, disc:x.disc, open:x.open, cap:Rt.cap, nom:x.nom});
+    if (R && pen>0.5) R.events.push(`${xpR(id).name}: shipped ${f0(x.fl)} kb/d against a ${f0(floor)} kb/d take-or-pay floor; the shortfall is billed ${money(pen)}.`); }
+  return o;
+}
+// disruptions: rolled once a quarter per online route, announced now and effective from next quarter
+function xpRisk(R, t, roll){
+  if (!xpOn() || !S.xp) return;
+  for (const id of XP_IDS){ const st = S.xp[id]; if (!st || st.st!=="online") continue; const Rt = xpR(id);
+    if (st.dis && st.dis.from<=t){ st.dis.left--; if (st.dis.left<=0){ st.dis = null; R.completed.push(`${Rt.name}: back to normal`); } continue; }
+    if (st.dis || !roll) continue;
+    if (rng() >= Rt.risk) continue;
+    const kind = id==="partner" ? "cut" : id==="port" ? "disc" : (rng()<.5 ? "cut" : "disc");
+    if (kind==="cut"){ const n = (Rt.cutQ||1) + (id==="border" ? Math.floor(rng()*2) : 0);
+      st.dis = {kind, left:n, amt:0, from:t+1};
+      R.events.push(id==="partner" ? `The partner refinery at Isla Coralina goes down for unplanned repairs: the ${Rt.name.toLowerCase()} takes no crude next quarter. Take-or-pay is waived.`
+        : `The border is closed after a diplomatic row: the ${Rt.name.toLowerCase()} is shut for ${n} quarter${n>1?"s":""} from next quarter. Take-or-pay is waived; the crude goes back to the main line.`); }
+    else { st.dis = {kind, left:Rt.discQ, amt:Rt.discAmt, from:t+1};
+      R.events.push(id==="port" ? `Sanctions on several cargo buyers at Puerto Jaspe: the remaining buyers want $${Rt.discAmt}/bbl more discount for ${Rt.discQ} quarters from next quarter.`
+        : `Trade sanctions on cross-border crude: the buyer pays $${Rt.discAmt}/bbl less for ${Rt.discQ} quarters from next quarter.`); }
+  }
+}
 let DSRF = {dom:1, exp:1, ol:1, fe:1};
 const OPEX = ["payBonus","training","incRelief","incCredit","incAccel","patch","shipTc"];
 const INC = {
@@ -1991,7 +2068,29 @@ function pickLetter(y){
   return {year:y, goal:keys[Math.floor(rng()*keys.length)]};
 }
 const CANCEL = {pen:.15, floor:.4, appr:3};      // early termination: 15% of the bonus value, scaled by the undelivered share (never below 40%), and -3 approval; free in the quarter it was signed
-const cancelPen = c => c.signed===S.turn ? 0 : CANCEL.pen*c.vol*c.bonus*Math.max(CANCEL.floor, 1-c.done/c.vol);
+const cancelPen = c => c.signed===S.turn ? 0 : c.kind==="prepay" ? ppRepay(c, CFG.pp.cancelPen) : CANCEL.pen*c.vol*c.bonus*Math.max(CANCEL.floor, 1-c.done/c.vol);
+/* ---- v68 prepayment deals ---- */
+const PP_BUYERS = ["Meridian Energy Trading","Atlas Commodities","Halcyon Oil Trading","Northbridge Resources","Sino-Andes Petroleum","Caribe Crude Partners"];
+const ppOn = () => !!(CFG.pp && CFG.pp.on);
+const isPP = c => c && c.kind==="prepay";
+// the undelivered share of the advance, plus a surcharge, which is what leaving early or missing the deadline costs
+const ppRepay = (c, sur) => c.adv*Math.max(0, 1 - c.done/c.vol)*(1 + sur);
+// advances from prepayments signed this quarter: paid when the quarter ends, and they lift this quarter's funding ceiling
+const advPending = () => S.active.filter(c=>isPP(c) && c.signed===S.turn && !c.advPaid).reduce((a,c)=>a+c.adv,0);
+const ceilEff = () => ceilingNow() + advPending();
+// the grade price a delivered barrel would have fetched: what a prepaid barrel gives up
+const ppGradePx = (grade, P, dA) => grade==="G16" ? P - CFG.diffG - dA : P - CFG.diffS - .6*dA;
+// a trader sizes the deal to a grade you actually ship: each quarterly instalment stays under 40% of that grade's tanker exports
+function genPrepay(F){
+  const X = CFG.pp, k = CFG.days/1000, gB = S.offSpec ? 0 : (F ? F.expB : 0)*k, gS = (F ? F.expS : 0)*k;
+  const grade = gB>=1 ? (gS>=1 && rng()<.4 ? "C32" : "G16") : gS>=1 ? "C32" : null; if (!grade) return null;
+  const turns = X.turns[0] + Math.floor(rng()*(X.turns[1]-X.turns[0]+1)), cap = Math.floor(.4*(grade==="G16"?gB:gS)*turns);
+  if (cap < 3) return null;
+  const vol = Math.min(cap, X.vol[0] + Math.floor(rng()*(X.vol[1]-X.vol[0]+1)));
+  const disc = Math.round((X.disc[0] + rng()*(X.disc[1]-X.disc[0]) + (S.approval<45 ? X.discD : 0))*1000)/1000;
+  const P = price() + (evMods().price||0), gp = ppGradePx(grade, P, 0);
+  return {id:S.nextId++, buyer:PP_BUYERS[Math.floor(rng()*PP_BUYERS.length)], kind:"prepay", grade, vol, turns, disc, gp, adv:Math.round(vol*gp*(1-disc)/10)*10, factor:1, bonus:0};
+}
 function genOffer(){
   const grade = rng()<0.65 ? "G16" : "C32";
   const vol = 5 + Math.floor(rng()*16);
@@ -2052,14 +2151,15 @@ function costOf(o){
   if (o.type==="shipSell") return -Math.round(CFG.ship.cls[o.cls].buy*CFG.ship.cls[o.cls].resale);
   if (o.type==="shipTc") return 0;
   if (o.type==="lngTrain") return ofsCost(o, CFG.ship.lng.cost);
+  if (o.type==="xpBuild") return ofsCost(o, xpR(o.xp).cost);
   let c = COST[o.type] ?? 0;
   if ((o.type==="drillCold"||o.type==="drillTh"||o.type==="drillSagd") && o.block && isGreen(o.block)) c += CFG.greenPadExtra;
   return ofsCost(o, c);
 }
 /* ---- oilfield services ---- */
-const OFS_TYPES = ["lngTrain","refinery","pcComplex","pcOlef","pcFert","drillSagd","pum","solar","wind","batt","exSeismic","exWildcat","drillLake","drillCold","drillTh","convert","workover","blendExp","turnaround","train","loop","berth","tank","gasWell","gasPlant","gasPipe","turbine","appraise","fieldFac","repair"];
+const OFS_TYPES = ["lngTrain","xpBuild","refinery","pcComplex","pcOlef","pcFert","drillSagd","pum","solar","wind","batt","exSeismic","exWildcat","drillLake","drillCold","drillTh","convert","workover","blendExp","turnaround","train","loop","berth","tank","gasWell","gasPlant","gasPipe","turbine","appraise","fieldFac","repair"];
 const SLOT_TYPES = ["pum","blendExp","train","loop","berth","tank","turbine","gasPlant","gasPipe","repair","fieldFac"];
-const PROJ_NAMES = {lngTrain:"Offshore gas and LNG train", refinery:"Refinery", pcComplex:"Petrochemical complex", pcOlef:"Olefins and polyethylene line", pcFert:"Fertiliser line", pum:"Partial upgrading module",solar:"Solar block",wind:"Wind block",batt:"Battery block",workover:"Workover",repair:"Repair",fieldFac:"Field facilities",blendExp:"Blending expansion",train:"Upgrader train",loop:"Pipeline loop",gatherExp:"Gathering expansion",reffeedExp:"Refinery feed expansion",berth:"Export berth",tank:"Storage tank",turbine:"Gas turbine block",gasPlant:"Gas plant expansion",gasPipe:"Gas export pipeline"};
+const PROJ_NAMES = {xpBuild:"Export pipeline route", lngTrain:"Offshore gas and LNG train", refinery:"Refinery", pcComplex:"Petrochemical complex", pcOlef:"Olefins and polyethylene line", pcFert:"Fertiliser line", pum:"Partial upgrading module",solar:"Solar block",wind:"Wind block",batt:"Battery block",workover:"Workover",repair:"Repair",fieldFac:"Field facilities",blendExp:"Blending expansion",train:"Upgrader train",loop:"Pipeline loop",gatherExp:"Gathering expansion",reffeedExp:"Refinery feed expansion",berth:"Export berth",tank:"Storage tank",turbine:"Gas turbine block",gasPlant:"Gas plant expansion",gasPipe:"Gas export pipeline"};
 function ofsS(){ return S.ofs || (S.ofs = {tier:"reg", sci:1, salt:(S.seed ^ 0x5bd1e995)|0, due:0, appr:0, local:{}, freeze:0, shock:null, natLock:0}); }
 const ofsTier = () => ofsS().tier;
 function ofsSci(){ const o = ofsS(); let v = o.sci; if (o.shock && o.shock.until>=S.turn) v += o.shock.add; v += evMods().ofsAdd||0; return clamp(v, .6, 1.6); }
@@ -2241,6 +2341,8 @@ function flows(ta){
   let F = flows0(ta);
   if (F.dsGasNeed && F.dsGasNeed.pc > 0){ const r = clamp(F.dsGasPc/F.dsGasNeed.pc, 0, 1); DSRF.ol = DSRF.fe = r; }
   dsVolumes(F);
+  if (F.walk){ F.walk.dsNet = F.dsNet||0; F.walk.net = F.net; F.walk.power = F.shed>0.5;
+    F.walk.lng = (shipOn() && F.lngFeed) ? F.lngFeed*(1-CFG.ship.lng.shrink)/CFG.ship.lng.boe : 0; }
   return F;
 }
 function flows0(ta){
@@ -2344,7 +2446,22 @@ function oilChain(ta, xf, uf){
   const domCrudeWant = Math.min(Math.max(0, domT - xhIn), made);
   const domCrude = Math.min(domCrudeWant, reffeedCapEff), domFeed = xhIn + domCrude;
   const reffeedLeft = Math.max(0, reffeedCapEff - domCrude);
-  const madeP = made - domCrude;
+  const madeP0 = made - domCrude;
+  // v67 export pipeline routes: each online route takes up to its nomination (share of capacity) from the processing complex,
+  // in order, before the main export pipeline. The Puerto Jaspe branch loses part of its weather-closed days; a cut route takes nothing.
+  const XP = {}; let xpFlow = 0, xpRem = madeP0;
+  if (xpOn() && S.xp){
+    const wxd = shipOn() ? Math.min(CFG.days, shipDays(S.turn) + (m.shipDays||0)) : 0;
+    for (const id of XP_IDS){
+      const st = S.xp[id]; if (!st || st.st!=="online") continue;
+      const Rt = xpR(id), dis = xpDis(id), cut = !!(dis && dis.kind==="cut");
+      const open = Rt.wxK ? Math.max(0, 1 - Rt.wxK*wxd/CFG.days) : 1;
+      const capNow = cut ? 0 : Rt.cap*open, want = capNow*st.nom, fl = Math.max(0, Math.min(want, xpRem));
+      xpRem -= fl; xpFlow += fl;
+      XP[id] = {fl, capNow, want, open, cut, nom:st.nom, disc:(dis && dis.kind==="disc") ? dis.amt : 0};
+    }
+  }
+  const madeP = madeP0 - xpFlow;
   const piped = Math.min(madeP, pipeCap*(m.pipe||1)), pipeLoss = madeP-piped;
   const expFeedWant = Math.min(expT, piped), expFeed = Math.min(expFeedWant, reffeedLeft), toTerm = piped - expFeed;
   const refShort = dsx ? Math.max(0, (domCrudeWant - domCrude) + (expFeedWant - expFeed)) : 0;
@@ -2381,7 +2498,9 @@ function oilChain(ta, xf, uf){
   const napOwn = domFeed*napY + (expFeed>0 ? expFeed*dsYield(S.ds.sites.exp.tier).n : 0);
   const napDil = Math.min(dil, domFeed*napY);
   const D = dsx ? {domFeed, expFeed, xhIn, domCrude, napOwn, napDil, dilIn:(domCrude+expFeed)*dilFrac, capDom, capExp} : null;
-  const net = exported - expDil;
+  // route barrels carry the same grade mix and diluent share as the rest of the made crude
+  const xpDil = xpFlow*dilFrac, xpB = xpFlow*shB, xpSc = xpFlow*shS, xpL = xpFlow*shL;
+  const net = exported - expDil + xpFlow - xpDil;
   let neck = null;
   const worn = f => cf(f)<.999 ? ` (condition ${f0(condEff(f))}%${tripped(f)?", tripped":""} limits it)` : "";
   if (gatherShut>0.5) neck = {node:"gather", why:`Gathering lines are full${worn("gather")}: ${f0(gatherShut)} kb/d choked back at the wells`};
@@ -2389,8 +2508,16 @@ function oilChain(ta, xf, uf){
   else if (pipeLoss>0.5) neck = {node:"pipe", why:m.pipe?"Pipeline capacity is cut by the leak":`Pipeline capacity is full${worn("pipe")}`};
   else if (overflow>0.5) neck = {node:"terminal", why: SHP && SHP.shutC>=SHP.ovf ? `Weather closed the terminal for ${SHP.d} days and the tanks filled` : SHP && SHP.liftShort ? "Not enough tankers: crude backed up into full tanks" : `Terminal and storage are full${worn("terminal")}`};
   else if (refShort>0.5) neck = {node:"reffeed", why:`Refinery feed line is full${worn("reffeed")}: ${f0(refShort)} kb/d sold as crude instead of refined`};
+  // v66 export walk-through (kb/d, quarter average): every step from the wellhead to net crude, built from the same figures so it ties exactly:
+  // well − shed − choke − unproc − shrink + dil − refin − pipe − ovf − stock − dom = gross;  gross − expDil = crude net
+  const walk = {well:pr0.xh*xm + (pr0.lake||0), shed:(pr0.xh*xm - xh) + ((pr0.lake||0) - lake), choke:gatherShut, unproc:shut,
+    shrink:(xhUp + xhPU) - sco, dil, refin:xhIn + domCrude + expFeed, pipe:pipeLoss, ovf:overflow, stock:(stored - S.stored)/k, dom,
+    gross:exported + xpFlow, xp:xpFlow, expDil:expDil + xpDil, crudeNet:net, refShort,
+    unprocWhy: ratio*dilCap < blendCap*ratio/(ratio+1) ? "dil" : "cap",
+    ovfWhy: SHP ? (SHP.shutC>=SHP.ovf ? "wx" : SHP.liftShort ? "ships" : "full") : "full", wxd: SHP ? SHP.d : 0};
   return {...pr, xhG, xhFull:pr0.xh*xm, gatherCapEff, gatherShut, upFull, upEff, blendCapEff:blendCap, pipeCapEff:pipeCap, reffeedCapEff:(dsx?reffeedCapEff:0), reffeedUse, refShort, ratio, dilCap, xhUp, xhBl, shut, dil, blend, sco, made, piped, pipeLoss, term, exported, stored, overflow,
-    xhPU, puCap, expB, expS, expL, lake, lakeFull:(pr0.lake||0), net, dom, lost:shut+pipeLoss+overflow+gatherShut, neck, ds:D, ship:SHP};
+    xhPU, puCap, expB, expS, expL, lake, lakeFull:(pr0.lake||0), net, dom, lost:shut+pipeLoss+overflow+gatherShut, neck, ds:D, ship:SHP, walk,
+    XP, xpFlow, xpB, xpS:xpSc, xpL, xpDil, exportedAll:exported + xpFlow};
 }
 
 // downstream barrels: sales volumes, domestic market, petrochemical feed; adds refined barrels to net output
@@ -2472,7 +2599,7 @@ function townS(F){
 
 /* ============ orders (this turn, undoable) ============ */
 function addOrder(o){ o.cost = costOf(o); if (DS_PAY.includes(o.type)) o.pay = o.cost/dsTurnsOf(o); o.id = S.nextId++; S.orders.push(o); save(); render(); }
-function dsTurnsOf(o){ if (o.type==="lngTrain") return CFG.ship.lng.turns; if (o.type==="refinery") return CFG.ds.tiers[dsNextTier(o.site)].turns; return CFG.ds.pc[{pcComplex:"complex", pcOlef:"olef", pcFert:"fert"}[o.type]].turns; }
+function dsTurnsOf(o){ if (o.type==="lngTrain") return CFG.ship.lng.turns; if (o.type==="xpBuild") return xpR(o.xp).turns; if (o.type==="refinery") return CFG.ds.tiers[dsNextTier(o.site)].turns; return CFG.ds.pc[{pcComplex:"complex", pcOlef:"olef", pcFert:"fert"}[o.type]].turns; }
 function undoOrder(id){ S.orders = S.orders.filter(o=>o.id!==id); save(); render(); }
 function orderLabel(o){
   const bn = id => S.blocks.find(b=>b.id===id)?.name;
@@ -2482,6 +2609,7 @@ function orderLabel(o){
   if (o.type==="shipSell") return `Sell an owned ${CFG.ship.cls[o.cls].name.toLowerCase()}`;
   if (o.type==="shipTc"){ const C = CFG.ship.cls[o.cls]; return `Time-charter a ${C.name.toLowerCase()}: ${money(shipTcRate(o.cls))} a quarter for ${C.tcTurns} quarters`; }
   if (o.type==="lngTrain") return `Offshore gas and LNG train (${money(o.pay||0)} a quarter for ${CFG.ship.lng.turns} quarters)`;
+  if (o.type==="xpBuild") return `${xpName(o.xp)} (${money(o.pay||0)} ${LANG==="es"?"por trimestre durante":"a quarter for"} ${xpR(o.xp).turns} ${LANG==="es"?"trimestres":"quarters"})`;
   return ({pcComplex:"Petrochemical complex", pcOlef:"Olefins and polyethylene line", pcFert:"Fertiliser line (ammonia and urea)", drillCold:`Cold pad, ${bn(o.block)}`, drillTh:`Thermal pad, ${bn(o.block)}`, convert:`Thermal conversion, pad #${o.pad}`,
     workover:`Workover, ${bn(o.block)}`, solar:"Solar block (50 MW)", wind:"Wind block (50 MW)", batt:"Battery block (25 MW)", leaseRig:"Lease a rig (arrives next turn)", buyRig:"Buy a rig (arrives in 2 turns)", sellRig:"Sell an owned rig", exLicense:`Licence: ${exLead(o.lead)?.name}`, exSeismic:`Seismic: ${exLead(o.lead)?.name}`, exWildcat:`Wildcat well: ${exLead(o.lead)?.name}`, drillLake:`Lake well, ${bn(o.block)}`, drillSagd:`SAGD well pair, ${bn(o.block)}`, pum:"Partial upgrading module", releaseRig:"Release a leased rig", dilContract:"Diluent supply contract",
     blendExp:"Blending expansion", turnaround:"Upgrader turnaround (offline this turn)", train:"New upgrader train", loop:"Pipeline loop", gatherExp:"Gathering expansion", reffeedExp:"Refinery feed expansion",
@@ -2565,6 +2693,7 @@ function endTurn(){
       case "shipSell": { const H = shipS(); H.own[o.cls] = Math.max(0, (H.own[o.cls]||0)-1); R.events.push(`Sold an owned ${CFG.ship.cls[o.cls].name.toLowerCase()} for ${money(-o.cost)}; the proceeds offset this quarter's capex.`); break; }
       case "shipTc": shipS().tc.push({cls:o.cls, left:CFG.ship.cls[o.cls].tcTurns, rate:shipTcRate(o.cls)}); break;
       case "lngTrain": { const n = dsTurnsOf(o); S.projects.push({kind:"lngTrain", left:n, slot:false, pay:o.pay, payLeft:n-1}); break; }
+      case "xpBuild": { const n = dsTurnsOf(o); xpS()[o.xp].st = "building"; S.projects.push({kind:"xpBuild", xp:o.xp, left:n, slot:false, pay:o.pay, payLeft:n-1}); break; }
       case "gasWell": S.gasWells.push({id:S.nextId++, status:"building", left:CFG.gasWellTurns+padExtra(), rate:0}); break;
       case "gasPlant": S.projects.push({kind:"gasPlant", left:CFG.gasPlantTurns, slot:true}); break;
       case "gasPipe": S.projects.push({kind:"gasPipe", left:CFG.expGasTurns, slot:true}); break;
@@ -2606,15 +2735,28 @@ function endTurn(){
 
   // 3. contracts: deliveries (Garza 16 off-spec does not qualify)
   let gMM = S.offSpec ? 0 : F.expB*k, sMM = F.expS*k, cbon=0, cpen=0;
-  for (const x of (S.cancelled||[])){ if (x.pen>0){ cpen += x.pen; R.appr.push({v:-CANCEL.appr, why:`Contract cancelled: ${x.buyer}`}); R.events.push(`Cancelled the contract with ${x.buyer}; early-termination penalty ${money(x.pen)}.`); } else R.events.push(`Withdrew from the contract with ${x.buyer} in the quarter it was signed; no penalty.`); }
+  for (const x of (S.cancelled||[])){ if (x.pen>0){ cpen += x.pen; R.appr.push({v:-CANCEL.appr, why:`Contract cancelled: ${x.buyer}`}); R.events.push(x.pp ? `Cancelled the prepayment with ${x.buyer}; ${money(x.pen)} of the advance repaid, with a ${f0(CFG.pp.cancelPen*100)}% surcharge.` : `Cancelled the contract with ${x.buyer}; early-termination penalty ${money(x.pen)}.`); } else R.events.push(`Withdrew from the contract with ${x.buyer} in the quarter it was signed; no penalty.`); }
   S.cancelled = [];
   S.active.sort((a,b)=>a.deadline-b.deadline);
+  // v68 prepayment advances signed this quarter are paid now, before any deal can complete and leave the list
+  const ppNew = S.active.filter(c=>isPP(c) && c.signed===t && !c.advPaid), advNow = ppNew.reduce((a,c)=>a+c.adv,0);
+  ppNew.forEach(c=>{ c.advPaid = true; R.events.push(`${c.buyer} paid a ${money(c.adv)} prepayment advance against ${f0(c.vol)} MMbbl of ${gradeName(c.grade)} due by turn ${c.deadline}.`); });
+  const ppDel = [];
   for (const c of S.active){
-    const need = c.vol - c.done; if (need<=0) continue;
-    if (c.grade==="G16"){ const d=Math.min(need,gMM); c.done+=d; gMM-=d; } else { const d=Math.min(need,sMM); c.done+=d; sMM-=d; }
+    // a prepayment delivers in equal quarterly instalments: catching up is allowed, delivering ahead is not
+    const need = isPP(c) ? Math.max(0, Math.min(c.vol, c.vol*Math.min(1, (t - c.signed + 1)/c.turns)) - c.done) : c.vol - c.done; if (need<=1e-9) continue;
+    let d; if (c.grade==="G16"){ d=Math.min(need,gMM); gMM-=d; } else { d=Math.min(need,sMM); sMM-=d; } c.done+=d;
+    if (isPP(c) && d>0) ppDel.push({grade:c.grade, d, buyer:c.buyer});
   }
   const still = [];
   for (const c of S.active){
+    if (isPP(c)){
+      if (c.done >= c.vol-1e-9){ R.appr.push({v:CFG.pp.appr, why:`Prepayment delivered: ${c.buyer}`}); R.events.push(`Prepayment to ${c.buyer} fully delivered: ${f0(c.vol)} MMbbl against the ${money(c.adv)} advance.`); }
+      else if (t >= c.deadline){ const rp = ppRepay(c, CFG.pp.missPen); cpen += rp; R.appr.push({v:-6, why:`Prepayment missed: ${c.buyer}`});
+        R.events.push(`Missed the prepayment to ${c.buyer} (${f1(c.done)} of ${f0(c.vol)} MMbbl): ${money(rp)} of the advance repaid, with a ${f0(CFG.pp.missPen*100)}% penalty.`); }
+      else still.push(c);
+      continue;
+    }
     if (c.done >= c.vol-1e-9){ cbon += c.vol*c.bonus; R.appr.push({v:2, why:`Contract delivered: ${c.buyer}`}); R.events.push(`Delivered ${f0(c.vol)} MMbbl to ${c.buyer}; bonus ${money(c.vol*c.bonus)}.`); c.yearDone=y; S.delivered=(S.delivered||[]).concat([{year:y}]); }
     else if (t >= c.deadline){ const pen=.25*c.vol*c.bonus; cpen+=pen; R.appr.push({v:-6, why:`Contract missed: ${c.buyer}`}); R.events.push(`Missed delivery to ${c.buyer} (${f1(c.done)} of ${f0(c.vol)} MMbbl); penalty ${money(pen)}.`); }
     else still.push(c);
@@ -2623,14 +2765,17 @@ function endTurn(){
 
   // 4. payable production bonuses (gross exports)
   CFG.thresholds.forEach((thr,i)=>{
-    if (!S.bonusHit[i] && F.exported>=thr){ S.bonusHit[i]=true; S.obligations.push({id:S.nextId++, amount:CFG.prodBonus, due:t+2, thr, paid:false});
+    if (!S.bonusHit[i] && (F.exportedAll ?? F.exported)>=thr){ S.bonusHit[i]=true; S.obligations.push({id:S.nextId++, amount:CFG.prodBonus, due:t+2, thr, paid:false});
       R.events.push(`Exports passed ${thr} kb/d: the State Hydrocarbons Agency bills a ${money(CFG.prodBonus)} production bonus, due by turn ${t+2}.`); }
   });
   S.obligations.filter(b=>!b.paid && t>b.due).forEach(b=>R.appr.push({v:-5, why:`Production bonus overdue (${b.thr} kb/d)`}));
 
   // 5. cash
   const dA = em.diffAdd||0;
-  const crudeRev = k*(F.expB*(P-(S.offSpec?CFG.diffOff:CFG.diffG)-dA) + F.expS*(P-CFG.diffS-.6*dA) + (F.expL||0)*(P-CFG.lake.diff-.6*dA)) + k*F.dom*CFG.domPrice;
+  const XPC = xpCash(F, P, dA, SIM ? null : R); R.XP = XPC; cpen += XPC.pen;
+  // prepaid barrels are sold (booked as revenue) but bring in no cash: the advance already paid for them
+  const ppW = ppDel.reduce((a,x)=>a + x.d*ppGradePx(x.grade, P, dA), 0); R.ppW = ppW; R.adv = advNow; R.ppDel = ppDel;
+  const crudeRev = k*(F.expB*(P-(S.offSpec?CFG.diffOff:CFG.diffG)-dA) + F.expS*(P-CFG.diffS-.6*dA) + (F.expL||0)*(P-CFG.lake.diff-.6*dA)) + k*F.dom*CFG.domPrice + XPC.rev;
   const gasRev = CFG.days*(F.gasDom*S.domGasPx + F.gasExp*CFG.expGasPrice)/1000;
   const townRev = Math.max(0, F.townMW - (em.townFirst?Math.min(em.townFirst,townCap()):0))*24*CFG.days*CFG.townPrice/1e6;
   const DS = dsCash(F, P, R);
@@ -2682,9 +2827,9 @@ function endTurn(){
   }
   S.taxPaid += tax; S.royPaid += royalty;
   const opMargin = (rev+cbon) > 0 ? (rev+cbon-royalty-lift-dilc-other-training-maintCost-tax)/(rev+cbon) : 0;
-  const ocf = rev + cbon - royalty - lift - dilc - other - training - fees - evCost - payments - cpen - claw - maintCost - commitCost - tax;
+  const ocf = rev + cbon - royalty - lift - dilc - other - training - fees - evCost - payments - cpen - claw - maintCost - commitCost - tax - ppW;
   const fund = Math.min(capex, ceiling);
-  const cashpre = S.cash + fund - capex;
+  const cashpre = S.cash + fund + advNow - capex;
   const distr = Math.max(0, cashpre + ocf - CFG.reserve);
   S.cash = cashpre + ocf - distr;
 
@@ -2709,7 +2854,7 @@ function endTurn(){
   else R.appr.push({v:-8, why:`Guidance missed badly (${f0((1-gr)*100)}% short)`});
   if (q===4 && CFG.gd && CFG.gd.on) gdScorecard(R, y, ytd, capex);
   { const v = marginPts(opMargin); R.appr.push({v, why:`After-tax cash margin ${f0(opMargin*100)}%`}); }
-  if (capex - R.ofs.ovrNow > ceiling + 1e-6) R.appr.push({v:-4, why:`Capex ${money(capex)} exceeded the ${money(ceiling)} funding ceiling`});
+  if (capex - R.ofs.ovrNow > ceiling + advNow + 1e-6) R.appr.push({v:-4, why:`Capex ${money(capex)} exceeded the ${money(ceiling)} funding ceiling`});
   if (hasTech("ccs")) R.appr.push({v:.5, why:"CO2 capture and storage in operation"});
   else if (F.flare>=CFG.flareHi) R.appr.push({v:-2, why:`Heavy gas flaring: ${f0(F.flare)} MMcfd`});
   else if (F.flare>=CFG.flareLo) R.appr.push({v:-1, why:`Gas flaring: ${f0(F.flare)} MMcfd`});
@@ -2737,7 +2882,7 @@ function endTurn(){
       if (g>=G.hi) R.appr.push({v:G.pHi, why:`Growth premium: net crude up ${f0(g*100)}% on last year`});
       else if (g>=G.lo) R.appr.push({v:G.pLo, why:`Growth premium: net crude up ${f0(g*100)}% on last year`}); } }
   // investor letter at year end
-  const rowNow = {ocf, opm:opMargin, cash:S.cash, turn:t, year:y, q, net:F.net, gross:F.exported, xh:F.xh, lost:F.lost, ta, gr, cost:lift+dilc+other, rev, distr, capex, tax, royalty, skill:skillStart, gnet:F.net+fmNet, gas:F.gasRaw, flare:F.flare, mw:F.demand, shed:F.shed, town:F.townMW, ev:evInfo?evInfo.title:null, approval:0, dsNet:F.dsNet||0, dsRev:DS.rev, dsMar:DS.rev-DS.cost};
+  const rowNow = {ocf, opm:opMargin, cash:S.cash, turn:t, year:y, q, net:F.net, gross:(F.exportedAll ?? F.exported), xh:F.xh, lost:F.lost, ta, gr, cost:lift+dilc+other, rev, distr, capex, tax, royalty, skill:skillStart, gnet:F.net+fmNet, gas:F.gasRaw, flare:F.flare, mw:F.demand, shed:F.shed, town:F.townMW, ev:evInfo?evInfo.title:null, approval:0, dsNet:F.dsNet||0, dsRev:DS.rev, dsMar:DS.rev-DS.cost};
   if (q===4){
     const ok = letterMet(S.letter.goal, y, rowNow);
     R.appr.push(ok ? {v:6, why:`Investor letter met: ${GOALS[S.letter.goal]}`} : {v:-3, why:`Investor letter missed: ${GOALS[S.letter.goal]}`});
@@ -2805,6 +2950,7 @@ function endTurn(){
     if (p.kind==="lngTrain"){ const H = shipS(); H.lng++; H.offGas = (H.offGas||0) + CFG.ship.lng.field; R.completed.push(`Offshore gas field and LNG train online: ${f0(CFG.ship.lng.field)} MMcfd of offshore gas, up to ${f0(lngFeedCap())} MMcfd liquefied for export. It needs LNG carriers.`); }
     if (p.kind==="tank"){ S.storageCap+=CFG.tankAdd; R.completed.push(`Storage now ${f0(S.storageCap)} MMbbl`); }
     if (p.kind==="gasPlant"){ renew("gasplant", S.gasPlant, CFG.gasPlantAdd); S.gasPlant+=CFG.gasPlantAdd; R.completed.push(`Gas plant now ${f0(S.gasPlant)} MMcfd`); }
+    if (p.kind==="xpBuild"){ const st = xpS()[p.xp], Rt = xpR(p.xp); st.st = "online"; R.completed.push(`${Rt.name} open: up to ${f0(Rt.cap)} kb/d of crude to ${Rt.dest}. Set its nomination on the export pipeline panel.`); }
     if (p.kind==="gasPipe"){ S.gasPipe=true; R.completed.push(`Gas export pipeline to Corales open: up to ${CFG.expGasCap} MMcfd at $${CFG.expGasPrice}/Mcf`); }
     if (p.kind==="turbine"){ renew("power", S.gtMW, CFG.gtAdd); S.gtMW+=CFG.gtAdd; R.completed.push(`New gas turbine block: Central Paují now ${f0(S.gtMW)} MW`); }
   }});
@@ -2827,6 +2973,7 @@ function endTurn(){
   if (shipOn()) shipTick(R, t, P);
   // 8. outcome checks
   R.wxOn = wxOn().map(w=>({id:w.id, title:WX[w.id].title, left:w.left-1}));
+  xpRisk(R, t, !SIM);
   if (S.wx) S.wx.forEach(w=>{ if (w.from<=S.turn) w.left--; });
   S.orders = [];
   S.last = R;
@@ -2844,6 +2991,7 @@ function endTurn(){
     if (S.turn>=CFG.evStart && rng()<CFG.evP){ S.ev = {id:drawEvent(), choice:null}; R.next = S.ev.id; }
     if (!SIM) wxRoll(R);
     S.offers = [genOffer(), genOffer()];
+    if (ppOn() && S.turn>=CFG.pp.minTurn && !S.active.some(isPP) && rng()<CFG.pp.chance){ const pp = genPrepay(F); if (pp) S.offers.push(pp); }
     openRound(); if (S.round) R.events.push(`Concession bid round open next turn: ${S.round.offers.map(o=>o.name).join(" and ")}. See Contracts.`);
     if (qOf(S.turn)===1){ S.letter = pickLetter(yearOf(S.turn)); S.guidanceLocked=false; S.guidance = suggestGuidance();
       if (CFG.ex && CFG.ex.on && CFG.ex.newYears.includes(yearOf(S.turn))){ exS(); const L = exNewLead(yearOf(S.turn)%2 ? "lake" : "land"); if (L) R.events.push(`New prospect open for licensing: ${L.name} (${L.area==="lake"?"Lake Maracaibo":"onshore"}). See Build, Exploration.`); } }
@@ -3032,16 +3180,18 @@ function finDerive(r){
   return r;
 }
 function finRow(R){
-  return finDerive({turn:R.turn, year:R.year, q:R.q, P:R.P, net:R.F.net, gross:R.F.exported,
+  return finDerive({turn:R.turn, year:R.year, q:R.q, P:R.P, net:R.F.net, gross:(R.F.exportedAll ?? R.F.exported),
     crude:R.crudeRev, gasp:R.gasRev+R.townRev, ds:R.DS ? R.DS.rev : 0, ship:R.SH ? R.SH.rev : 0, dsCost:R.DS ? R.DS.cost : 0, cbon:R.cbon, royalty:R.royalty,
     lift:R.lift, dil:R.dilc, other:R.other, maint:R.maintCost, training:R.training,
-    items:R.fees+R.evCost+R.payments+R.cpen+R.claw+R.commitCost,
+    items:R.fees+R.evCost+R.payments+R.cpen+R.claw+R.commitCost+(R.ppW||0), adv:R.adv||0,
     tax:R.tax, pretax:R.pretax, allowance:R.allowance, capex:R.capex, ceiling:R.ceiling, distr:R.distr, cash:S.cash,
     // price exposure: $M of pre-tax cash per $1/bbl on Atlantic Light (crude sales after royalty, less diluent and diesel bought at oil-linked prices)
-    sens: (1-R.rRate)*CFG.days/1000*(R.F.expB+R.F.expS+(R.F.expL||0)) - CFG.days/1000*R.F.dil - R.F.dsGen*CFG.dsFuel*CFG.days/1e6,
+    sens: (1-R.rRate)*CFG.days/1000*(R.F.expB+R.F.expS+(R.F.expL||0)+(R.F.xpFlow||0)) - CFG.days/1000*R.F.dil - R.F.dsGen*CFG.dsFuel*CFG.days/1e6,
     lost: R.F.lost, gas: R.F.gasRaw, assets: finAssets(R.F), ovr: R.ofs ? R.ofs.ovr : 0, idx: R.ofs ? R.ofs.idx : 0, sci: R.ofs ? R.ofs.sci : 1,
     // v53: crude storage at quarter end, so the outlook can show inventories too
-    stored: R.F.stored, storageCap: S.storageCap, overflow: R.F.overflow});
+    stored: R.F.stored, storageCap: S.storageCap, overflow: R.F.overflow,
+    // v66: the export walk-through for this quarter (kb/d), so the Inventories report can show how exports were reached
+    wk: R.F.walk ? Object.fromEntries(Object.entries(R.F.walk).map(([k,v])=>[k, typeof v==="number" ? Math.round(v*100)/100 : v])) : null});
 }
 // field output by block this quarter (kb/d at the wellhead, after event cuts and power shedding)
 function finAssets(F){
@@ -3142,7 +3292,7 @@ function finYear(y){
 
 /* ============ persistence ============ */
 const KEY="crudo-prototype-v7";
-const VERSION="0.65";   // user-facing build; pre-1.0, so labelled beta. Bump here when publishing.
+const VERSION="0.68";   // user-facing build; pre-1.0, so labelled beta. Bump here when publishing.
 const VLABEL=`Beta · v${VERSION}`;
 /* ============ i18n — Spanish (Venezuelan / Faja terminology). Stage 1: UI shell. ============
    Core glossary: upgrader→mejorador · blending→mezcla · diluent→diluente(nafta) · extra-heavy→extrapesado
@@ -3201,6 +3351,7 @@ const T = {
   "menu.demoT":{en:"Demo camp", es:"Campo demo"}, "menu.demoNote":{en:"A sandbox to look around. Nothing here is saved, and your real campaign is untouched.", es:"Un espacio para explorar. Aquí no se guarda nada, y tu campaña real queda intacta."}, "menu.exit":{en:"Exit to main menu", es:"Salir al menú principal"}, "menu.exitD":{en:"Back to the difficulty and scenario picker.", es:"De vuelta al selector de dificultad y escenario."},
   // --- finance tab labels + controls ---
   "fin.budget":{en:"Budget and outlook", es:"Presupuesto y perspectiva"}, "fin.stmt":{en:"Statement", es:"Estado"}, "fin.ana":{en:"Charts and analysis", es:"Gráficos y análisis"}, "fin.stock":{en:"Inventories", es:"Inventarios"}, "fin.reserves":{en:"Reserves", es:"Reservas"}, "fin.inv":{en:"Investors", es:"Inversionistas"}, "fin.tax":{en:"Tax", es:"Impuestos"},
+  "inv.walk":{en:"Exports", es:"Exportaciones"}, "inv.tanks":{en:"Storage", es:"Almacenamiento"},
   "fin.close":{en:"Close", es:"Cerrar"}, "fin.quarter":{en:"Quarter", es:"Trimestre"}, "fin.ytd":{en:"Year to date", es:"Acumulado del año"}, "fin.fy":{en:"Full year", es:"Año completo"}, "fin.year":{en:"Year", es:"Año"},
   "hist.charts":{en:"Charts", es:"Gráficos"}, "hist.log":{en:"Quarterly log", es:"Registro trimestral"}, "fin.history":{en:"History", es:"Historial"},
 };
@@ -3290,7 +3441,7 @@ const TIPS = {
   guidance:["Guidance","Your yearly public promise: average net crude in kb/d and capex a quarter (the capex number is also your budget). You set both in Q1, and you cannot promise less crude than last year's average. Investors judge production on the year-to-date average every quarter. In Q3 you may revise once: a cut costs 2 approval at once but is cheaper than a miss; a capex raise costs 1. At year end a scorecard adds approval: delivering production earns +2 (+3 if you raised it, +1 if you beat it by 10% or more, which looks like conservative guidance), a clean year with capex on guidance +1 more, a miss below 93% costs 3, and capex more than 10% over guidance costs 1. Analysts track the record as guidance credibility."],
   approval:["Investor approval","A 0–100 measure of how happy investors are. It moves with guidance, cash margin, contracts and the yearly letter, and drifts back toward 50. After a big drop, gains count half for 4 turns. It is half of your final score (average of the last four turns)."],
   grade:["Grade","A is 80+, B is 65–79, C is 45–64, D is below 45. Three straight quarters in D ends the campaign. Your funding ceiling follows the approval score itself, not the grade."],
-  ceiling:["Funding ceiling","The most capex investors will fund each turn. It slides with your approval: nothing at 35 or below, $600M at 45, $1.15B at 65, $1.32B at 80 and $1.4B at 100. Your share price then moves it: half of the share price's change over the last year, capped at 10% either way. Ordering more than this drains your cash reserve and costs −4 approval."],
+  ceiling:["Funding ceiling","The most capex investors will fund each turn. It slides with your approval: nothing at 35 or below, $600M at 45, $1.15B at 65, $1.32B at 80 and $1.4B at 100. Your share price then moves it: half of the share price's change over the last year, capped at 10% either way. Ordering more than this drains your cash reserve and costs −4 approval. A prepayment signed this quarter lifts it by the advance, for this quarter only."],
   progress:["Net crude exported","Your running total of net crude exported, against the 1,900 MMbbl target. It is the export half of your score."],
   score:["Score","Half is your net crude exported against 1,900 MMbbl; half is your average investor approval over the last four turns. 80 wins; 92 is a distinction."],
   map:["The network map","Crude flows left to right: three fields, then the upgrader or blending station, then the pipeline, terminal and tankers. The bottom row is gas and power: gas supply, the gas plant, Central Paují's power, the towns and gas sales. Line thickness shows volume. Tap any box to see what you can build there."],
@@ -3349,7 +3500,10 @@ const TIPS = {
   gasplant:["Gas plant","Processes all gas before it can be burned or sold. Gas beyond its capacity is flared."],
   gassales:["Gas sales","After your turbines and the towns, gas goes to the Corales export pipeline if built ($8/Mcf, up to 150 MMcfd), then to home industry at a regulated $2.5/Mcf. Home demand grows 8 MMcfd a year."],
   flaring:["Flaring","Burning gas you cannot use or sell. It costs $1/Mcf, and investors dislike it: −1 approval at 15 MMcfd or more, −2 at 40 or more."],
-  window:["Recovery window","After a drop of 4 or more approval points, investors are slow to forgive: gains count half for 4 turns."]
+  window:["Recovery window","After a drop of 4 or more approval points, investors are slow to forgive: gains count half for 4 turns."],
+  prepay:["Prepayment deals","A trading house pays you cash now for crude you deliver later. The advance values the barrels at today's grade price less a financing discount (10 to 16%, more when approval is in grade D). It arrives at the end of the quarter you sign and first covers capex above your funding ceiling that quarter, without the approval penalty; the rest goes to cash. The barrels come out of your tanker exports of that grade in equal quarterly instalments (you can catch up if you fall behind, but not deliver ahead): they are booked as sales but bring in no cash, so later operating cash flow is lower. If prices rise you hand over barrels worth more than you were paid. Miss the due turn and you repay the undelivered share of the advance plus 15%, and lose 6 approval; cancelling early repays it plus 10% (free in the quarter you sign). One prepayment at a time, counted among your three contracts."],
+  xproutes:["Pipeline export routes","Three pipelines can carry crude out of the processing complex without the main export pipeline, the terminal or tankers. They open in stages: a line to a partner refinery (Year 2), a branch to Puerto Jaspe where buyers lift on their own ships (Year 4), and a cross-border line (Year 6). Each sells for less than a ship-delivered barrel: the partner refinery pays Atlantic Light less a flat $8 for any crude, the other two pay the grade price less a tariff ($2.50 and $4). Each is take-or-pay: you nominate a share of its capacity, and anything below its floor (75%, 60% or 80% of capacity) is billed per barrel, whether you chose to send less or simply did not have the crude. A route can be cut or discounted for a few quarters by an outage, a border closure or sanctions; take-or-pay is waived while it is cut. Route barrels count as exports but not toward tanker cargo contracts."],
+  exports:["Gross and net exports","Gross exports are every barrel loaded onto ships (or sent down an export pipeline) in the quarter. To get there, start from what the wells produce, take away what was shed for lack of power, choked by full gathering lines, left unprocessed because the upgrader and blending were full, lost as upgrading shrink, sent to the refineries, held back by a full pipeline or terminal, or put into the tanks; add the naphtha diluent blended in and anything drawn from the tanks. Net crude is gross exports less that diluent, because you buy it rather than produce it. Net output adds the refined fuels you sell (less their diluent) and is what investors judge against guidance. The export target counts net output plus LNG in barrels of oil equivalent."]
 };
 // v61 Spanish tooltips (Venezuelan / Faja terminology). Units (kb/d, MMbbl, MMcfd, Mcf) match the in-game labels.
 const TIPS_ES = {
@@ -3385,7 +3539,7 @@ const TIPS_ES = {
   guidance:["Guía","Tu promesa pública anual: crudo neto promedio en kb/d y capex por trimestre (la cifra de capex también es tu presupuesto). Fijas ambos en el Q1, y no puedes prometer menos crudo que el promedio del año pasado. Los inversionistas juzgan la producción por el promedio acumulado cada trimestre. En el Q3 puedes revisar una vez: un recorte cuesta 2 de aprobación de inmediato pero es más barato que un incumplimiento; un alza de capex cuesta 1. A fin de año una tarjeta de resultados suma aprobación: cumplir la producción gana +2 (+3 si la subiste, +1 si la superas por 10% o más, lo que parece guía conservadora), un año limpio con capex en guía +1 más, un incumplimiento por debajo de 93% cuesta 3, y capex más de 10% sobre la guía cuesta 1. Los analistas siguen el historial como credibilidad de la guía."],
   approval:["Aprobación de inversionistas","Una medida de 0–100 de qué tan contentos están los inversionistas. Se mueve con la guía, el margen de caja, los contratos y la carta anual, y tiende a volver hacia 50. Tras una caída grande, las ganancias cuentan la mitad por 4 turnos. Es la mitad de tu puntaje final (promedio de los últimos cuatro turnos)."],
   grade:["Grado","A es 80+, B es 65–79, C es 45–64, D es menos de 45. Tres trimestres seguidos en D terminan la campaña. Tu techo de financiamiento sigue al puntaje de aprobación en sí, no al grado."],
-  ceiling:["Techo de financiamiento","El máximo de capex que los inversionistas financiarán cada turno. Se desliza con tu aprobación: nada en 35 o menos, $600M en 45, $1.15B en 65, $1.32B en 80 y $1.4B en 100. Tu precio de la acción luego lo mueve: la mitad del cambio del precio de la acción en el último año, limitado a 10% en cualquier sentido. Ordenar más de esto drena tu reserva de efectivo y cuesta −4 de aprobación."],
+  ceiling:["Techo de financiamiento","El máximo de capex que los inversionistas financiarán cada turno. Se desliza con tu aprobación: nada en 35 o menos, $600M en 45, $1.15B en 65, $1.32B en 80 y $1.4B en 100. Tu precio de la acción luego lo mueve: la mitad del cambio del precio de la acción en el último año, limitado a 10% en cualquier sentido. Ordenar más de esto drena tu reserva de efectivo y cuesta −4 de aprobación. Un prepago firmado este trimestre lo sube en el monto del anticipo, solo por este trimestre."],
   progress:["Crudo neto exportado","Tu total acumulado de crudo neto exportado, frente a la meta de 1,900 MMbbl. Es la mitad de exportación de tu puntaje."],
   score:["Puntaje","La mitad es tu crudo neto exportado frente a 1,900 MMbbl; la otra mitad es tu aprobación promedio de inversionistas en los últimos cuatro turnos. 80 gana; 92 es distinción."],
   map:["El mapa de la red","El crudo fluye de izquierda a derecha: tres campos, luego el mejorador o la estación de mezcla, luego el oleoducto, la terminal y los buques. La fila inferior es gas y energía: suministro de gas, la planta de gas, la energía de Central Paují, los pueblos y las ventas de gas. El grosor de la línea muestra el volumen. Toca cualquier recuadro para ver qué puedes construir ahí."],
@@ -3444,7 +3598,10 @@ const TIPS_ES = {
   gasplant:["Planta de gas","Procesa todo el gas antes de que pueda quemarse o venderse. El gas por encima de su capacidad se quema en mechurrio."],
   gassales:["Ventas de gas","Después de tus turbinas y los pueblos, el gas va al gasoducto de exportación de Corales si está construido ($8/Mcf, hasta 150 MMcfd), luego a la industria nacional a un regulado $2.5/Mcf. La demanda nacional crece 8 MMcfd al año."],
   flaring:["Quema (mechurrio)","Quemar gas que no puedes usar ni vender. Cuesta $1/Mcf, y a los inversionistas les disgusta: −1 de aprobación en 15 MMcfd o más, −2 en 40 o más."],
-  window:["Ventana de recuperación","Tras una caída de 4 o más puntos de aprobación, los inversionistas tardan en perdonar: las ganancias cuentan la mitad por 4 turnos."]
+  window:["Ventana de recuperación","Tras una caída de 4 o más puntos de aprobación, los inversionistas tardan en perdonar: las ganancias cuentan la mitad por 4 turnos."],
+  prepay:["Acuerdos de prepago","Una casa comercial te paga hoy en efectivo por crudo que entregas después. El anticipo valora los barriles al precio de hoy del grado menos un descuento financiero (10 a 16%, más si la aprobación está en grado D). Llega al cerrar el trimestre en que firmas y cubre primero el capex por encima de tu techo de financiamiento ese trimestre, sin la penalización de aprobación; el resto va a caja. Los barriles salen de tus exportaciones por buque de ese grado en cuotas trimestrales iguales (puedes ponerte al día si te atrasas, pero no adelantarte): se registran como venta pero no traen efectivo, así que el flujo de caja operativo posterior es menor. Si el precio sube, entregas barriles que valen más de lo que te pagaron. Si no cumples a tiempo devuelves la parte no entregada del anticipo más 15% y pierdes 6 de aprobación; cancelar antes cuesta esa parte más 10% (gratis en el trimestre en que firmas). Un prepago a la vez, contado dentro de tus tres contratos."],
+  xproutes:["Rutas de exportación por oleoducto","Tres oleoductos pueden sacar crudo del complejo de procesamiento sin pasar por el oleoducto principal de exportación, la terminal ni los tanqueros. Se abren por etapas: una línea a una refinería socia (año 2), un ramal a Puerto Jaspe donde los compradores cargan en sus propios buques (año 4) y un oleoducto fronterizo (año 6). Cada uno paga menos que un barril entregado por buque: la refinería socia paga Atlantic Light menos $8 fijos por cualquier crudo, y los otros dos pagan el precio del grado menos una tarifa ($2.50 y $4). Todos son take-or-pay: nominas una parte de su capacidad, y lo que quede bajo su piso (75%, 60% u 80% de la capacidad) se cobra por barril, ya sea porque decidiste enviar menos o porque no tenías el crudo. Una ruta puede cortarse o descontarse por algunos trimestres por una parada, un cierre de frontera o sanciones; el take-or-pay se exime mientras está cortada. Los barriles por ruta cuentan como exportaciones, pero no para los contratos de cargamentos por tanquero."],
+  exports:["Exportaciones brutas y netas","Las exportaciones brutas son todos los barriles cargados en buques (o enviados por un oleoducto de exportación) en el trimestre. Para llegar a ellas, parte de lo que producen los pozos y resta lo deslastrado por falta de energía, lo recortado por líneas de recolección llenas, lo que quedó sin procesar porque el mejorador y la mezcla estaban llenos, la merma del mejorador, lo enviado a las refinerías, lo retenido por un oleoducto o una terminal llenos, o lo que entró a los tanques; suma el diluente (nafta) mezclado y lo que salió de los tanques. El crudo neto son las exportaciones brutas menos ese diluente, porque lo compras en vez de producirlo. La producción neta suma los combustibles refinados que vendes (menos su diluente) y es lo que los inversionistas comparan con la guía. La meta de exportación cuenta la producción neta más el GNL en barriles equivalentes de petróleo."]
 };
 const TIP = k => (LANG==="es" && TIPS_ES[k]) ? TIPS_ES[k] : (TIPS[k] || ["",""]);
 const tip = k => `<button class="qm" data-tip="${k}" aria-label="${LANG==="es"?"¿Qué es":"What is"} ${esc(TIP(k)[0])}?">?</button>`;
@@ -3603,30 +3760,108 @@ function finTile(label, unit, a, b, t, sub){
 // v53: crude storage, now and through the rest of the year. Refined products and gas have no stockpile mechanic
 // (they're matched to demand each quarter), so this tab is crude-only for now.
 function finStockHTML(D){
+  if ((UI.stockView||"walk")==="walk") return `<div class="fpnl walk">${exportWalkHTML(D)}</div>`;
   const cap = S.storageCap, st = S.stored, pct = cap>0 ? st/cap : 0;
-  const net = flows(taOrdered()).net, days = net>0.5 ? st*1000/net : null;
-  const status = pct>=.92 ? {cls:"bad", t:"Tanks nearly full", s:"Little room left to absorb a shipping delay before crude is shut in."}
-    : pct<=.08 ? {cls:"bad", t:"Tanks nearly empty", s:"Little buffer left if exports slip behind production."}
-    : pct>=.7 ? {cls:"good", t:"Comfortable buffer", s:"Healthy room on both sides."}
-    : {cls:"", t:"Normal range", s:"Healthy room on both sides."};
+  const net = flows(taOrdered()).net, days = net>0.5 ? st*1000/net : null, es = LANG==="es";
+  const status = pct>=.92 ? {cls:"bad", t:es?"Tanques casi llenos":"Tanks nearly full", s:es?"Poco espacio para absorber un retraso de embarques antes de cerrar crudo.":"Little room left to absorb a shipping delay before crude is shut in."}
+    : pct<=.08 ? {cls:"bad", t:es?"Tanques casi vacíos":"Tanks nearly empty", s:es?"Poco margen si las exportaciones se quedan atrás de la producción.":"Little buffer left if exports slip behind production."}
+    : pct>=.7 ? {cls:"good", t:es?"Margen cómodo":"Comfortable buffer", s:es?"Espacio sano en ambos sentidos.":"Healthy room on both sides."}
+    : {cls:"", t:es?"Rango normal":"Normal range", s:es?"Espacio sano en ambos sentidos.":"Healthy room on both sides."};
   const tile = (l,v,sub,cls="") => `<div class="ftile"><div class="l">${l}</div><div class="v num ${cls}">${v}</div>${sub?`<div class="s">${sub}</div>`:""}</div>`;
   const tiles = `<div class="ftiles">
-    ${tile("Crude in storage", `${f1(st)} <small>of ${f0(cap)} MMbbl</small>`, `${f0(pct*100)}% full`, pct>=.92||pct<=.08?"fb":"")}
-    ${tile("Days of cover", days==null?"—":`${f0(days)} <small>days</small>`, "At this quarter's net crude rate")}
-    ${tile("Status", status.t, status.s, status.cls==="bad"?"fb":status.cls==="good"?"fg":"")}
+    ${tile(es?"Crudo almacenado":"Crude in storage", `${f1(st)} <small>${es?"de":"of"} ${f0(cap)} MMbbl</small>`, `${f0(pct*100)}% ${es?"lleno":"full"}`, pct>=.92||pct<=.08?"fb":"")}
+    ${tile(es?"Días de cobertura":"Days of cover", days==null?"—":`${f0(days)} <small>${es?"días":"days"}</small>`, es?"Al ritmo de crudo neto de este trimestre":"At this quarter's net crude rate")}
+    ${tile(es?"Estado":"Status", status.t, status.s, status.cls==="bad"?"fb":status.cls==="good"?"fg":"")}
   </div>`;
   const rows = D.fy.map((r,i)=>{ const q=i+1;
     if (!r) return `<tr><td>Q${q}</td><td colspan="3" class="muted num">—</td></tr>`;
     const isAct = !!D.act.find(x=>x.q===q), capv = r.storageCap!=null ? r.storageCap : cap;
     const pctv = r.stored!=null && capv>0 ? r.stored/capv : null, ovf = r.overflow||0;
-    return `<tr${isAct?"":' class="bud"'}><td>Q${q}${isAct?"":` <span class="muted">(outlook)</span>`}</td>
+    return `<tr${isAct?"":' class="bud"'}><td>Q${q}${isAct?"":`${es?"<br>":" "}<span class="muted">(${es?"perspectiva":"outlook"})</span>`}</td>
       <td class="r num">${r.stored!=null?f1(r.stored):"—"}</td>
       <td class="r num">${pctv!=null?f0(pctv*100)+"%":"—"}</td>
-      <td class="r num ${ovf>.5?"bad":""}">${ovf>.5?f1(ovf)+" lost":"—"}</td></tr>`; }).join("");
+      <td class="r num ${ovf>.5?"bad":""}">${ovf>.5?f1(ovf)+(es?"":" lost"):"—"}</td></tr>`; }).join("");
   const missing = D.act.some(r=>r.stored==null);
   return `<div class="fpnl">${tiles}
-    <div class="tblwrap"><table class="t fin-t"><thead><tr><th>Year ${D.y}</th><th class="r">Stored</th><th class="r">% full</th><th class="r">Overflow</th></tr></thead><tbody>${rows}</tbody></table></div>
-    <p class="note">MMbbl of crude in tanks only. Gasoline, diesel, jet, fuel oil and gas are matched to demand each quarter and aren’t stockpiled here yet.${missing?" Earlier quarters predate inventory tracking and show as —.":""}</p></div>`;
+    <div class="tblwrap"><table class="t fin-t"><thead><tr><th>${es?"Año":"Year"} ${D.y}</th><th class="r">${es?"Tanques":"Stored"}</th><th class="r">${es?"% lleno":"% full"}</th><th class="r">${es?"Perdido":"Overflow"}</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="note">${es?"MMbbl de crudo solo en tanques. La gasolina, el diésel, el combustible de aviación, el fuel oil y el gas se igualan a la demanda cada trimestre y aún no se almacenan aquí.":"MMbbl of crude in tanks only. Gasoline, diesel, jet, fuel oil and gas are matched to demand each quarter and aren’t stockpiled here yet."}${missing?(es?" Los trimestres anteriores son previos al registro de inventarios y se muestran como —.":" Earlier quarters predate inventory tracking and show as —."):""}</p>
+    </div>`;
+}
+// v66: a one-word label for what held exports back in a quarter (the table's last row)
+function exportNeckShort(w, es){
+  if (!w) return "—";
+  const c = [["shed",w.shed],["choke",w.choke],["unproc",w.unproc],["pipe",w.pipe],["ovf",w.ovf]].sort((a,b)=>b[1]-a[1])[0];
+  if (!c || c[1] < 0.5) return es ? "Nada" : "Nothing";
+  if (c[0]==="shed") return es ? "Energía" : "Power";
+  if (c[0]==="choke") return es ? "Recolección" : "Gathering";
+  if (c[0]==="unproc") return w.unprocWhy==="dil" ? (es ? "Diluente" : "Diluent") : (es ? "Mejorador" : "Upgrader");
+  if (c[0]==="pipe") return es ? "Oleoducto" : "Pipeline";
+  if (w.ovfWhy==="wx") return `${es?"Clima":"Weather"} ${f0(w.wxd)}${es?" d":"d"}`;
+  if (w.ovfWhy==="ships") return es ? "Tanqueros" : "Tankers";
+  return "Terminal";
+}
+// v66: what held exports back in one quarter, in plain language, from the walk-through's biggest loss
+function exportNeckText(w, es){
+  if (!w) return null;
+  const c = [["shed",w.shed],["choke",w.choke],["unproc",w.unproc],["pipe",w.pipe],["ovf",w.ovf]].sort((a,b)=>b[1]-a[1])[0];
+  if (!c || c[1] < 0.5) return es ? "Nada frenó las exportaciones: todo barril producido llegó a un comprador." : "Nothing held exports back: every barrel produced reached a buyer.";
+  const v = f0(c[1]);
+  if (c[0]==="shed") return es ? `Faltó energía: se deslastraron ${v} kb/d de producción. Más turbinas o plantas diésel lo resuelven.` : `Power ran short: ${v} kb/d of output was shed. More turbines or diesel sets fix this.`;
+  if (c[0]==="choke") return es ? `Las líneas de recolección estaban llenas: ${v} kb/d se recortaron en los pozos. Amplía las líneas de recolección.` : `Gathering lines were full: ${v} kb/d was choked back at the wells. Expand the gathering lines.`;
+  if (c[0]==="unproc") return w.unprocWhy==="dil"
+    ? (es ? `Faltó diluente, así que la mezcla no pudo tomar el crudo que dejó el mejorador: ${v} kb/d cerrados. Firma más contratos de diluente.` : `Diluent ran short, so blending could not take the crude the upgrader left: ${v} kb/d shut in. Sign more diluent contracts.`)
+    : (es ? `El mejorador y la estación de mezcla estaban llenos: ${v} kb/d cerrados. Amplía la mezcla o recupera el mejorador.` : `The upgrader and blending station were both full: ${v} kb/d shut in. Expand blending or restore the upgrader.`);
+  if (c[0]==="pipe") return es ? `El oleoducto de exportación estaba lleno: ${v} kb/d no llegaron a la costa. Construye un lazo del oleoducto.` : `The export pipeline was full: ${v} kb/d could not reach the coast. Loop the pipeline.`;
+  if (w.ovfWhy==="wx") return es ? `El clima cerró la terminal ${f0(w.wxd)} días y los tanques se llenaron: ${v} kb/d cerrados. Más almacenamiento amortigua los cierres.` : `Weather closed the terminal for ${f0(w.wxd)} days and the tanks filled: ${v} kb/d shut in. More storage rides out closures.`;
+  if (w.ovfWhy==="ships") return es ? `Faltaron tanqueros: ${v} kb/d se acumularon en tanques llenos. Compra o contrata a plazo más tanqueros.` : `Not enough tankers: ${v} kb/d backed up into full tanks. Own or time-charter more crude tankers.`;
+  return es ? `La terminal y los tanques estaban llenos: ${v} kb/d perdidos. Agrega atraques o almacenamiento.` : `The terminal and tanks were full: ${v} kb/d lost. Add berths or storage.`;
+}
+// v66: the export walk-through — wellhead to net output, one column per quarter of the selected year (actuals, then the committed outlook)
+function exportWalkHTML(D){
+  const es = LANG==="es", W = D.fy.map(r => r && r.wk ? r.wk : null);
+  if (!W.some(Boolean)) return "";
+  const isAct = q => !!D.act.find(x=>x.q===q);
+  // [key, English, Spanish, sign (0 level, −1 takes away, +1 adds), kind]
+  const R = [
+    ["well","Wellhead output","Producción en cabezal",0,"lvl"],
+    ["shed","Power shed","Deslastre por energía",-1,"opt"],
+    ["choke","Gathering lines full","Recolección llena",-1,"opt"],
+    ["unproc","Upgrader and blending full","Mejorador y mezcla llenos",-1,"opt"],
+    ["shrink","Upgrading shrink","Merma del mejorador",-1,"opt"],
+    ["dil","Diluent blended in","Diluente mezclado",1,"opt"],
+    ["refin","Sent to refineries","Enviado a refinerías",-1,"opt"],
+    ["pipe","Pipeline full","Oleoducto lleno",-1,"opt"],
+    ["ovf","Terminal, ships, tanks full","Terminal, buques, tanques",-1,"opt"],
+    ["stock","Into (−) or from (+) tanks","A (−) o desde (+) tanques",-1,"opt"],
+    ["dom","Home market (event)","Mercado interno (evento)",-1,"opt"],
+    ["gross","Gross exports","Exportaciones brutas",0,"tot"],
+    ["xp","of which by pipeline routes","de ello, por oleoducto",0,"opt"],
+    ["expDil","Diluent in exports","Diluente exportado",-1,"opt"],
+    ["crudeNet","Net crude exported","Crudo neto exportado",0,"tot"],
+    ["dsNet","Refined fuels, net","Combustibles refinados, neto",1,"opt"],
+    ["net","Net output (guidance)","Producción neta (guía)",0,"tot"],
+    ["lng","LNG in boe (target only)","GNL en bep (solo meta)",1,"opt"]];
+  const hasDs = W.some(w => w && Math.abs(w.dsNet||0) >= 0.5);
+  const val = (w, key, sign) => { if (!w || w[key]==null) return null; const v = w[key]; return sign ? sign*v : v; };
+  const fmt = (v, sign) => v==null ? "—" : (sign && Math.abs(v) < 0.5) ? "—" : sign ? `${v<0?"−":"+"}${f0(Math.abs(v))}` : f0(v);
+  const rows = R.filter(([k,,,s,kind]) => {
+    if (k==="net" && !hasDs) return false;
+    if (kind!=="opt") return true;
+    return W.some(w => { const v = val(w,k,s); return v!=null && Math.abs(v) >= 0.5; });
+  }).map(([k,en,esL,s,kind]) => {
+    const tot = kind==="tot", st = tot ? ' style="font-weight:600;border-top:1px solid var(--line)"' : "";
+    return `<tr${st}><td>${es?esL:en}</td>${[1,2,3,4].map(q=>`<td class="r num${isAct(q)?"":" muted"}">${fmt(val(W[q-1],k,s), s)}</td>`).join("")}</tr>`;
+  }).join("");
+  const held = `<tr><td>${es?"Lo que frenó":"Held back by"}</td>${[1,2,3,4].map(q=>`<td class="r${isAct(q)?"":" muted"}" style="font-size:12px">${W[q-1]?exportNeckShort(W[q-1], es):"—"}</td>`).join("")}</tr>`;
+  const lastA = D.act.filter(r=>r.wk).slice(-1)[0];
+  const anyOut = [1,2,3,4].some(q => !isAct(q) && W[q-1]);
+  const foot = es
+    ? `Promedios trimestrales en kb/d; cada línea es lo que ese paso sumó o restó.${anyOut?" En gris, la perspectiva comprometida.":""} La producción neta se compara con la guía; la meta de exportación suma además el GNL.`
+    : `Quarter averages in kb/d; each line is what that step added or took away.${anyOut?" Grey is the committed outlook.":""} Net output is judged against guidance; the export target also counts LNG.`;
+  return `<h4 style="margin:2px 0 6px;display:flex;align-items:center;gap:6px">${es?"Cómo se calculan las exportaciones":"How exports are worked out"} ${tip("exports")}</h4>
+    ${lastA ? `<p style="margin:0 0 6px"><b>Q${lastA.q}:</b> ${exportNeckText(lastA.wk, es)}</p>` : ""}
+    <div class="tblwrap"><table class="t fin-t"><thead><tr><th>${es?"Año":"Year"} ${D.y}</th>${[1,2,3,4].map(q=>`<th class="r${isAct(q)?"":" muted"}">Q${q}</th>`).join("")}</tr></thead><tbody>${rows}${held}</tbody></table></div>
+    <p class="note" style="margin-top:4px">${foot}</p>`;
 }
 // v60: remaining-reserves estimate per oilfield, for the Finance view. Display only — fields decline exactly
 // as before; this just surfaces how much crude is left in the ground at today's decline, with no new drilling.
@@ -3705,7 +3940,7 @@ function finTargets(cy){
   const gr = ytd!=null && S.guidance>0 ? ytd/S.guidance : null;
   const left = Math.max(0, CFG.turns-(S.turn-1)), lastNet = S.hist.length ? S.hist[S.hist.length-1].net : 0;
   const proj = S.cumNet + lastNet*CFG.days/1000*left, pr = proj/CFG.target;
-  const cq = capexOrders(), cn = ceilingNow();
+  const cq = capexOrders(), cn = ceilEff();
   const g = gradeOf(S.approval);
   return `<div class="ftargets"><h3>Investor targets · Year ${cy}</h3>
     <div class="trow"><span>Production guidance</span><span class="num">${ytd==null?"Q1 not closed yet":`${f0(ytd)} vs ${f0(S.guidance)} kb/d`}</span>${gr==null?"":pill(gr>=.95, gr>=.85, gr>=.95?"On track":gr>=.85?"At risk":"Off track")}</div>
@@ -3933,7 +4168,7 @@ function finCardHTML(F){
   const fsec = (UI.fs&&UI.fs.fin) || "budget";
   const SECS = [["budget","Budget and outlook"],["stmt","Statement"],["ana","Charts and analysis"],["stock","Inventories"],["reserves","Reserves"],["inv","Investors"],["tax","Tax"]];
   const needY = ["budget","stmt","ana","stock"].includes(fsec);
-  const bar = `<div class="finbar"><div class="subtabs fsecs" role="tablist">${SECS.map(([k,l])=>`<button class="chip" role="tab" aria-pressed="${fsec===k}" data-fsec="fin:${k}">${TR("fin."+k)}</button>`).join("")}</div>${needY?`<div class="seg ychips">${ychips}</div>`:""}${fsec==="stmt"?ctog:""}<button class="btn ghost sm finclose" data-finov="0">${TR("fin.close")} ✕</button></div>`;
+  const bar = `<div class="finbar"><div class="subtabs fsecs" role="tablist">${SECS.map(([k,l])=>`<button class="chip" role="tab" aria-pressed="${fsec===k}" data-fsec="fin:${k}">${TR("fin."+k)}</button>`).join("")}</div>${needY?`<div class="seg ychips">${ychips}</div>`:""}${fsec==="stmt"?ctog:""}${fsec==="stock"?`<div class="seg stockseg" role="group" aria-label="${TR("fin.stock")}">${[["walk","inv.walk"],["tanks","inv.tanks"]].map(([k,lk])=>`<button class="chip" aria-pressed="${(UI.stockView||"walk")===k}" data-stockv="${k}">${TR(lk)}</button>`).join("")}</div>`:""}<button class="btn ghost sm finclose" data-finov="0">${TR("fin.close")} ✕</button></div>`;
   const content = fsec==="budget" ? `${banner?`<div class="fbud">${banner}</div>`:""}<div class="fduo fout">${finTargets(cy)}${finRolling()}</div>`
     : fsec==="stmt" ? table
     : fsec==="ana" ? finStep2(D, `<div class="fcol">${legend}${charts}</div>`)
@@ -4556,7 +4791,7 @@ function topHTML(F){
     ${kp("drop","Net crude","net",`${f0(F.net)} kb/d`, S.guidance>0?`${f0(F.net/S.guidance*100)}% of guidance`:"")}
     ${kp("target",`Guidance Y${y}`,"guidance",`${f0(S.guidance)} kb/d`, gy==null?"Year to date: —":`Year to date ${f0(gy*100)}%`, gy!=null&&gy<.95?"warnk":"")}
     ${kp("gauge","Approval","approval",`${f1(S.approval)} <span class="gradechip g${g}">${g}</span> <span class="muted">${arrow}</span>`, (S.last?`Last turn ${sgn(S.last.after-S.last.before)}`:"")+(CFG.rescue.on&&CFG.rescue.max-(S.resN||0)>0&&S.dStreak>0?` · ${CFG.rescue.max-(S.resN||0)} rescue${CFG.rescue.max-(S.resN||0)>1?"s":""} left`:""))}
-    ${kp("coins","Ceiling","ceiling",money(ceilingNow()), `${money(capexOrders())} queued${anCeilMult()!==1?` · ×${anCeilMult().toFixed(2)}`:""}`)}
+    ${kp("coins","Ceiling","ceiling",money(ceilEff()), `${money(capexOrders())} queued${advPending()>0.5?` · +${money(advPending())} ${LANG==="es"?"anticipo":"advance"}`:""}${anCeilMult()!==1?` · ×${anCeilMult().toFixed(2)}`:""}`)}
     ${kp("bank","Cash","reserve",money(S.cash), S.last?`Paid out ${money(S.last.distr)}`:"No payout yet")}
   </div>${fbox}${hbox}${hctl}</header>`;
 }
@@ -5008,11 +5243,11 @@ function railInner(F, opt){
   const fac = facShown().map(f=>{ const c = condEff(f), col = c>=70?"var(--good)":c>=45?"var(--amber)":"var(--bad)";
     const _a = accDrop(f);
     return `<div class="rf"${_a?` title="Incident: −${_a} until it clears"`:""}><span>${_a?"⚠ ":""}${({upgrader:"Upgrader",power:"Turbines",pipe:"Pipeline",terminal:"Terminal",blend:"Blending",gasplant:"Gas plant"})[f]||FAC[f].name}</span><div class="rbar"><i style="width:${c}%;background:${col}"></i></div><b class="num" style="color:${col}">${f0(c)}%${tripped(f)?"⚠":""}</b></div>`; }).join("");
-  const W = warnList(F, capexOrders(), ceilingNow());
+  const W = warnList(F, capexOrders(), ceilEff());
   const warns = W.length ? `<div class="rwarn">${W.map(x=>`<div class="warn ${x.bad?"bad":"amb"}">${ic("alert",14)}<span>${x.t}</span></div>`).join("")}</div>` : `<p class="note" style="margin:0">No warnings for this turn.</p>`;
   const gdTop = opt.pop && gdPending();
   return `${opt.cap?`<div class="rsec rcap budget">${capHTML()}</div>`:""}${gdTop?gdBlockHTML():""}<div class="rsec"><h3>Barrel flow <span class="u">kb/d</span></h3>
-      ${row("XH produced", f0(F.xh))}${row("Exports (gross)", f0(F.exported))}${F.ds?row("Refined", f0(F.ds.domFeed+F.ds.expFeed)):""}${F.ds&&dsTier("dom")?row("Home fuel", `${f0(F.ds.domSold)} / ${f0(F.ds.dem)}`, F.ds.shortV>CFG.ds.short*F.ds.dem?"bad":""):""}${row("Net crude", f0(F.net))}${row("Lost (bottleneck)", f0(F.lost), F.lost>0.5?"bad":"")}</div>
+      ${row("XH produced", f0(F.xh))}${row("Exports (gross)", f0(F.exportedAll ?? F.exported))}${F.xpFlow>0.5?row("by pipeline routes", f0(F.xpFlow)):""}${F.ds?row("Refined", f0(F.ds.domFeed+F.ds.expFeed)):""}${F.ds&&dsTier("dom")?row("Home fuel", `${f0(F.ds.domSold)} / ${f0(F.ds.dem)}`, F.ds.shortV>CFG.ds.short*F.ds.dem?"bad":""):""}${row("Net crude", f0(F.net))}${row("Lost (bottleneck)", f0(F.lost), F.lost>0.5?"bad":"")}</div>
     <div class="rsec"><h3>Power and gas</h3>
       ${row("Power", `${f0(F.demand)} / ${f0(sup)} MW`, F.short>0.5||F.shed>0.5?"bad":"")}<div class="rbar"><i style="width:${ratio}%;background:${F.demand>sup?"var(--bad)":"var(--power)"}"></i></div>
       ${F.shed>0.5||F.upShed>0.5?row("Shed", `${f0(F.shed)} / ${f0(F.upShed)} kb/d`, "bad"):""}
@@ -5091,7 +5326,7 @@ function trendHTML(){
 }
 function railHTML(F){ return `<aside class="rail card" aria-label="Camp status">${railInner(F, {cap:true})}</aside>`; }
 function railStripHTML(F){
-  const W = warnList(F, capexOrders(), ceilingNow()), sup = F.gtCap+F.dsCap;
+  const W = warnList(F, capexOrders(), ceilEff()), sup = F.gtCap+F.dsCap;
   const c = (l,v,cls="",flare=false) => `<span class="rs ${flare?"flare":""}"><i>${l}</i> <b class="num ${cls}">${v}</b></span>`;
   return `<div class="rstrip">${c(TR("rs.net"),f0(F.net))}${c(TR("rs.lost"),f0(F.lost),F.lost>0.5?"bad":"")}${c(TR("rs.power"),`${f0(F.demand)}/${f0(sup)}`,F.short>0.5||F.shed>0.5?"bad":"")}${c(TR("rs.flare"),f0(F.flare),F.flare>=CFG.flareLo?"bad":"",true)}
     <button class="chip" data-status="1" aria-expanded="${!!UI.status}">${TR("rs.status")}${gdPending()?` <span class="badge">!</span>`:W.length?` <span class="badge">${W.length}</span>`:""}</button>
@@ -5217,6 +5452,12 @@ function mapCardHTML(F){
      ${shipOn()&&(shipS().lng||S.projects.some(p=>p.kind==="lngTrain"))?`<g role="img" aria-label="Offshore gas and LNG"><rect x="450" y="104" width="150" height="66" rx="5" fill="var(--panel2)" stroke="var(--line)"/><text class="nm" x="462" y="128">LNG train</text>${icMap("flame",568,112,"var(--gas)")}<text class="vl" x="462" y="146">${shipS().lng?`${f0(F.lngFeed||0)} of ${f0(lngFeedCap())} MMcfd`:`building: ${S.projects.find(p=>p.kind==="lngTrain").left} left`}</text><text class="vl" x="462" y="162" style="fill:var(--amber)">${shipFixed("lng")} carrier${shipFixed("lng")===1?"":"s"}</text></g>`:""}
      <path class="flowpath" d="M525 228 V240" stroke="var(--fg)" stroke-width="${w(F.piped)}" fill="none" opacity=".75"/>
      <path d="M615 240 V96" stroke="var(--fg)" stroke-width="${w(F.exported)}" fill="none" opacity=".75"/>
+     ${xpOn() && XP_IDS.some(id=>xpUnlocked(id)) ? (()=>{ const es = LANG==="es", nOn = XP_IDS.filter(id=>xpState(id)==="online").length, nB = XP_IDS.filter(id=>xpState(id)==="building").length, nNew = XP_IDS.filter(id=>xpUnlocked(id) && xpState(id)==="none" && !xpOrdered(id)).length;
+       const vl = nOn ? `${f0(F.xpFlow||0)} kb/d · ${nOn} ${es?(nOn>1?"líneas":"línea"):(nOn>1?"lines":"line")}` : nB ? (es?"En construcción":"Under construction") : (es?"Nueva ruta disponible":"New route available");
+       return `<g class="${cls("pipe")}" data-node="pipe" data-nsub="pp:rt" role="button" tabindex="0" aria-label="${es?"Rutas por oleoducto":"Pipeline export routes"}">
+       <rect x="450" y="120" width="150" height="44" rx="6" fill="var(--panel2)" stroke="var(--line)" stroke-dasharray="4 3"/>
+       <text class="nm" x="462" y="139">${es?"Rutas por oleoducto":"Pipeline routes"}</text>
+       <text class="vl" x="462" y="156" style="fill:${nOn?"var(--fg)":"var(--amber)"}">${vl}</text></g>`; })() : ""}
      <g class="${cls("pipe")}" data-node="pipe" role="button" tabindex="0" aria-label="Export pipeline">
        <rect x="450" y="182" width="150" height="46" rx="23"/>
        <text class="nm" x="466" y="203">Pipeline</text>${icMap("pipe",568,188,"var(--muted)")}
@@ -5383,7 +5624,7 @@ function renHTML(F){
     </div>`;
 }
 function exploreHTML(rigFree){
-  const e = exS(), X = CFG.ex, ceilLeft = ceilingNow() - capexOrders();
+  const e = exS(), X = CFG.ex, ceilLeft = ceilEff() - capexOrders();
   const st = L => ({open:"Open for licensing", licensed: L.seis?"Surveyed, ready to drill":`Licensed until turn ${L.exp}`, seismic:"Seismic under way", drilling:`Wildcat drilling, ${L.left} turn${L.left>1?"s":""} left`, found:"Discovery", dry:"Dry hole", lapsed:"Licence lapsed"})[L.status] || L.status;
   const card = L => {
     const ord = S.orders.find(o=>o.lead===L.id), a = L.area, odds = exOdds(L);
@@ -5414,6 +5655,51 @@ function act(title, desc, cost, ok, why, data){
   const _t = esc((String(desc).replace(/<[^>]*>/g,"")+(!ok&&why?" "+String(why).replace(/<[^>]*>/g,""):"")).replace(/\s+/g," ").trim());
   return `<div class="act" title="${_t}"><b>${_i?ic(_i,16):""}${title}</b><button class="btn" ${ok?"":"disabled"} ${data}>${cost===null?"Order":money(cost)}</button><span class="d">${desc}${!ok&&why?` <span class="why">${why}</span>`:""}</span></div>`;
 }
+// v67 export pipeline routes, on the export pipeline panel: locked, buildable, under construction or online with a nomination
+function xpDesc(id, es){
+  const Rt = xpR(id), floor = `${f0(Rt.top*100)}%`, pen = `$${Rt.pen}/bbl`, usd = v => Number.isInteger(v) ? `${v}` : v.toFixed(2);
+  const price = Rt.flat!=null
+    ? (es ? `Atlantic Light − $${usd(Rt.flat)} fijo, para cualquier crudo` : `Atlantic Light − $${usd(Rt.flat)} flat, for any crude`)
+    : (es ? `precio del grado menos una tarifa de $${usd(Rt.tariff)}` : `grade price less a $${usd(Rt.tariff)} tariff`);
+  const risk = { partner: es ? "Riesgo bajo: la refinería puede parar por reparaciones." : "Low risk: the refinery can go down for repairs.",
+    port: es ? "Sin tanqueros propios y la mitad de los cierres por clima. Las sanciones a compradores pueden ampliar el descuento." : "No tankers of your own and half the weather closures. Sanctions on buyers can widen the discount.",
+    border: es ? "Sin buques ni clima. Riesgo más alto: cierres de frontera y sanciones comerciales." : "No ships, no weather. Highest risk: border closures and trade sanctions." }[id];
+  return es ? `Hasta ${f0(Rt.cap)} kb/d hacia ${Rt.destEs}, a ${price}. Take-or-pay: ${floor} de la capacidad; el faltante se cobra a ${pen}. ${risk}`
+            : `Up to ${f0(Rt.cap)} kb/d to ${Rt.dest}, at ${price}. Take-or-pay: ${floor} of capacity; any shortfall is billed at ${pen}. ${risk}`;
+}
+// does the Routes tab need the player's attention: a newly opened route, a shortfall billed this quarter, or a disruption
+function xpAlert(F){
+  if (!xpOn()) return false;
+  return XP_IDS.some(id => (xpUnlocked(id) && xpState(id)==="none" && !xpOrdered(id))
+    || (xpState(id)==="online" && (xpDis(id) || (F.XP && F.XP[id] && !F.XP[id].cut && xpR(id).top*xpR(id).cap*F.XP[id].open - F.XP[id].fl > 0.5))));
+}
+function xpPanelHTML(F){
+  if (!xpOn()) return "";
+  xpS(); const es = LANG==="es", em = evMods(), P = price() + (em.price||0) + (S.fwd||0), dA = em.diffAdd||0;
+  const usd = v => Number.isInteger(v) ? `${v}` : v.toFixed(2);
+  const basis = Rt => Rt.flat!=null ? (es ? `AL − $${usd(Rt.flat)} fijo` : `AL − $${usd(Rt.flat)} flat`) : (es ? `grado − tarifa $${usd(Rt.tariff)}` : `grade − $${usd(Rt.tariff)} tariff`);
+  const summ = Rt => `${f0(Rt.cap)} kb/d · ${basis(Rt)} · ${es?"piso":"floor"} ${f0(Rt.top*100)}%`;
+  const rows = XP_IDS.map(id => {
+    const Rt = xpR(id), st = S.xp[id], name = loc(Rt, "short"), title = esc(`${xpName(id)}. ${xpDesc(id, es)}`);
+    if (!xpUnlocked(id)) return `<div class="xpr locked" title="${title}"><div class="xph"><b>${name}</b><span class="muted">${es?"Año":"Year"} ${Rt.unlockY}</span></div><div class="xps">${summ(Rt)}</div></div>`;
+    if (st.st==="none"){
+      if (xpOrdered(id)) return `<div class="xpr" title="${title}"><div class="xph"><b>${name}</b><span class="muted">${es?"Ordenado":"Ordered"}</span></div><div class="xps">${summ(Rt)} · ${es?"empieza al terminar el turno":"starts when you end the turn"}</div></div>`;
+      const cost = ofsCost({type:"xpBuild"}, Rt.cost), blk = ofsBlock("xpBuild");
+      return `<div class="xpr" title="${title}"><div class="xph"><b>${name}</b><button class="btn sm" data-order="xpBuild" data-xp="${id}"${blk?" disabled":""}>${money(cost)}</button></div>
+        <div class="xps">${summ(Rt)} · ${Rt.turns} ${es?"trim., pago por partes":"qtrs, paid as built"}${blk?` · <span class="bad">${blk}</span>`:""}</div></div>`;
+    }
+    if (st.st==="building"){ const pj = S.projects.find(q=>q.kind==="xpBuild" && q.xp===id);
+      return `<div class="xpr" title="${title}"><div class="xph"><b>${name}</b><span class="muted">${es?"En construcción":"Under construction"} · ${pj?pj.left:"?"} ${es?"trim.":"qtrs"}</span></div><div class="xps">${summ(Rt)}</div></div>`; }
+    const x = F.XP && F.XP[id], dis = xpDis(id), pend = st.dis && !dis ? st.dis : null;
+    const fl = x ? x.fl : 0, floor = x && !x.cut ? Rt.top*Rt.cap*x.open : 0, short = Math.max(0, floor - fl);
+    const badge = dis ? `<span class="bad">${dis.kind==="cut" ? (es?"Cortado":"Cut") : `${es?"Sancionado":"Sanctioned"} −$${dis.amt}`} · ${dis.left} ${es?"trim.":"qtr"}</span>`
+      : pend ? `<span class="bad">${pend.kind==="cut" ? (es?"Corte el próximo trim.":"Cut next quarter") : (es?"Sanción el próximo trim.":"Sanctioned next quarter")}</span>` : "";
+    const noms = [0,.5,.75,1].map(v=>`<button aria-pressed="${Math.abs(st.nom-v)<1e-6}" data-xpnom="${id}:${v}">${f0(v*100)}%</button>`).join("");
+    return `<div class="xpr" title="${title}"><div class="xph"><b>${name}</b><div class="toggle xpn" role="group" aria-label="${es?"Nominación":"Nomination"}: ${esc(name)}">${noms}</div></div>
+      <div class="xps">${badge?badge+" · ":""}<span class="num">${f0(fl)}/${f0(Rt.cap)} kb/d</span> · <span class="num">$${f1(xpPrice(id, F, P, dA))}</span> · ${es?"piso":"floor"} <span class="num">${f0(floor)}</span>${short>0.5?` · <span class="bad">${es?"faltan":"short"} ${f0(short)}</span>`:""}</div></div>`;
+  }).join("");
+  return `<div class="xprs">${rows}</div>`;
+}
 function condHTML(f){
   const c=condEff(f), cap=Math.min(1,c/CFG.condFull), col=c>=70?"var(--good)":c>=45?"var(--amber)":"var(--bad)", fac=FAC[f];
   const pOrd = S.orders.some(o=>o.type==="patch"&&o.fac===f), rep = repairing(f), slotFree = slotsMax()-slotsBusy();
@@ -5427,7 +5713,7 @@ function condHTML(f){
   </div>`;
 }
 function nodeGroupOf(id){ return id==="power" ? "power" : id==="crews" ? "crews" : (id==="gather"||id==="reffeed") ? "midstream" : /^(ref|pc)/.test(id) ? "downstream" : ["upgrader","blend","pipe","terminal","gas"].includes(id) ? "midstream" : "upstream"; }
-const PROJ_NAME = {workover:"Workover",repair:"Repair",fieldFac:"Field facilities",blendExp:"Blending expansion",train:"Upgrader train",loop:"Pipeline loop",gatherExp:"Gathering expansion",reffeedExp:"Refinery feed expansion",berth:"Export berth",tank:"Storage tank",turbine:"Gas turbine block",gasPlant:"Gas plant expansion",gasPipe:"Gas export pipeline"};
+const PROJ_NAME = {xpBuild:"Export pipeline route", workover:"Workover",repair:"Repair",fieldFac:"Field facilities",blendExp:"Blending expansion",train:"Upgrader train",loop:"Pipeline loop",gatherExp:"Gathering expansion",reffeedExp:"Refinery feed expansion",berth:"Export berth",tank:"Storage tank",turbine:"Gas turbine block",gasPlant:"Gas plant expansion",gasPipe:"Gas export pipeline"};
 function buildQueueHTML(){
   if (S.turn>CFG.turns || S.over) return "";
   const free = slotsMax()-slotsBusy(), items = S.projects.map(p=>{ const b = p.block && S.blocks.find(x=>x.id===p.block);
@@ -5555,12 +5841,13 @@ function buildHTML(F, grp){
     </div>`;
     h += secTabs("bl",[["st","Status",bA+bB+bC],["ord","Orders",bD]]);
   } else if (NODE==="pipe"){
-    h += `<h3 style="font-size:22px">${ic("pipe",22)}Export pipeline</h3>
-    <div class="stats"><div class="stat"><div class="l">Nameplate</div><div class="v">${f0(S.pipeCap)} kb/d</div></div>
+    h += `<h3 style="font-size:22px">${ic("pipe",22)}Export pipeline${xpOn()?tip("xproutes"):""}</h3>`;
+    const pA = `<div class="stats"><div class="stat"><div class="l">Nameplate</div><div class="v">${f0(S.pipeCap)} kb/d</div></div>
       <div class="stat"><div class="l">Effective now</div><div class="v">${f0(F.pipeCapEff)} kb/d</div></div>
       <div class="stat"><div class="l">Flow this turn</div><div class="v">${f0(F.piped)} kb/d</div></div></div>
     ${condHTML("pipe")}
     <div class="acts">${act("Pipeline loop","+250 kb/d after 4 turns.",COST.loop, slotFree>0, "No construction slot free.", `data-order="loop"`)}</div>`;
+    h += xpOn() ? secTabs("pp", [["st", LANG==="es"?"Estado":"Status", pA], ["rt", LANG==="es"?"Rutas de exportación":"Export routes", xpPanelHTML(F), xpAlert(F)]]) : pA;
   } else if (NODE==="gather"){
     const gBuild = S.projects.filter(p=>p.kind==="gatherExp");
     h += `<h3 style="font-size:22px">${ic("pipe",22)}Gathering lines${tip("gather")}</h3>
@@ -5737,7 +6024,7 @@ function bidBannerHTML(){
 // with a way back. Skippable once the player has seen it enough times.
 function confirmHTML(F){
   const t = Math.min(S.turn, CFG.turns), y = yearOf(t), q = qOf(t);
-  const capex = capexOrders(), ceil = ceilingNow(), over = capex > ceil + 1e-6;
+  const capex = capexOrders(), ceil = ceilEff(), over = capex > ceil + 1e-6;
   const rows = outlookRows(), yrRows = rows.filter(r=>r.year===y);
   const ords = S.orders.map(o=>`<div class="cfr"><span>${esc(orderLabel(o))}</span><b class="num">${(o.pay??o.cost)?money(o.pay??o.cost):"\u2014"}</b></div>`).join("");
   const W = warnList(F, capex, ceil);
@@ -5852,6 +6139,7 @@ function letterHTML(){
   const L = UI.letter; if (!L) return "";
   const act = L.k==="a", c = act ? S.active.find(x=>x.id===L.id) : S.offers.find(x=>x.id===L.id);
   if (!c){ return `<div class="overlay" role="dialog" aria-modal="true"><div class="modal"><p>This contract is no longer available.</p><button class="btn" data-close="1">Close</button></div></div>`; }
+  if (isPP(c)) return ppLetterHTML(c, act, L);
   const dead = act ? c.deadline : S.turn + c.turns - 1, total = c.vol*c.bonus, defPen = .25*c.vol*c.bonus, free = act && c.signed===S.turn, cp = act ? cancelPen(c) : 0;
   const full = S.active.length>=3;
   const term = (l,v)=>`<tr><td>${l}</td><td class="r num">${v}</td></tr>`;
@@ -5868,10 +6156,37 @@ function letterHTML(){
     <div class="lsig"><div><span>${esc(c.buyer)}</span><i></i></div><div><span>Camp operator</span><i>${act?"Signed "+turnLabel(c.signed||S.turn):""}</i></div></div>
     ${foot}</div></div>`;
 }
+// v68 the prepayment agreement: same letter frame, prepayment terms
+function ppLetterHTML(c, act, L){
+  const es = LANG==="es", dead = act ? c.deadline : S.turn + c.turns - 1, free = act && c.signed===S.turn;
+  const otherPP = !act && S.active.some(isPP), full = !act && (S.active.length>=3 || otherPP);
+  const P = price() + (evMods().price||0), pxNow = ppGradePx(c.grade, P, 0), valNow = c.vol*pxNow, effD = valNow>0 ? 1 - c.adv/valNow : 0;
+  const repNow = act ? cancelPen(c) : ppRepay({...c, done:0}, CFG.pp.cancelPen), missNow = ppRepay(act ? c : {...c, done:0}, CFG.pp.missPen);
+  const term = (l,v)=>`<tr><td>${l}</td><td class="r num">${v}</td></tr>`;
+  const T = es ? {adv:"Anticipo", when:"Se paga", whenV:"al cerrar el trimestre en que firmas", vol:"Volumen a entregar", by:"Entrega hasta", worth:"Valor de esos barriles hoy", disc:"Descuento implícito", del:"Entregado", miss:"Si no cumples", missV:`devuelves ${money(missNow)} (parte no entregada + ${f0(CFG.pp.missPen*100)}%) y −6 aprobación`, cancel:"Terminación anticipada", cancelV:free?"Sin costo hasta que cierre el trimestre":`devuelves ${money(repNow)} y −${CANCEL.appr} aprobación`}
+              : {adv:"Advance", when:"Paid", whenV:"at the end of the quarter you sign", vol:"Volume to deliver", by:"Deliver by", worth:"Those barrels at today's price", disc:"Implied discount", del:"Delivered so far", miss:"If you miss the due turn", missV:`repay ${money(missNow)} (the undelivered share + ${f0(CFG.pp.missPen*100)}%) and −6 approval`, cancel:"Early termination", cancelV:free?"No cost until the quarter ends":`repay ${money(repNow)} and −${CANCEL.appr} approval`};
+  const foot = !act ? `<div class="lbtns"><button class="btn ghost" data-close="1">${es?"Ahora no":"Not now"}</button><button class="btn lsign" data-accept="${c.id}" ${full?"disabled":""}>${es?"Firmar y comprometer":"Sign &amp; commit"}</button></div>${full?`<p class="note" style="margin:0">${otherPP?(es?"Ya tienes un prepago activo. Termínalo primero.":"You already hold a prepayment. Finish it first."):(es?"Ya tienes 3 contratos activos.":"You already hold 3 active contracts. Complete or cancel one first.")}</p>`:""}`
+    : L.cancel ? `<div class="lcancel"><b>${es?"¿Cancelar este prepago?":"Cancel this prepayment?"}</b><p style="margin:4px 0 0">${free?(es?"Lo firmaste este trimestre: puedes retirarte <b>sin costo</b>, y el anticipo no se paga.":"You signed it this quarter, so you can withdraw <b>at no cost</b>; the advance is not paid."):(es?`Debes devolver <b class="bad">${money(repNow)}</b> (la parte del anticipo aún no entregada, más ${f0(CFG.pp.cancelPen*100)}%) y <b class="bad">−${CANCEL.appr} aprobación</b>, al final de este turno.`:`You repay <b class="bad">${money(repNow)}</b> (the share of the advance not yet delivered, plus ${f0(CFG.pp.cancelPen*100)}%) and lose <b class="bad">${CANCEL.appr} approval</b>, at the end of this turn.`)}</p></div>
+      <div class="lbtns"><button class="btn ghost" data-cancelback="1">${es?"Mantener":"Keep the deal"}</button><button class="btn danger" data-cancelgo="${c.id}">${es?"Confirmar cancelación":"Confirm cancellation"}</button></div>`
+    : `<div class="lbtns"><button class="btn ghost" data-close="1">${es?"Cerrar":"Close"}</button><button class="btn ghost danger" data-cancelask="1">${es?"Cancelar prepago…":"Cancel prepayment…"}</button></div>`;
+  const body = es
+    ? `<p>${esc(c.buyer)} ofrece pagarte hoy <b>${money(c.adv)}</b> a cambio de <b>${c.vol} MMbbl de ${gradeName(c.grade)}</b> entregados desde tus exportaciones por buque en ${c.turns} cuotas trimestrales iguales de unos ${f1(c.vol/c.turns)} MMbbl, la última hasta el final de <b>${turnLabel(dead)}</b> (turno ${dead}).</p>
+       <p>El anticipo cubre primero el capex por encima de tu techo de financiamiento ese trimestre, sin la penalización de aprobación; lo que sobre va a caja. Los barriles entregados se registran como venta, pero no traen efectivo: ya los pagó el anticipo. Si el precio sube, entregas barriles que valen más; si baja, ganas tú.</p>`
+    : `<p>${esc(c.buyer)} offers to pay you <b>${money(c.adv)}</b> now, against <b>${c.vol} MMbbl of ${gradeName(c.grade)}</b> delivered from your tanker exports in ${c.turns} equal quarterly instalments of about ${f1(c.vol/c.turns)} MMbbl, the last by the end of <b>${turnLabel(dead)}</b> (turn ${dead}).</p>
+       <p>The advance first covers capex above your funding ceiling that quarter, without the approval penalty; anything left goes to cash. Delivered barrels are booked as sales but bring in no cash, because the advance already paid for them. If the price rises you hand over barrels worth more; if it falls, you come out ahead.</p>`;
+  return `<div class="overlay" role="dialog" aria-modal="true" aria-labelledby="lt"><div class="modal letter">
+    <div class="lhead"><div><div class="lbuyer" id="lt">${esc(c.buyer)}</div><div class="note" style="margin:0">${es?"Acuerdo de prepago de crudo":"Crude Prepayment Agreement"} · ref. ${String(c.id).padStart(4,"0")}</div></div><div class="ldate num">${turnLabel(S.turn)}</div></div>
+    <p>${es?"Al operador del campo de la Faja del Orinoco,":"To the operator of the Orinoco Belt camp,"}</p>${body}
+    <table class="t lterms"><tbody>${term(T.adv,`<b class="good">${money(c.adv)}</b>`)}${term(T.when,act&&c.advPaid?(es?"Cobrado":"Received"):T.whenV)}${term(T.vol,`${c.vol} MMbbl ${gradeName(c.grade)}`)}${term(T.by,turnLabel(dead))}${term(T.worth,money(valNow))}${term(T.disc,`${f0(effD*100)}%`)}${act?term(T.del,`${f1(c.done)} of ${c.vol} MMbbl`):""}${term(T.miss,`<span class="bad">${T.missV}</span>`)}${term(T.cancel,T.cancelV)}</tbody></table>
+    <p class="note" style="margin:0">${es?"Términos. Las entregas salen de tus exportaciones por buque del grado indicado, junto con tus otros contratos por orden de vencimiento. Los barriles por oleoducto y el Garza 16 fuera de especificación no cuentan. Solo un prepago a la vez; cuenta dentro de los tres contratos.":"Terms. Deliveries come out of your tanker exports of this grade, alongside your other contracts in order of due date. Pipeline-route barrels and off-spec Garza 16 do not count. One prepayment at a time; it counts toward your three contracts."}${tip("prepay")}</p>
+    <div class="lsig"><div><span>${esc(c.buyer)}</span><i></i></div><div><span>${es?"Operador del campo":"Camp operator"}</span><i>${act?(es?"Firmado ":"Signed ")+turnLabel(c.signed||S.turn):""}</i></div></div>
+    ${foot}</div></div>`;
+}
 function contractsHTML(){
   const k = CFG.days/1000, F = flows(taOrdered());
-  const offers = S.offers.length ? S.offers.map(o=>`<div class="crow"><div class="cmain"><span class="gtag ${o.grade==="G16"?"gG":"gS"}">${gradeName(o.grade)}</span><b>${esc(o.buyer)}</b></div><div class="cdet num">${o.vol} MMbbl · ${o.turns} turns · bonus ${money(o.vol*o.bonus)}</div><button class="btn sm" data-letter="o:${o.id}">Read &amp; sign</button></div>`).join("") : `<p class="note" style="margin:0">No open offers this turn.</p>`;
-  const active = S.active.length ? S.active.map(c=>`<div class="crow act"><div class="cmain"><span class="gtag ${c.grade==="G16"?"gG":"gS"}">${gradeName(c.grade)}</span><b>${esc(c.buyer)}</b></div><div class="cdet num">${f1(c.done)} of ${c.vol} MMbbl · due ${turnLabel(c.deadline)}<div class="bar"><i style="width:${clamp(c.done/c.vol*100,0,100)}%"></i></div></div><button class="btn ghost sm" data-letter="a:${c.id}">Letter</button></div>`).join("") : `<p class="note" style="margin:0">No active contracts.</p>`;
+  const es = LANG==="es", ppTag = `<span class="gtag gP">${es?"Prepago":"Prepayment"}</span>`;
+  const offers = S.offers.length ? S.offers.map(o=>`<div class="crow${isPP(o)?" pp":""}"><div class="cmain">${isPP(o)?ppTag:""}<span class="gtag ${o.grade==="G16"?"gG":"gS"}">${gradeName(o.grade)}</span><b>${esc(o.buyer)}</b></div><div class="cdet num">${isPP(o)?`${es?"anticipo":"advance"} ${money(o.adv)} ${es?"ahora":"now"} · ${o.vol} MMbbl ${es?"en":"over"} ${o.turns} ${es?"turnos":"turns"}`:`${o.vol} MMbbl · ${o.turns} turns · bonus ${money(o.vol*o.bonus)}`}</div><button class="btn sm" data-letter="o:${o.id}">Read &amp; sign</button></div>`).join("") : `<p class="note" style="margin:0">No open offers this turn.</p>`;
+  const active = S.active.length ? S.active.map(c=>`<div class="crow act${isPP(c)?" pp":""}"><div class="cmain">${isPP(c)?ppTag:""}<span class="gtag ${c.grade==="G16"?"gG":"gS"}">${gradeName(c.grade)}</span><b>${esc(c.buyer)}</b></div><div class="cdet num">${f1(c.done)} of ${c.vol} MMbbl · due ${turnLabel(c.deadline)}${isPP(c)?` · ${c.advPaid?(es?"anticipo cobrado":"advance received"):(es?"anticipo al cerrar el trimestre":"advance at quarter end")}`:""}<div class="bar"><i style="width:${clamp(c.done/c.vol*100,0,100)}%"></i></div></div><button class="btn ghost sm" data-letter="a:${c.id}">Letter</button></div>`).join("") : `<p class="note" style="margin:0">No active contracts.</p>`;
   return `<div class="cwrap">${bidBannerHTML()}<h3 class="ch3">Buyer offers${tip("contracts")}</h3>${offers}<h3 class="ch3">Active contracts (${S.active.length}/3)</h3>${active}
   <p class="note cfoot">This turn you ship about ${f1(F.expB*k)} MMbbl of ${S.offSpec?"off-spec blend":"Garza 16"} and ${f1(F.expS*k)} MMbbl of Cardonal 32. Open a letter to sign or cancel.${(S.cancelled||[]).length?` <span class="bad">Pending: ${S.cancelled.map(x=>`${esc(x.buyer)} ${x.pen>0?money(x.pen):"no penalty"}`).join(", ")}.</span>`:""}</p></div>`;
 }
@@ -6033,7 +6348,7 @@ function warnList(F, capex, ceil){
   return W;
 }
 function capHTML(){
-  const capex = capexOrders(), ceil = ceilingNow(), over = capex>ceil;
+  const capex = capexOrders(), ceil = ceilEff(), over = capex>ceil;
   const pct = ceil>0 ? clamp(capex/ceil*100,0,100) : (capex>0?100:0);
   const due = CFG.ofsOn && S.ofs ? S.ofs.due : 0;
   const chips = (due>.5?`<span class="ochip dim">Contractor overruns <b class="num">${money(due)}</b></span>`:"") + S.orders.map(o=>`<span class="ochip"><span>${orderLabel(o)} <b class="num">${(o.pay??o.cost)?money(o.pay??o.cost):""}</b></span><button data-undo="${o.id}" aria-label="Undo ${esc(orderLabel(o))}">×</button></span>`).join("");
@@ -6045,7 +6360,7 @@ function capHTML(){
       ${list?`<details class="ordd"><summary class="note" style="cursor:pointer">Review this turn's orders</summary>${list}</details>`:""}`;
 }
 function endbarHTML(F, wide){
-  const capex = capexOrders(), ceil = ceilingNow(), over = capex>ceil;
+  const capex = capexOrders(), ceil = ceilEff(), over = capex>ceil;
   const pct = ceil>0 ? clamp(capex/ceil*100,0,100) : (capex>0?100:0);
   const W = warnList(F, capex, ceil), mv = UI.mview==="panel" ? "panel" : "map";
   const due = CFG.ofsOn && S.ofs ? S.ofs.due : 0;
@@ -6396,11 +6711,11 @@ function ledgerHTML(){
         ${kv("Power load / generated",`${f0(F.demand)} / ${f0(F.gtGen+F.dsGen)} MW`)}${kv("Shed: field / upgrader",`${f0(F.shed)} / ${f0(F.upShed)} kb/d`, F.shed>0.5||F.upShed>0.5?"bad":"")}
         ${kv("Supplied to towns",f0(F.townMW)+" MW")}</div>`,
     cash: `<div class="lgrp">${H3("Cash ($M)")}
-        ${kv("Crude revenue",money(R.crudeRev))}${R.gasRev>0.5?kv("Gas sales",money(R.gasRev)):""}${R.townRev>0.5?kv("Power sold to towns",money(R.townRev)):""}${R.DS&&R.DS.rev>0.5?kv("Fuel and chemical sales",money(R.DS.rev)):""}${R.SH&&Math.abs(R.SH.rev)>0.5?kv("Shipping netback"+(R.SH.lngRev>0.5?" and LNG":""),money(R.SH.rev),R.SH.rev<0?"bad":""):""}${kv("Contract bonuses",money(R.cbon))}${kv("Lifting cost","−"+money(R.lift))}
+        ${kv("Crude revenue",money(R.crudeRev))}${R.ppW>0.5?kv("Prepaid barrels delivered (no cash)","−"+money(R.ppW)):""}${R.adv>0.5?kv("Prepayment advance received","+"+money(R.adv)):""}${R.XP&&R.XP.rev>0.5?kv(`of which pipeline routes (${f0(R.XP.rows.reduce((a,x)=>a+x.fl,0))} kb/d)`,money(R.XP.rev)):""}${R.gasRev>0.5?kv("Gas sales",money(R.gasRev)):""}${R.townRev>0.5?kv("Power sold to towns",money(R.townRev)):""}${R.DS&&R.DS.rev>0.5?kv("Fuel and chemical sales",money(R.DS.rev)):""}${R.SH&&Math.abs(R.SH.rev)>0.5?kv("Shipping netback"+(R.SH.lngRev>0.5?" and LNG":""),money(R.SH.rev),R.SH.rev<0?"bad":""):""}${kv("Contract bonuses",money(R.cbon))}${kv("Lifting cost","−"+money(R.lift))}
         ${kv("Royalty ("+f0(R.rRate*100)+"%)","−"+money(R.royalty))}${kv("Diluent","−"+money(R.dilc))}${kv("Power and gas costs","−"+money(R.powerCost+R.gasCost))}${R.DS&&R.DS.cost>0.5?kv("Refining and petrochemical costs","−"+money(R.DS.cost)):""}${R.DS&&R.DS.sub>0.5?kv("of which price subsidy and leakage (lost sales)","−"+money(R.DS.sub+R.DS.leak),"bad"):""}${R.SH&&R.SH.lngOpex>0.5?kv("LNG operating costs","−"+money(R.SH.lngOpex)):""}${R.SH&&R.SH.spill>0.5?kv("Tanker spill clean-up","−"+money(R.SH.spill),"bad"):""}${kv("Other opex and rig leases","−"+money(R.other-R.powerCost-R.gasCost-(R.DS?R.DS.cost:0)-(R.SH?R.SH.cost:0)))}
         ${R.training?kv("Crew training","−"+money(R.training)):""}${R.fees?kv("Incentive fees","−"+money(R.fees)):""}${R.evCost?kv("Event costs","−"+money(R.evCost),"bad"):""}${R.claw?kv("Royalty relief clawback","−"+money(R.claw),"bad"):""}${R.maintCost?kv("Maintenance and patches","−"+money(R.maintCost)):""}${R.commitCost?kv("Work commitment penalties","−"+money(R.commitCost),"bad"):""}
         ${kv("Income tax"+(R.credit>0.5?` (after ${money(R.credit)} credit)`:""),"−"+money(R.tax))}
-        ${R.payments?kv("Production bonuses paid","−"+money(R.payments)):""}${R.cpen?kv("Contract penalties","−"+money(R.cpen),"bad"):""}</div>
+        ${R.payments?kv("Production bonuses paid","−"+money(R.payments)):""}${R.cpen?kv(R.XP&&R.XP.pen>0.5?(R.cpen-R.XP.pen>0.5?"Contract and take-or-pay penalties":"Take-or-pay penalties"):"Contract penalties","−"+money(R.cpen),"bad"):""}</div>
       <div class="lgrp">${H3("Result")}${kv("Operating cash flow after tax",money(R.ocf))}${kv("After-tax cash margin",f0(R.opMargin*100)+"%")}
         ${kv("Capex / funding released",`${money(R.capex)} / ${money(R.fund)}`, R.capex>R.fund?"bad":"")}${R.ofs&&R.ofs.ovr>.5?kv("of which contractor overruns",money(R.ofs.ovr),"bad"):""}${R.ofs&&CFG.ofsOn?kv("Service cost index",(R.ofs.sci||1).toFixed(2)):""}${kv("Distributed to investors",money(R.distr))}${kv("Cash on hand",money(S.cash))}</div>`,
     appr: `<div class="lgrp"><h3>Investor approval ${f1(R.before)} → ${f1(R.after)} (${gradeOf(R.after)})</h3>
@@ -6446,7 +6761,7 @@ function howtoHTML(){
     `Every barrel must be upgraded or blended with naphtha (3 XH : 1 diluent) before it can move through the pipeline and terminal.`,
     `Investors fund your capex up to a ceiling set by their approval grade. Hit your guidance, keep margins healthy and stay inside the ceiling.`,
     `Score = 50% net crude exported against your difficulty's target (${tgt} MMbbl on the level picked below) + 50% approval over the last four turns. 80 wins; 92 is a distinction.`,
-    `Every cargo needs a ship: own them, time-charter them or hire spot tankers. The terminal closes in bad weather, so keep tanks and a fixed fleet. An offshore gas and LNG project is a late-game option.`,
+    `Every cargo needs a ship: own them, time-charter them or hire spot tankers. The terminal closes in bad weather, so keep tanks and a fixed fleet. From Year 2, pipeline export routes can carry crude past the terminal and ships, at a lower price and on take-or-pay terms. An offshore gas and LNG project is a late-game option.`,
     `You inherit worn and damaged facilities. Patch, repair or expand them, and keep a maintenance budget, or they wear down and trip.`,
     `Once a year you can bid for new greenfield blocks against rival operators.`,
     `Pick who builds: premier, regional or national contractors trade price, reliability and local content, and their rates follow the oil price.`,
@@ -6457,7 +6772,7 @@ function howtoHTML(){
     `Cada barril debe mejorarse o mezclarse con nafta (3 de extrapesado : 1 de diluente) antes de poder moverse por el oleoducto y la terminal.`,
     `Los inversionistas financian tu capex hasta un techo que fija su grado de aprobación. Cumple tu guía, mantén márgenes sanos y quédate dentro del techo.`,
     `Puntaje = 50% del crudo neto exportado frente a la meta de tu dificultad (${tgt} MMbbl en el nivel elegido abajo) + 50% de aprobación en los últimos cuatro turnos. 80 gana; 92 es distinción.`,
-    `Cada cargamento necesita un buque: cómpralos, contrátalos a plazo (time charter) o alquila tanqueros spot. La terminal cierra con mal tiempo, así que mantén tanques y una flota fija. Un proyecto de gas costa afuera y GNL es una opción de juego avanzado.`,
+    `Cada cargamento necesita un buque: cómpralos, contrátalos a plazo (time charter) o alquila tanqueros spot. La terminal cierra con mal tiempo, así que mantén tanques y una flota fija. Desde el año 2, las rutas de exportación por oleoducto pueden llevar crudo sin pasar por la terminal ni los buques, a menor precio y con condiciones take-or-pay. Un proyecto de gas costa afuera y GNL es una opción de juego avanzado.`,
     `Heredas instalaciones desgastadas y dañadas. Párchalas, repáralas o amplíalas, y mantén un presupuesto de mantenimiento, o se desgastan y fallan.`,
     `Una vez al año puedes licitar por nuevos bloques (greenfield) frente a operadoras rivales.`,
     `Elige quién construye: contratistas premier, regionales o nacionales negocian precio, confiabilidad y contenido nacional, y sus tarifas siguen el precio del crudo.`,
@@ -6715,6 +7030,7 @@ document.addEventListener("click", e=>{
     else if (gdOpen()){ S.guidance = Math.max(10, S.guidance + +d.fing); save(); } render(); return; }
   if (d.finyear){ UI.finYear = +d.finyear; render(); return; }
   if (d.fincol){ UI.fincol = d.fincol; UI.finCol = d.fincol; render(); return; }
+  if (d.stockv){ UI.stockView = d.stockv; render(); return; }
   if (d.tip){ UI.tip = UI.tip===d.tip ? null : d.tip; render(); return; }
   if (d.tipclose){ UI.tip=null; render(); return; }
   if (d.help){ UI.modal="help"; render(); return; }
@@ -6768,12 +7084,13 @@ document.addEventListener("click", e=>{
   if (d.tprio){ S.town = S.town||{}; S.town.prio = d.tprio; save(); render(); return; }
   if (d.tgo){ UI.tab = d.tgo; UI.mview = "panel"; render(); return; }
   if (d.node && /^(ref|pc)/.test(d.node) && d.node!=="reffeed"){ UI.node=d.node; UI.tab="downstream"; UI.mview="panel"; UI.status=false; render(); return; }
-  if (d.node){ UI.node=d.node; UI.tab=nodeGroupOf(d.node); if (UI.tab==="upstream") UI.ups = d.node==="explore" ? "expl" : "prod"; UI.mview="panel"; UI.status=false; render(); return; }
+  if (d.node){ if (d.nsub){ const [sk,sv]=d.nsub.split(":"); UI.sub=UI.sub||{}; UI.sub[sk]=sv; } UI.node=d.node; UI.tab=nodeGroupOf(d.node); if (UI.tab==="upstream") UI.ups = d.node==="explore" ? "expl" : "prod"; UI.mview="panel"; UI.status=false; render(); return; }
   if (d.route){ S.upFirst = d.route==="up"; save(); render(); return; }
   if (d.pw){ S.pwFirst = d.pw; save(); render(); return; }
   if (d.spec){ S.offSpec = d.spec==="off"; save(); render(); return; }
-  if (d.order){ const o={type:d.order}; if (d.block) o.block=d.block; if (d.pad) o.pad=+d.pad; if (d.ob) o.ob=+d.ob; if (d.fac) o.fac=d.fac; if (d.site) o.site=d.site; if (d.lead) o.lead=+d.lead; if (d.cls) o.cls=d.cls;
+  if (d.order){ const o={type:d.order}; if (d.block) o.block=d.block; if (d.pad) o.pad=+d.pad; if (d.ob) o.ob=+d.ob; if (d.fac) o.fac=d.fac; if (d.site) o.site=d.site; if (d.lead) o.lead=+d.lead; if (d.cls) o.cls=d.cls; if (d.xp) o.xp=d.xp;
     if (d.offer){ o.offer=+d.offer; o.mult=+d.mult; o.pads=+d.pads; } addOrder(o); return; }
+  if (d.xpnom){ const [id,v] = d.xpnom.split(":"); if (XP_IDS.includes(id)){ xpS()[id].nom = clamp(+v,0,1); save(); } render(); return; }
   if (d.dssplit!=null && d.dssplit!==""){ dsS().split = +d.dssplit/100; save(); render(); return; }
   if (d.dsdial){ if (CFG.ds.dial[d.dsdial] && !dsLocked()){ dsS().dial = d.dsdial; save(); render(); } return; }
   if (d.tech){ if (techOpen(d.tech)){ techS().cur = d.tech; save(); } render(); return; }
@@ -6782,7 +7099,7 @@ document.addEventListener("click", e=>{
   if (d.bidm){ const [id,m]=d.bidm.split(":"); UI.bid=UI.bid||{}; UI.bid[id]={...(UI.bid[id]||{p:4}), m:+m}; render(); return; }
   if (d.bidp){ const [id,p]=d.bidp.split(":"); UI.bid=UI.bid||{}; UI.bid[id]={...(UI.bid[id]||{m:1}), p:+p}; render(); return; }
   if (d.undo){ undoOrder(+d.undo); return; }
-  if (d.accept){ const o=S.offers.find(x=>x.id===+d.accept); if (!o||S.active.length>=3) return;
+  if (d.accept){ const o=S.offers.find(x=>x.id===+d.accept); if (!o||S.active.length>=3||(isPP(o)&&S.active.some(isPP))) return;
     S.active.push({...o, done:0, deadline:S.turn+o.turns-1, signed:S.turn}); S.offers=S.offers.filter(x=>x!==o); if (UI.modal==="letter") UI.modal=null; UI.letter=null; sfx("click"); save(); render(); return; }
   if (d.rigs){ UI.rigsOpen = !rigsOpen(); render(); return; }
   if (d.ups){ UI.ups=d.ups; render(); return; }
@@ -6792,7 +7109,7 @@ document.addEventListener("click", e=>{
   if (d.letter){ const [k,id] = d.letter.split(":"); UI.letter = {k, id:+id, cancel:false}; UI.modal="letter"; render(); return; }
   if (d.cancelask){ if (UI.letter) UI.letter.cancel = true; render(); return; }
   if (d.cancelback){ if (UI.letter) UI.letter.cancel = false; render(); return; }
-  if (d.cancelgo){ const c = S.active.find(x=>x.id===+d.cancelgo); if (c){ S.cancelled = (S.cancelled||[]).concat([{buyer:c.buyer, pen:cancelPen(c)}]); S.active = S.active.filter(x=>x!==c); } UI.modal=null; UI.letter=null; save(); render(); return; }
+  if (d.cancelgo){ const c = S.active.find(x=>x.id===+d.cancelgo); if (c){ S.cancelled = (S.cancelled||[]).concat([{buyer:c.buyer, pen:cancelPen(c), pp:isPP(c)}]); S.active = S.active.filter(x=>x!==c); } UI.modal=null; UI.letter=null; save(); render(); return; }
   if (d.end){ commitGuidance();                       // capture the typed guidance before the redraw
     if (S.skipConfirm){ endTurn(); return; }
     UI.modal = "confirm"; UI.status = false; UI.tip = null; render(); return; }
