@@ -5,3 +5,8 @@ and game design) are proprietary. The repository is publicly visible so the
 game can be played, but no license is granted to copy, modify, distribute,
 sublicense, or create derivative works from it, in whole or in part, without
 prior written permission from the copyright holder.
+
+Third-party material: the instrument samples in assets/sf/ come from the
+FluidR3 GM soundfont by Frank Wen, licensed under CC BY 3.0
+(https://creativecommons.org/licenses/by/3.0/). They are not covered by the
+notice above.
