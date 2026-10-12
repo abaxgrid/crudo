@@ -828,7 +828,25 @@ html,body{margin:0}
 .lcols{column-width:290px;column-gap:32px;column-fill:balance}
 .lcols h3{font-size:15px;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;margin:0 0 4px;break-after:avoid}
 .lgrp{margin-bottom:12px}
+.lneck{display:flex;gap:8px;align-items:flex-start;padding:8px 11px;border:1px solid var(--line);border-left:3px solid var(--good);border-radius:6px;background:var(--panel2);font-size:13px;margin-bottom:10px}
+.lneck.neg{border-left-color:var(--bad)} .lneck .ic{flex:none;margin-top:2px;color:var(--good)} .lneck.neg .ic{color:var(--bad)}
+.lprod{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:10px}
+.lcard{border:1px solid var(--line);border-radius:8px;background:var(--panel2);padding:10px 12px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.lcard h3{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;margin:0 0 4px}
+.lcard h3 .muted{font-family:var(--mono);font-size:10.5px;text-transform:none;letter-spacing:0;margin-left:auto}
+.lfl{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(40px,1fr) auto;gap:8px;align-items:center;font-size:13px;padding:2px 0}
+.lfl .ll{min-width:0;line-height:1.25}
+.lfl b{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:500;text-align:right;min-width:58px}
+.lfl b small{color:var(--muted);font-size:10px}
+.lfl.sub .ll{color:var(--muted);padding-left:10px}
+.lfl.tot{border-top:1px solid var(--line);padding-top:4px;margin-top:2px} .lfl.tot .ll,.lfl.tot b{font-weight:700}
+.lbar{display:block;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.lbar i{display:block;height:100%;border-radius:4px;background:var(--teal)}
+.lbar i.xh{background:var(--xh)} .lbar i.nap{background:var(--naphtha)} .lbar i.good{background:var(--good)} .lbar i.bad{background:var(--bad)} .lbar i.gas{background:var(--gas)} .lbar i.pow{background:var(--power)} .lbar i.mut{background:var(--muted)}
 .lcols .an,.lcols .evcard{break-inside:avoid;margin-bottom:10px}
+.lcols .lgrp{border:1px solid var(--line);border-radius:8px;background:var(--panel2);padding:10px 12px;break-inside:avoid}
+.lcols .lgrp .kv{border-bottom:1px dashed color-mix(in srgb, var(--line) 70%, transparent);padding:4px 0}
+.lcols .lgrp .kv:last-child{border-bottom:0}
 .lcols .kv{break-inside:avoid}
 @media (max-width:760px){ .ltabs{flex-wrap:wrap;overflow:visible} .ltabs .chip{min-height:32px;padding:4px 10px;font-size:12.5px} .lcols{columns:1} .modal.rp.lg{height:100%} .lbody{flex:1 1 0} }
 @media (max-height:520px) and (min-width:700px){ .lcols{columns:2} .modal.rp.lg .rphead h2{font-size:18px} }
@@ -882,7 +900,7 @@ html,body{margin:0}
 .fbox .fbs b{color:var(--fg);font-weight:600} .fbox .fbs b.bad{color:var(--bad)}
 .finclose{margin-left:auto}
 .finbar{flex-direction:column;align-items:stretch;flex-wrap:nowrap;gap:0}
-.fbrow{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;min-width:0}
+.fbrow{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;min-width:0} .finbar>.fbrow{width:100%;max-width:100%;box-sizing:border-box}
 .fbrow.fb1{align-items:flex-end;border-bottom:1px solid var(--line);padding-bottom:0;flex-wrap:nowrap}
 .fbrow.fb1 .fsecs{flex:1 1 auto;display:flex;gap:2px;flex-wrap:wrap;min-width:0}
 .fbrow.fb1 .fsecs .chip{border:1px solid transparent;border-bottom:0;border-radius:6px 6px 0 0;background:none;padding:4px 11px;min-height:28px;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:-1px}
@@ -894,7 +912,7 @@ html,body{margin:0}
 .fbrow .seg{display:flex;flex-wrap:wrap;gap:4px} .fbrow .seg .chip{padding:2px 10px;min-height:24px;font-size:12px}
 .fbrow.fb3 .seg .chip{min-height:24px;font-size:11.5px}
 .fincard .fsecbody .subtabs{display:flex;flex-wrap:wrap;gap:4px} .fincard .fsecbody .subtabs .chip{flex:0 0 auto;min-height:26px;padding:3px 12px;font-size:12px}
-@media (max-width:700px){ .fbrow.fb1{flex-wrap:wrap} .fovl .fbrow.fb1 .fsecs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;order:2;flex-basis:100%} .fbrow.fb1 .fsecs::-webkit-scrollbar{display:none} .fovl .fbrow.fb1 .fsecs .chip{flex:none;padding:5px 9px;font-size:12px} .fbrow.fb1 .finclose{order:1;margin-left:auto} .fbl{min-width:0} }
+@media (max-width:700px){ .fbrow.fb1{flex-wrap:wrap} .fovl .fbrow.fb1 .fsecs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;order:2;flex:1 1 100%;min-width:0;max-width:100%} .fbrow.fb1 .fsecs::-webkit-scrollbar{display:none} .fovl .fbrow.fb1 .fsecs .chip{flex:none;padding:5px 9px;font-size:12px} .fbrow.fb1 .finclose{order:1;margin-left:auto} .fbl{min-width:0} }
 .finov{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:12px;padding-block:10px}
 .finov>.card{overflow-y:auto;overscroll-behavior:contain;padding:12px 14px}
 .fovr h2{font-size:18px;margin:0 0 8px;letter-spacing:.04em}
@@ -1652,7 +1670,7 @@ const CFG = {
   // v20: difficulty ladder and scenarios, applied on top of these defaults when a campaign starts or loads
   modes:{
     diff:{
-      easy:{name:"Easy", blurb:"A lower export target, steadier investors, higher prices, fewer incidents and less bad news, two rescues.", nameEs:"Fácil", blurbEs:"Una meta de exportación más baja, inversionistas más estables, precios más altos, menos incidentes y menos malas noticias, dos rescates.", appr0:58, cash0:300, px:6, acc:.6, evP:.35, ceil:1, decl:.9, rescues:2, target:1750, revert:.11, shipWx:.7, shipSpot:1.2},
+      easy:{name:"Easy", blurb:"A lower export target, steadier investors, higher prices, fewer incidents and less bad news, two rescues.", nameEs:"Fácil", blurbEs:"Una meta de exportación más baja, inversionistas más estables, precios más altos, menos incidentes y menos malas noticias, dos rescates.", appr0:55, cash0:300, px:2, acc:.6, evP:.35, ceil:1, decl:.9, rescues:2, target:1850, revert:.11, shipWx:.7, shipSpot:1.2},
       std:{name:"Standard", blurb:"The game as designed. One rescue.", nameEs:"Estándar", blurbEs:"El juego como fue diseñado. Un rescate.", appr0:55, cash0:200, px:0, acc:1, evP:.5, ceil:1, decl:1, rescues:1, target:1900, revert:.15, shipWx:1, shipSpot:1},
       hard:{name:"Hard", blurb:"A higher export target, impatient investors, lower prices, faster decline, more incidents and bad news.", nameEs:"Difícil", blurbEs:"Una meta de exportación más alta, inversionistas impacientes, precios más bajos, declinación más rápida, más incidentes y malas noticias.", appr0:52, cash0:150, px:-4, acc:1.3, evP:.6, ceil:.95, decl:1.1, rescues:1, target:2050, revert:.18, shipWx:1.1, shipSpot:.9},
       vet:{name:"Veteran", blurb:"Hard, and then some. No rescue: three quarters in grade D ends the campaign.", nameEs:"Veterano", blurbEs:"Difícil, y más. Sin rescate: tres trimestres en grado D terminan la campaña.", appr0:50, cash0:100, px:-6, acc:1.5, evP:.65, ceil:.9, decl:1.2, rescues:0, target:2200, revert:.21, shipWx:1.2, shipSpot:.85}},
@@ -2233,7 +2251,23 @@ function applyMode(m){
   if (m.sandbox){ CFG.turns = CFG.sandbox.turns; CFG.cash0 = CFG.sandbox.cash0; }
   // v0.75 quick campaign: three years, export target scaled to the shorter clock
   else if (m.quick){ CFG.turns = QUICK_TURNS; CFG.target = Math.round(CFG.target*QUICK_TGT/10)*10; }
+  sysGate(m, (typeof S!=="undefined" && S && S.mode===m) ? S.turn : 1);
 }
+// v0.90 advanced systems: "core" rules leave out water and pumps, bolívares and hedging, supply chain, and abandonment and
+// environment; "full" has them all. Easy and quick campaigns default to core. With Learn as you go they switch on in stages.
+const SYS_GROUPS = {
+  wells:{keys:["water","lift"], full:4, quick:2, en:["Water and wells","Water cut now rises as blocks age, water handling can choke oil, and pumps fail. See Mid › Gathering › Water and wells."], es:["Agua y pozos","El corte de agua ahora sube con la edad de los bloques, el manejo de agua puede estrangular el crudo y las bombas fallan. Ver Medio › Recolección › Agua y pozos."]},
+  env:{keys:["aro","env"], full:5, quick:5, en:["Abandonment and environment","Abandonment liabilities, legacy oil pits, methane limits and green financing apply from this year. See Crews › Environment."], es:["Abandono y ambiente","Desde este año aplican el pasivo de abandono, las fosas heredadas, los límites de metano y el financiamiento verde. Ver Cuadrillas › Ambiente y cierre."]},
+  money:{keys:["fx","hedge"], full:6, quick:3, en:["Bolívares and hedging","Local costs now move with the exchange rate, surplus bolívares get trapped, and you can hedge the oil price. See Contracts › Financial risk."], es:["Bolívares y coberturas","Los costos locales ahora siguen el tipo de cambio, el excedente en bolívares queda atrapado y puedes cubrir el precio del crudo. Ver Contratos › Riesgo financiero."]},
+  supply:{keys:["ll","mat","tp"], full:7, quick:4, en:["Supply chain","Long-lead equipment, materials inflation and third-party pipeline and terminal access are in play. See Services › Long-lead equipment and Mid › Pipeline."], es:["Cadena de suministro","Entran en juego los equipos de largo plazo, la inflación de materiales y el acceso a oleoducto y terminal de terceros. Ver Servicios › Equipos de largo plazo y Medio › Oleoducto."]}};
+const advOf = m => m && (m.adv==="core" || m.adv==="full") ? m.adv : (m && (m.diff==="easy" || m.quick) ? "core" : "full");
+const sysUnlock = (g, m) => !m || !m.learn || m.sandbox ? 1 : (m.quick ? SYS_GROUPS[g].quick : SYS_GROUPS[g].full);
+function sysGate(m, turn){ if (m && !m.adv && typeof S!=="undefined" && S && S.mode===m && S.turn>1) m.adv = "full";   // campaigns saved before v0.90 keep every system
+  const adv = advOf(m);
+  for (const [g, G] of Object.entries(SYS_GROUPS)){ const on = adv==="full" && turn >= sysUnlock(g, m);
+    G.keys.forEach(k=>{ if (CFG[k]) CFG[k].on = on && CFG0 && CFG0[k] ? !!CFG0[k].on : on; }); } }
+function sysNews(m, turn){ if (advOf(m)!=="full" || !m.learn) return [];
+  return Object.entries(SYS_GROUPS).filter(([g])=>sysUnlock(g, m)===turn && turn>1).map(([g,G])=>{ const T = G[LANG==="es"?"es":"en"]; return LANG==="es" ? `Nuevo sistema: ${T[0]}. ${T[1]}` : `New system: ${T[0]}. ${T[1]}`; }); }
 // scenario starting assets, after the standard state is built
 function scenInit(m){
   const Sc = CFG.modes.scen[m.scen]; if (!Sc) return;
@@ -2277,7 +2311,7 @@ function newGame(mode){
   };
   ofsS(); S.tech = {done:[], cur:null, prog:{}}; S.pum = 0; S.ren = {solar:0, wind:0, batt:0}; S.wx = []; S.owned = 0; S.ownedPending = []; S.acc = []; exS(); dsS();
   if (CFG.priceRand) S.prices = genPrices((S.seed ^ 0x27d4eb2f)|0);
-  S.mode = {diff:mode.diff||"std", scen:mode.scen||"orinoco", ctr:mode.ctr==="em"?"em":"cpp", sandbox:!!mode.sandbox, quick:!!mode.quick && !mode.sandbox, learn:!!mode.learn, daily:mode.daily||null, coded:!!mode.coded};
+  S.mode = {diff:mode.diff||"std", scen:mode.scen||"orinoco", ctr:mode.ctr==="em"?"em":"cpp", adv:advOf(mode), sandbox:!!mode.sandbox, quick:!!mode.quick && !mode.sandbox, learn:!!mode.learn, daily:mode.daily||null, coded:!!mode.coded};
   scenInit(S.mode);
   if (mode.sandbox) sandboxInit();
   if (shipOn()) shipS();
@@ -3434,6 +3468,7 @@ function endTurn(){
   S.turn++;
   if (!S.over && S.turn>CFG.turns) S.over = {kind:"end"};
   if (!S.over && S.mode && S.mode.learn) for (const [k,tt] of Object.entries(learnTurns())) if (tt===S.turn) R.events.push(learnNews(k));
+  if (!SIM && S.mode){ sysGate(S.mode, S.turn); if (!S.over) sysNews(S.mode, S.turn).forEach(x=>R.events.push(x)); }
   S.ev = null;
   if (!S.over){
     if (S.turn>=CFG.evStart && rng()<CFG.evP){ S.ev = {id:drawEvent(), choice:null}; R.next = S.ev.id; }
@@ -3756,7 +3791,7 @@ function finYear(y){
 
 /* ============ persistence ============ */
 const KEY="crudo-prototype-v7";
-const VERSION="0.88";   // user-facing build; pre-1.0, so labelled beta. Bump here when publishing.
+const VERSION="0.90";   // user-facing build; pre-1.0, so labelled beta. Bump here when publishing.
 const VLABEL=`Beta · v${VERSION}`;
 /* ============ i18n — Spanish (Venezuelan / Faja terminology). Stage 1: UI shell. ============
    Core glossary: upgrader→mejorador · blending→mezcla · diluent→diluente(nafta) · extra-heavy→extrapesado
@@ -6477,7 +6512,7 @@ function finRiskHTML(){ const es = LANG==="es", X = fxS(), H = hedgeS(), P0 = pr
       <div class="stat"><div class="l">Pays now</div><div class="v">${f0(ctrPayRate(P0, t)*100)}% of calls</div></div></div>
     <p class="note" style="margin:0">The state partner owes ${f0(CFG.ctr.em.share*100)}% of every dollar of capex. It pays more of each cash call when oil is dear and catches up slowly on arrears (repayments go to your capex fund). Royalty is ${f0(CFG.royalty*100)}% under the empresa mixta.</p>
     <div class="dcb">${PT.arrears>100?`<button class="btn ghost sm" data-ptkind="1" ${PT.kindTurn>=t-3?"disabled":""}>Take crude in kind · ${money(PT.arrears*CFG.ctr.em.kind)} now</button><span class="note">Settles all arrears at ${f0(CFG.ctr.em.kind*100)}%. Once a year.</span>`:""}</div>`; })() : "";
-  return pt + hedges + fx; }
+  return pt + (CFG.hedge && CFG.hedge.on ? hedges : "") + fx; }
 function techTreeHTML(){
   const T = techS(), brs = Object.keys(TECH_BR), stOf = id => T.done.includes(id) ? "done" : T.cur===id ? "on" : techRuledOut(id) ? "out" : techOpen(id) ? "open" : "locked";
   const node = id => { const X = TECH[id], st = stOf(id), sub = st==="done"?"In use":st==="on"?`Researching ${T.prog[id]||0}/${X.turns}`:st==="out"?"Ruled out":`${money(X.cost)} · ${X.turns}t`;
@@ -7177,7 +7212,7 @@ function contractsHTML(){
   const active = S.active.length ? S.active.map(c=>`<div class="crow act${isPP(c)?" pp":""}"><div class="cmain">${isPP(c)?ppTag:""}<span class="gtag ${c.grade==="G16"?"gG":"gS"}">${gradeName(c.grade)}</span><b>${esc(c.buyer)}</b></div><div class="cdet num">${f1(c.done)} of ${c.vol} MMbbl · due ${turnLabel(c.deadline)}${isPP(c)?` · ${c.advPaid?(es?"anticipo cobrado":"advance received"):(es?"anticipo al cerrar el trimestre":"advance at quarter end")}`:""}<div class="bar"><i style="width:${clamp(c.done/c.vol*100,0,100)}%"></i></div></div><button class="btn ghost sm" data-letter="a:${c.id}">Letter</button></div>`).join("") : `<p class="note" style="margin:0">No active contracts.</p>`;
   const buyers = `<h3 class="ch3">Buyer offers${tip("contracts")}</h3>${offers}<h3 class="ch3">Active contracts (${S.active.length}/3)</h3>${active}${(hvOn()||true)?mktQualHTML():""}
   <p class="note cfoot">This turn you ship about ${f1(F.expB*k)} MMbbl of ${S.offSpec?"off-spec blend":"Garza 16"} and ${f1(F.expS*k)} MMbbl of Cardonal 32. Open a letter to sign or cancel.${(S.cancelled||[]).length?` <span class="bad">Pending: ${S.cancelled.map(x=>`${esc(x.buyer)} ${x.pen>0?money(x.pen):"no penalty"}`).join(", ")}.</span>`:""}</p>`;
-  return `<div class="cwrap">${bidBannerHTML()}${secTabs("ct", [["by", LANG==="es"?"Compradores":"Buyers", buyers], ["dl", LANG==="es"?"Gobierno y socios":"Government & partners", dealsHTML(), (S.deals||[]).length>0], ["fr", LANG==="es"?"Riesgo financiero":"Financial risk", finRiskHTML(), isEM() && ptS().arrears>300]])}</div>`;
+  return `<div class="cwrap">${bidBannerHTML()}${secTabs("ct", [["by", LANG==="es"?"Compradores":"Buyers", buyers], ["dl", LANG==="es"?"Gobierno y socios":"Government & partners", dealsHTML(), (S.deals||[]).length>0], ...(isEM() || (CFG.hedge&&CFG.hedge.on) || (CFG.fx&&CFG.fx.on) ? [["fr", LANG==="es"?"Riesgo financiero":"Financial risk", finRiskHTML(), isEM() && ptS().arrears>300]] : [])])}</div>`;
 }
 
 function eventHTML(){
@@ -7922,26 +7957,55 @@ function gzHTML(){
       <div class="gznav"><button class="btn ghost sm" data-gzix="${ix-1}" ${ix>0?"":"disabled"}>‹ ${es?"Anterior":"Previous"}</button><button class="btn ghost sm" data-gzix="${ix+1}" ${ix<E.length-1?"":"disabled"}>${es?"Siguiente":"Next"} ›</button><button class="btn sm" data-gz="0">${es?"Cerrar":"Close"}</button></div></footer>
   </div></div>`;
 }
-const LTABS = [["barrels","Barrels"],["gas","Gas and power"],["cash","Cash"],["appr","Approval"],["cond","Facilities"],["news","News and events"]];
+const LTABS = [["prod","Production"],["cash","Cash"],["appr","Approval"],["cond","Facilities"],["news","News and events"]];
+// v0.89 the ledger's production tab: barrels, gas and power on one page, as flows with bars instead of bare lists
+function ledgerProdHTML(R, F){ const es = LANG==="es", X = Math.max(1, F.xh + (F.lake||0) + F.dil);
+  const bar = (v, mx, cls) => `<span class="lbar"><i class="${cls||""}" style="width:${clamp(v/mx*100,0,100).toFixed(1)}%"></i></span>`;
+  const fl = (lab, v, unit, mx, cls, opts={}) => `<div class="lfl${opts.tot?" tot":""}${opts.sub?" sub":""}"><span class="ll">${lab}</span>${bar(Math.abs(v), mx, cls)}<b class="num ${opts.bad?"bad":""}">${opts.sign&&v>0.5?"+":opts.sign&&v<-0.5?"−":""}${f0(Math.abs(v))}<small> ${unit}</small></b></div>`;
+  const neck = F.walk ? exportNeckText(F.walk, es) : (F.neck ? F.neck.why : (es?"Sin cuellos de botella este trimestre.":"No bottleneck this quarter."));
+  const lost = F.lost>0.5;
+  const barrels = `<section class="lcard"><h3>${ic("derrick",15)}${es?"Barriles":"Barrels"} <span class="muted">kb/d</span></h3>
+    ${fl(es?"Extrapesado producido":"Extra-heavy produced", F.xh, "", X, "xh")}
+    ${(F.lake||0)>0.5?fl(es?"Crudo del lago":"Lake crude", F.lake, "", X, "xh"):""}
+    ${fl(es?"→ al mejorador":"→ to the upgrader", F.xhUp+(F.xhPU||0), "", X, "st", {sub:1})}
+    ${fl(es?"→ a la mezcla":"→ to blending", F.xhBl, "", X, "st", {sub:1})}
+    ${fl(es?"+ diluente mezclado":"+ diluent blended in", F.dil, "", X, "nap", {sub:1})}
+    ${fl(es?"Exportaciones brutas":"Gross exports", F.exported, "", X, "st", {tot:1})}
+    ${F.dom>0.5?fl(es?"vendido en el país (no exporta)":"sold at home (not exports)", F.dom, "", X, "mut", {sub:1}):""}
+    ${fl(es?"Crudo neto":"Net crude", F.net, "", X, "good", {tot:1})}
+    ${fl(es?"Perdido por cuellos de botella":"Lost to bottlenecks", F.lost, "", X, "bad", {bad:lost})}
+    ${R.fmNet>0.5?`<p class="note">${es?`Fuerza mayor: ${f0(R.fmNet)} kb/d excusados al juzgar la guía.`:`Force majeure: ${f0(R.fmNet)} kb/d excused when judging guidance.`}</p>`:""}</section>`;
+  const gasMx = Math.max(1, F.gasRaw), used = F.gasFuel + F.gasDom + F.gasExp;
+  const gas = `<section class="lcard"><h3>${ic("flame",15)}${es?"Gas":"Gas"} <span class="muted">MMcfd</span></h3>
+    ${fl(es?"Gas producido":"Gas produced", F.gasRaw, "", gasMx, "gas", {tot:1})}
+    ${fl(es?"→ turbinas":"→ turbines", F.gasFuel, "", gasMx, "gas", {sub:1})}
+    ${fl(es?"→ mercado interno":"→ home market", F.gasDom, "", gasMx, "gas", {sub:1})}
+    ${F.gasExp>0.5?fl("→ Corales", F.gasExp, "", gasMx, "gas", {sub:1}):""}
+    ${fl(es?"Quemado (mechurrio)":"Flared", F.flare, "", gasMx, "bad", {bad:F.flare>=CFG.flareLo})}</section>`;
+  const gen = F.gtGen + F.dsGen, pMx = Math.max(1, F.demand, gen);
+  const power = `<section class="lcard"><h3>${ic("bolt",15)}${es?"Energía":"Power"} <span class="muted">MW</span></h3>
+    ${fl(es?"Demanda":"Load", F.demand, "", pMx, "pow", {tot:1})}
+    ${fl(es?"Generado: turbinas":"Generated: turbines", F.gtGen, "", pMx, "pow", {sub:1})}
+    ${F.dsGen>0.5?fl(es?"Generado: diésel":"Generated: diesel", F.dsGen, "", pMx, "pow", {sub:1}):""}
+    ${F.townMW>0.5?fl(es?"A los poblados":"To the towns", F.townMW, "", pMx, "mut", {sub:1}):""}
+    ${(F.shed>0.5||F.upShed>0.5)?`<div class="lfl"><span class="ll">${es?"Producción deslastrada: campo / mejorador":"Output shed: field / upgrader"}</span><span></span><b class="num bad">${f0(F.shed)} / ${f0(F.upShed)}<small> kb/d</small></b></div>`:""}</section>`;
+  const ref = F.ds ? `<section class="lcard"><h3>${ic("column",15)}${es?"Refinación":"Refining"} <span class="muted">kb/d</span></h3>
+    ${fl(es?"Crudo refinado: nacional":"Crude refined: domestic", F.ds.domFeed, "", Math.max(1,F.ds.domFeed+F.ds.expFeed), "st")}
+    ${fl(es?"Crudo refinado: exportación":"Crude refined: export", F.ds.expFeed, "", Math.max(1,F.ds.domFeed+F.ds.expFeed), "st")}
+    ${dsTier("dom")?fl(es?"Combustible al país":"Home fuel supplied", F.ds.domSold, "", Math.max(1,F.ds.dem), F.ds.shortV>CFG.ds.short*F.ds.dem?"bad":"good"):""}
+    ${dsTier("dom")?`<div class="lfl sub"><span class="ll">${es?"demanda":"demand"}</span><span></span><b class="num">${f0(F.ds.dem)}</b></div>`:""}
+    ${F.ds.imp>0.5?fl(es?"Combustible importado":"Fuel imported", F.ds.imp, "", Math.max(1,F.ds.dem), "bad"):""}</section>` : "";
+  return `<div class="lneck ${lost?"neg":""}">${ic(lost?"alert":"gauge",15)}<span><b>${lost?(es?"Cuello de botella":"Bottleneck"):(es?"Sin cuello de botella":"No bottleneck")}.</b> ${esc(neck)}</span></div>
+    <div class="lprod">${barrels}${gas}${power}${ref}</div>`; }
 function ledgerHTML(){
   const R = S.last, F = R.F;
   const kv = (a,b,c="") => `<div class="kv"><span>${a}</span><span class="${c}">${b}</span></div>`;
-  const tab = LTABS.some(t=>t[0]===UI.ltab) ? UI.ltab : "barrels";
+  const tab = LTABS.some(t=>t[0]===UI.ltab) ? UI.ltab : "prod";
   const evs = R.events.concat(R.completed), nx = R.next && !S.over ? EVENTS[R.next] : null;
   const newsN = ((R.wx&&R.wx.length)||0) + ((R.wxOn&&R.wxOn.length)?1:0) + (R.gdCard?1:0) + (R.an?1:0) + (nx?1:0) + evs.length;
   const H3 = t => `<h3>${t}</h3>`;
   const panes = {
-    barrels: `<div class="lgrp">${H3("Barrels")}
-        ${kv("Extra-heavy produced",f0(F.xh)+" kb/d")}${kv("To upgrader / blending",`${f0(F.xhUp)} / ${f0(F.xhBl)}`)}
-        ${kv("Diluent used",f0(F.dil)+" kb/d")}${kv("Exports (gross)",f0(F.exported)+" kb/d")}${kv("Net crude",f0(F.net)+" kb/d")}
-        ${F.dom>0.5?kv("Sold at home (not exports)",f0(F.dom)+" kb/d"):""}${kv("Lost to bottlenecks",f0(F.lost)+" kb/d", F.lost>0.5?"bad":"")}
-        ${R.fmNet>0.5?`<p class="note">Force majeure: ${f0(R.fmNet)} kb/d excused when judging guidance.</p>`:""}
-        <p class="note">${F.neck?`Bottleneck: ${F.neck.why}.`:"No bottleneck this quarter."}</p></div>
-      ${F.ds?`<div class="lgrp">${H3("Refining")}${kv("Crude refined: domestic / export",`${f0(F.ds.domFeed)} / ${f0(F.ds.expFeed)} kb/d`)}${dsTier("dom")?kv("Home fuel supplied / demand",`${f0(F.ds.domSold)} / ${f0(F.ds.dem)} kb/d`, F.ds.shortV>CFG.ds.short*F.ds.dem?"bad":""):""}${F.ds.imp>0.5?kv("Fuel imported",f0(F.ds.imp)+" kb/d"):""}${F.ds.olFeed>0?kv("Naphtha into plastics",f0(F.ds.napOl)+" kb/d"):""}${F.ds.feFeed>0?kv("Gas into fertiliser",f0(F.ds.feFeed)+" MMcfd"):""}</div>`:""}`,
-    gas: `<div class="lgrp">${H3("Gas and power")}
-        ${kv("Gas produced / flared",`${f0(F.gasRaw)} / ${f0(F.flare)} MMcfd`, F.flare>=CFG.flareLo?"bad":"")}${kv("Gas to turbines / home / Corales",`${f0(F.gasFuel)} / ${f0(F.gasDom)} / ${f0(F.gasExp)}`)}
-        ${kv("Power load / generated",`${f0(F.demand)} / ${f0(F.gtGen+F.dsGen)} MW`)}${kv("Shed: field / upgrader",`${f0(F.shed)} / ${f0(F.upShed)} kb/d`, F.shed>0.5||F.upShed>0.5?"bad":"")}
-        ${kv("Supplied to towns",f0(F.townMW)+" MW")}</div>`,
+    prod: ledgerProdHTML(R, F),
     cash: `<div class="lgrp">${H3("Cash ($M)")}
         ${kv("Crude revenue",money(R.crudeRev))}${R.ppW>0.5?kv("Prepaid barrels delivered (no cash)","−"+money(R.ppW)):""}${R.adv>0.5?kv("Prepayment advance received","+"+money(R.adv)):""}${R.XP&&R.XP.rev>0.5?kv(`of which pipeline routes (${f0(R.XP.rows.reduce((a,x)=>a+x.fl,0))} kb/d)`,money(R.XP.rev)):""}${R.gasRev>0.5?kv("Gas sales",money(R.gasRev)):""}${R.townRev>0.5?kv("Power sold to towns",money(R.townRev)):""}${R.DS&&R.DS.rev>0.5?kv("Fuel and chemical sales",money(R.DS.rev)):""}${R.SH&&Math.abs(R.SH.rev)>0.5?kv("Shipping netback"+(R.SH.lngRev>0.5?" and LNG":""),money(R.SH.rev),R.SH.rev<0?"bad":""):""}${kv("Contract bonuses",money(R.cbon))}${kv("Lifting cost","−"+money(R.lift))}
         ${kv("Royalty ("+f0(R.rRate*100)+"%)","−"+money(R.royalty))}${kv("Diluent","−"+money(R.dilc))}${kv("Power and gas costs","−"+money(R.powerCost+R.gasCost))}${R.DS&&R.DS.cost>0.5?kv("Refining and petrochemical costs","−"+money(R.DS.cost)):""}${R.DS&&R.DS.sub>0.5?kv("of which price subsidy and leakage (lost sales)","−"+money(R.DS.sub+R.DS.leak),"bad"):""}${R.SH&&R.SH.lngOpex>0.5?kv("LNG operating costs","−"+money(R.SH.lngOpex)):""}${R.SH&&R.SH.spill>0.5?kv("Tanker spill clean-up","−"+money(R.SH.spill),"bad"):""}${kv("Other opex and rig leases","−"+money(R.other-R.powerCost-R.gasCost-(R.DS?R.DS.cost:0)-(R.SH?R.SH.cost:0)))}
@@ -7955,7 +8019,7 @@ function ledgerHTML(){
       <div class="drv"><span>Drift toward neutral</span><span class="num">${sgn(R.drift)}</span></div>
       ${R.mult<1?`<div class="drv"><span>Slow to forgive: gains counted at half</span><span class="num">×0.5</span></div>`:""}</div>`,
     cond: `<div class="lgrp">${H3("Facility condition (next turn)")}
-        ${facShown().map(f=>kv(FAC[f].name, `${f0(S.cond[f])}%${S.trip[f]?" · tripped":""}`, S.cond[f]<45||S.trip[f]?"bad":"")).join("")}
+        ${facShown().map(f=>{ const c = S.cond[f], col = c>=70?"good":c>=45?"pow":"bad"; return `<div class="lfl"><span class="ll">${FAC[f].name}${S.trip[f]?` <span class="bad">· ${LANG==="es"?"disparada":"tripped"}</span>`:""}</span><span class="lbar"><i class="${col}" style="width:${clamp(c,0,100).toFixed(0)}%"></i></span><b class="num ${c<45||S.trip[f]?"bad":""}">${f0(c)}%</b></div>`; }).join("")}
         ${kv("Crew skill",`${f0(R.skillStart)} → ${f0(R.skillEnd)}`)}</div>`,
     news: `${(R.wx&&R.wx.length)||(R.wxOn&&R.wxOn.length)?`<div class="an"><div class="anh"><h3>${ic("trend",16)}World news${tip("worldnews")}</h3></div>${(R.wx||[]).map(w=>`<p class="anp"><b>New: ${esc(w.title)}.</b> ${esc(w.text)} <span class="muted">From next quarter, for ${w.q} quarters: ${esc(w.fx)}.</span></p>`).join("")}${(R.wxOn||[]).length?`<p class="note" style="margin:0">In force this quarter: ${R.wxOn.map(w=>`${esc(w.title)}${w.left>0?` (${w.left} more)`:" (ended)"}`).join("; ")}.</p>`:""}</div>`:""}
       ${R.gdCard?gdCardHTML(R.gdCard):""}
@@ -7968,13 +8032,13 @@ function ledgerHTML(){
     <div class="rphead"><div><div class="note">Turn ${R.turn} · Q${R.q} Year ${R.year} · Atlantic Light $${R.P}</div><h2 id="rt">Full ledger</h2></div>
       <div class="rpbtns"><button class="btn ghost" data-ledger="0">← Dashboard</button><button class="btn" data-close="1">${S.over?"See result":`Continue to turn ${S.turn}`}</button></div></div>
     <div class="ltabs" role="tablist" aria-label="Ledger sections">${LTABS.map(([k,l])=>`<button class="chip" role="tab" aria-selected="${tab===k}" aria-pressed="${tab===k}" data-ltab="${k}">${l}${k==="news"&&newsN?` <span class="badge">${newsN}</span>`:""}</button>`).join("")}</div>
-    <div class="lbody"><div class="lcols">${panes[tab]}</div></div>
+    <div class="lbody">${tab==="prod" ? panes[tab] : `<div class="lcols">${panes[tab]}</div>`}</div>
   </div></div>`;
 }
 
 function loadPick(){ try{ const p = JSON.parse(localStorage.getItem("crudo-pick")||"null"); if (p && CFG.modes.diff[p.diff] && CFG.modes.scen[p.scen]) return p; }catch(e){} return {diff:"std", scen:"orinoco", learn:!campaignsDone()}; }
 function savePick(){ try{ localStorage.setItem("crudo-pick", JSON.stringify(UI.pick)); }catch(e){} }
-const modeLabel = m => { m = m||{diff:"std",scen:"orinoco"}; const es = LANG==="es"; return `${m.daily?(es?"Reto diario":"Daily challenge")+" "+m.daily+" · ":""}${loc(CFG.modes.diff[m.diff],"name")} · ${loc(CFG.modes.scen[m.scen],"name")}${m.sandbox?` · ${TR("mnu.sandbox")}`:m.quick?` · ${es?"Rápida":"Quick"}`:""}${m.ctr==="em"?" · EM":""}`; };
+const modeLabel = m => { m = m||{diff:"std",scen:"orinoco"}; const es = LANG==="es"; return `${m.daily?(es?"Reto diario":"Daily challenge")+" "+m.daily+" · ":""}${loc(CFG.modes.diff[m.diff],"name")} · ${loc(CFG.modes.scen[m.scen],"name")}${m.sandbox?` · ${TR("mnu.sandbox")}`:m.quick?` · ${es?"Rápida":"Quick"}`:""}${m.ctr==="em"?" · EM":""}${advOf(m)==="core"?(es?" · Básico":" · Core"):""}`; };
 function pickerHTML(){
   if (!UI.pick) UI.pick = loadPick();
   const M = CFG.modes, p = UI.pick, D = M.diff[p.diff];
@@ -7987,6 +8051,9 @@ function pickerHTML(){
     <div class="pgrid mini ctrrow" role="group" aria-label="${LANG==="es"?"Contrato":"Contract"}">
       <button class="popt" data-pctr="cpp" aria-pressed="${p.ctr!=="em"}"><b>${LANG==="es"?"CPP (ley 2026)":"CPP (2026 law)"}</b><span>${LANG==="es"?`Regalía ${f0((CFG0||CFG).royalty*100)}% · financias todo tu capex`:`${f0((CFG0||CFG).royalty*100)}% royalty · you fund all your capex`}</span></button>
       <button class="popt" data-pctr="em" aria-pressed="${p.ctr==="em"}"><b>Empresa mixta</b><span>${LANG==="es"?`Socio estatal ${f0(CFG.ctr.em.share*100)}% · regalía ${f0(CFG.ctr.em.roy*100)}% · paga tarde`:`${f0(CFG.ctr.em.share*100)}% state partner · ${f0(CFG.ctr.em.roy*100)}% royalty · pays late`}</span></button></div>
+    <div class="pgrid mini ctrrow" role="group" aria-label="${LANG==="es"?"Sistemas":"Systems"}">${(()=>{ const a = advOf(p), es = LANG==="es";
+      return `<button class="popt" data-padv="core" aria-pressed="${a==="core"}"><b>${es?"Sistemas básicos":"Core systems"}</b><span>${es?"Producción, mercados, finanzas y contratos":"Production, markets, finance and contracts"}</span></button>
+      <button class="popt" data-padv="full" aria-pressed="${a==="full"}"><b>${es?"Todos los sistemas":"All systems"}</b><span>${es?"Suma agua, bolívares, coberturas, suministro y ambiente":"Adds water, bolívares, hedging, supply chain and environment"}</span></button>`; })()}</div>
     <div class="pgrid mini" role="group" aria-label="${LANG==="es"?"Opciones":"Options"}">
       <button class="popt" data-pquick="0" aria-pressed="${!p.quick||!!p.sandbox}"><b>${LANG==="es"?"Completa":"Full"}</b><span>${LANG==="es"?"36 turnos · ~1 h":"36 turns · ~1 h"}</span></button>
       <button class="popt" data-pquick="1" aria-pressed="${!!p.quick&&!p.sandbox}"${p.sandbox?" disabled":""}><b>${LANG==="es"?"Rápida":"Quick"}</b><span>${LANG==="es"?`12 turnos · ~15 min · ${f0(Math.round(D.target*QUICK_TGT/10)*10)} MMbbl`:`12 turns · ~15 min · ${f0(Math.round(D.target*QUICK_TGT/10)*10)} MMbbl`}</span></button>
@@ -8052,10 +8119,10 @@ const DAILY_SCEN = ["orinoco","lake","gas","refiner"];
 function dailyMode(day){ const n = Math.floor(Date.parse(day+"T00:00:00Z")/864e5); return {diff:"std", scen:DAILY_SCEN[((n%4)+4)%4], quick:true, learn:false, seed:hash32("crudo-daily-"+day), daily:day}; }
 // challenge codes: CR-<difficulty><scenario><length>-<seed>, e.g. CR-SOQ-1F3KZ9
 const CODE_D = {easy:"E", std:"S", hard:"H", vet:"V"}, CODE_S = {orinoco:"O", lake:"L", gas:"G", refiner:"R"};
-function codeOf(m, seed){ if (!m || m.sandbox || seed==null) return ""; return `CR-${CODE_D[m.diff]||"S"}${CODE_S[m.scen]||"O"}${m.quick?"Q":"F"}${m.ctr==="em"?"M":""}-${((seed|0)>>>0).toString(36).toUpperCase()}`; }
-function parseCode(str){ const m = String(str||"").trim().toUpperCase().match(/^CR-([ESHV])([OLGR])([QF])(M?)-([0-9A-Z]{1,7})$/); if (!m) return null;
-  const inv = o => Object.fromEntries(Object.entries(o).map(([k,v])=>[v,k])), n = parseInt(m[5],36); if (!isFinite(n) || n>0xffffffff) return null;
-  return {diff:inv(CODE_D)[m[1]], scen:inv(CODE_S)[m[2]], quick:m[3]==="Q", ctr:m[4]==="M"?"em":"cpp", learn:false, seed:n|0, coded:true}; }
+function codeOf(m, seed){ if (!m || m.sandbox || seed==null) return ""; return `CR-${CODE_D[m.diff]||"S"}${CODE_S[m.scen]||"O"}${m.quick?"Q":"F"}${m.ctr==="em"?"M":""}${m.adv && m.adv!==advOf({diff:m.diff, quick:m.quick}) ? "X" : ""}-${((seed|0)>>>0).toString(36).toUpperCase()}`; }
+function parseCode(str){ const m = String(str||"").trim().toUpperCase().match(/^CR-([ESHV])([OLGR])([QF])(M?)(X?)-([0-9A-Z]{1,7})$/); if (!m) return null;
+  const inv = o => Object.fromEntries(Object.entries(o).map(([k,v])=>[v,k])), n = parseInt(m[6],36); if (!isFinite(n) || n>0xffffffff) return null;
+  return {diff:inv(CODE_D)[m[1]], scen:inv(CODE_S)[m[2]], quick:m[3]==="Q", ctr:m[4]==="M"?"em":"cpp", adv:(()=>{ const d = advOf({diff:inv(CODE_D)[m[1]], quick:m[3]==="Q"}); return m[5]==="X" ? (d==="core"?"full":"core") : d; })(), learn:false, seed:n|0, coded:true}; }
 function startMode(m){ clearSaved(m.daily ? "daily" : "main"); newGame(m); UI = {tab:"build", node:"moriche", modal:null, screen:"game", offer:true}; save(); render(); window.scrollTo(0,0); }
 
 // leaderboard: scores/<player id> = {days:{"YYYY-MM-DD":{s, t, exp, ap}}}, read by everyone, written only by its owner
@@ -8443,7 +8510,7 @@ document.addEventListener("click", e=>{
     const mc = UI.menuConfirm;
     if (mc==="load"){ const s = loadSaved(slotOf(S)); if (s){ S=s; applyMode(S.mode); } UI.modal=null; UI.menuConfirm=null; render(); return; }
     if (mc==="restart" && S.mode && (S.mode.daily || S.mode.coded)){ UI.modal=null; UI.menuConfirm=null; startMode(Object.assign({}, S.mode, {seed:S.seed0})); return; }
-    if (mc==="restart"){ const pk = {diff:S.mode.diff, scen:S.mode.scen, ctr:S.mode.ctr, quick:S.mode.quick, learn:S.mode.learn, sandbox:S.mode.sandbox}; clearSaved(); newGame(pk); UI={tab:"build", node:"moriche", modal:null, screen:"game", offer:true}; save(); render(); window.scrollTo(0,0); return; }
+    if (mc==="restart"){ const pk = {diff:S.mode.diff, scen:S.mode.scen, ctr:S.mode.ctr, adv:S.mode.adv, quick:S.mode.quick, learn:S.mode.learn, sandbox:S.mode.sandbox}; clearSaved(); newGame(pk); UI={tab:"build", node:"moriche", modal:null, screen:"game", offer:true}; save(); render(); window.scrollTo(0,0); return; }
     if (mc==="new"){ UI.screen="intro"; UI.pick = Object.assign({}, S.mode||{}); savePick(); UI.modal=null; UI.menuConfirm=null; render(); window.scrollTo(0,0); return; }
     return;
   }
@@ -8456,6 +8523,7 @@ document.addEventListener("click", e=>{
   if (d.hedge){ const [kind, c] = d.hedge.split(":"); if (!S.orders.some(o=>o.type==="hedge"&&o.kind===kind)) addOrder(hedgeOrder(kind, +c)); return; }
   if (d.fxconv){ if (!S.orders.some(o=>o.type==="fxConv")){ const X = fxS(); addOrder({type:"fxConv", mode:d.fxconv, amt: d.fxconv==="win" ? fxConvMax() : X.bs}); } return; }
   if (d.ptkind){ const PT = ptS(); if (PT.arrears>100 && PT.kindTurn < S.turn-3){ S.chest = (S.chest||0) + PT.arrears*CFG.ctr.em.kind; PT.arrears = 0; PT.kindTurn = S.turn; save(); } render(); return; }
+  if (d.padv){ const cur = UI.pick||loadPick(); UI.pick = Object.assign({}, cur, {adv:d.padv}); savePick(); render(); return; }
   if (d.pctr){ const cur = UI.pick||loadPick(); UI.pick = Object.assign({}, cur, {ctr:d.pctr}); savePick(); render(); return; }
   if (d.pquick!=null){ const cur = UI.pick||loadPick(); UI.pick = Object.assign({}, cur, {quick:d.pquick==="1"}); savePick(); render(); return; }
   if (d.plearn){ const cur = UI.pick||loadPick(); UI.pick = Object.assign({}, cur, {learn:!cur.learn}); savePick(); render(); return; }
@@ -8469,7 +8537,7 @@ document.addEventListener("click", e=>{
   if (d.sharecopy){ copyText(shareText(), LANG==="es"?"Resumen copiado.":"Summary copied."); return; }
   if (d.codecopy){ copyText(codeOf(S.mode, S.seed0), LANG==="es"?"Código copiado.":"Code copied."); return; }
   if (d.new && d.same && S && S.mode && (S.mode.daily || S.mode.coded)){ startMode(Object.assign({}, S.mode, {seed:S.seed0})); return; }
-  if (d.new){ const pk = (d.same&&S&&S.mode)||UI.pick||loadPick(); clearSaved(); newGame({diff:pk.diff, scen:pk.scen, ctr:pk.ctr, sandbox:pk.sandbox, quick:pk.quick, learn:pk.learn}); UI={tab:"build", node:"moriche", modal:null, screen:"game", offer:true}; save(); render(); window.scrollTo(0,0); return; }
+  if (d.new){ const pk = (d.same&&S&&S.mode)||UI.pick||loadPick(); clearSaved(); newGame({diff:pk.diff, scen:pk.scen, ctr:pk.ctr, adv:pk.adv, sandbox:pk.sandbox, quick:pk.quick, learn:pk.learn}); UI={tab:"build", node:"moriche", modal:null, screen:"game", offer:true}; save(); render(); window.scrollTo(0,0); return; }
   if (d.continue){ S = loadSaved(); applyMode(S.mode); UI.screen="game"; render(); return; }
   if (d.glg){ UI.glg = d.glg; render(); const gl = document.querySelector(".glmodal"); if (gl) gl.scrollTop = 0; return; }
   if (d.tab){ if (d.tab==="gloss"){ if (UI.tip && TIPS[UI.tip]) UI.glg = glGroupOf(TIP(UI.tip)[0]); UI.tip = null; UI.modal="gloss"; render(); return; } if (d.tab==="investors"||d.tab==="fiscal"||d.tab==="finance"||d.tab==="log"){ UI.fov=d.tab==="log"?"hist":"fin"; UI.status=false; UI.tip=null; if (UI.modal==="help") UI.modal=null; render(); return; } UI.fov=false; UI.tab = d.tab==="fiscal" ? "investors" : d.tab; UI.mview="panel"; UI.status=false; UI.tip=null; if (UI.modal==="help") UI.modal=null; render(); return; }
