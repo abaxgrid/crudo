@@ -1699,6 +1699,7 @@ const CFG = {
     tightFi:.6, tightSpot:.5, tightTurns:3, complySpot:.35, sanctTurns:4,
     lng:{cost:900, turns:6, feed:120, max:2, field:130, fieldDecl:.015, shrink:.08, opexFix:10, opexVar:1.0, slope:.17, tankDays:10, boe:6},
     spill:{base:.002, perShip:.0006, shadow:2.5, spotK:1.5, cost:[40,90], appr:-3, berthOut:1}},
+  rt:{on:true, name:"Llanero Fuels", pack:200, packCost:90, max:1600, kbd:.09, base:4, swing:.12, mLo:1, mHi:10, uplift:4, spotPrem:1.5, upkeep:.02, brand0:50, drift:2, camp:8, campCost:8, churnBelow:35, churn:.04},
   ds:{on:true, slots:1, mktPain:[[95,-2],[80,-1]], lockTurns:4, sanct:{turns:4, disc:8, redirect:4, cost:40},
       split0:1, demand0:90, demandYr:.02, impCap:60, impSp:10, impFreight:3, expBonus:3, short:.10, leak:.10, wear:2, condFull:85, ta:12, taCost:15, defer:4,
       dial:{market:{f:1, appr:0, dem:1, name:"Market"}, capped:{f:.8, appr:.5, dem:1.10, name:"Capped"}, subsid:{f:.5, appr:1, dem:1.25, name:"Subsidised"}},
@@ -2020,7 +2021,7 @@ function xpRisk(R, t, roll){
   }
 }
 let DSRF = {dom:1, exp:1, ol:1, fe:1};
-const OPEX = ["payBonus","training","incRelief","incCredit","incAccel","patch","shipTc","ofsExit","fxConv","hedge","aroFund","pna","pitClean","ldar","greenSign","greenExit","tpBook"];
+const OPEX = ["rtBrand","payBonus","training","incRelief","incCredit","incAccel","patch","shipTc","ofsExit","fxConv","hedge","aroFund","pna","pitClean","ldar","greenSign","greenExit","tpBook"];
 const INC = {
   relief:{name:"Extra-heavy royalty relief", fee:30},
   credit:{name:"Strategic infrastructure credit", fee:20},
@@ -2096,6 +2097,15 @@ const EVENTS = {
   water:{good:false, title:"Water breakthrough at Araguaney", text:"Water is coning into the main producers.",
     opts:[{label:"Water shut-off job", desc:"$45M. Araguaney loses 3 kb/d for good.", cost:45, fx:()=>{ blk("araguaney").base=Math.max(0,blk("araguaney").base-3); return 0; }},
           {label:"Accept it", desc:"No cost. Araguaney loses 10 kb/d for good.", fx:()=>{ blk("araguaney").base=Math.max(0,blk("araguaney").base-10); return 0; }}]},
+  rtCreditors:{good:false, title:"Creditors go after your overseas fuel network", text:"Holders of defaulted state bonds ask a foreign court to seize the shares of your dealer network to pay the debt.",
+    cond:()=>rtOn() && S.rt && S.rt.dealers>=400 && !S.rtSeized, w:()=>1,
+    opts:[{label:"Settle with the creditors", desc:"$120M. The network is safe.", cost:120},
+          {label:"Fight it in court", desc:"50%: the claim fails. 50%: you lose 30% of the dealers and −4 approval.",
+           fx:R=>{ S.rtSeized = 1; if (rng()<.5){ R.events.push("The court threw out the creditors' claim on the dealer network."); return 0; } const T = rtS(), lost = Math.round(T.dealers*.3); T.dealers -= lost; R.appr.push({v:-4, why:"Lost dealers to a court seizure"}); R.events.push(`The court handed ${f0(lost)} dealers to the creditors.`); return 0; }}]},
+  rtStorm:{good:false, title:"A hurricane shuts Gulf fuel terminals", text:"Your dealers' supply terminals are closed for a week and stations are running dry.",
+    cond:()=>rtOn() && S.rt && S.rt.dealers>0, w:()=>.6,
+    opts:[{label:"Truck in fuel at any price", desc:"$25M. The brand holds.", cost:25},
+          {label:"Ration deliveries", desc:"No cost. Brand −15.", fx:R=>{ const T = rtS(); T.brand = clamp(T.brand-15,0,100); return 0; }}]},
   envInspect:{good:false, title:"Inspectors order a clean-up of legacy oil pits", text:"Environment ministry inspectors found old oil pits leaking on your blocks and order them cleaned up.",
     cond:()=>envOn() && S.turn>3 && Object.values(envS().pits).some(n=>n>0), w:()=>Math.min(2, Object.values(envS().pits).reduce((a,b)=>a+b,0)/10),
     opts:[{label:"Agree a clean-up plan", desc:`Remediate the three worst pits now, about $${CFG.env?CFG.env.pitCost*3:36}M. No approval cost.`,
@@ -2480,6 +2490,8 @@ function costOf0(o){
   if (o.type==="pna") return CFG.aro.pnaCost;
   if (o.type==="pitClean") return CFG.env.pitCost*Math.min(CFG.env.pitBatch, (S.env&&S.env.pits[o.block])||CFG.env.pitBatch);
   if (o.type==="ldar") return CFG.env.ldarCost;
+  if (o.type==="rtSign") return CFG.rt.packCost;
+  if (o.type==="rtBrand") return CFG.rt.campCost;
   if (o.type==="greenSign" || o.type==="greenExit" || o.type==="tpBook") return 0;
   if (o.type==="llBuy") return CFG.ll.items[o.item].px*(o.n||1);
   if (o.type==="ofsExit"){ const c = ofsS().k[o.cat].c; return c ? ofsExitFee(c) : 0; }
@@ -3010,6 +3022,8 @@ function dsTurnsOf(o){ if (o.type==="lngTrain") return CFG.ship.lng.turns; if (o
 function undoOrder(id){ S.orders = S.orders.filter(o=>o.id!==id); save(); render(); }
 function orderLabel(o){
   const bn = id => S.blocks.find(b=>b.id===id)?.name;
+  if (o.type==="rtSign") return `Sign ${CFG.rt.pack} ${CFG.rt.name} dealers`;
+  if (o.type==="rtBrand") return `${CFG.rt.name} brand campaign`;
   if (o.type==="aroFund") return `Pay ${money(o.amt||50)} into the abandonment fund`;
   if (o.type==="pna") return `Plug idle wells at ${blk(o.block)?blk(o.block).name:o.block}`;
   if (o.type==="pitClean") return `Remediate legacy pits at ${blk(o.block)?blk(o.block).name:o.block}`;
@@ -3090,6 +3104,8 @@ function endTurn(){
       case "training": training += o.cost; S.skillAdj += CFG.crewTrain; break;
       case "incRelief": fees += o.cost; S.inc.relief = {start:t, end:t+CFG.reliefTurns-1, pads:0, received:0}; R.events.push(`Royalty relief granted for turns ${t}–${t+CFG.reliefTurns-1}: royalty ${f0(CFG.royRelief*100)}% instead of ${f0(CFG.royalty*100)}%. Commitment: start ${CFG.reliefPads} pads in that time.`); break;
       case "incCredit": fees += o.cost; S.inc.credit = {start:t, end:t+CFG.creditTurns-1}; R.events.push(`Infrastructure credit granted for turns ${t}–${t+CFG.creditTurns-1}.`); break;
+      case "rtSign": rtS().pending += CFG.rt.pack; R.events.push(`Signed ${CFG.rt.pack} new ${CFG.rt.name} dealers: they switch flags next turn.`); break;
+      case "rtBrand": { fees += o.cost; const T = rtS(); T.brand = clamp(T.brand + CFG.rt.camp, 0, 100); R.events.push(`${CFG.rt.name} brand campaign: brand ${f0(T.brand)}.`); break; }
       case "aroFund": fees += o.cost; aroS().fund += o.cost; R.events.push(`Paid ${money(o.cost)} into the abandonment fund: ${money(S.aro.fund)} set aside.`); break;
       case "pna": { fees += o.cost; const b = blk(o.block), V = envS(), n = Math.min(CFG.aro.pnaWells, V.idle[o.block]||0);
         V.idle[o.block] = (V.idle[o.block]||0) - n; if (b){ const r = Math.min(b.aro||0, CFG.aro.pnaRetire); b.aro -= r; }
@@ -3234,6 +3250,7 @@ function endTurn(){
   const gasRev = CFG.days*(F.gasDom*S.domGasPx + F.gasExp*CFG.expGasPrice)/1000;
   const townRev = Math.max(0, F.townMW - (em.townFirst?Math.min(em.townFirst,townCap()):0))*24*CFG.days*CFG.townPrice/1e6;
   const DS = dsCash(F, P, R);
+  { const RT = rtCash(F, P, R); DS.rev += RT.rev; DS.cost += RT.cost; }   // v0.91 dealer network margins ride with downstream
   const SH = shipCash(F, P, R);
   const rev = crudeRev + gasRev + townRev + DS.rev + SH.rev;
   const lift = k*(F.mature*CFG.liftM + F.cold*CFG.liftC + F.th*CFG.liftT*(hasTech("steamopt")?.75:1) + (F.lake||0)*CFG.lake.lift) + (CFG.water&&CFG.water.on ? k*(F.water||0)*CFG.water.cost : 0);   // v0.78 produced water handling
@@ -3450,6 +3467,7 @@ function endTurn(){
   if (CFG.ofsOn) ofsTick(P, R);
   if (CFG.fx && CFG.fx.on && !SIM) fxTick(R, t);
   if (!SIM) v80Tick(R, t);
+  if (!SIM) rtTick(R, t);
   if (dsOn() && S.ds) dsAdvance(R, t);
   if (shipOn()) shipTick(R, t, P);
   // 8. outcome checks
@@ -3791,7 +3809,7 @@ function finYear(y){
 
 /* ============ persistence ============ */
 const KEY="crudo-prototype-v7";
-const VERSION="0.90";   // user-facing build; pre-1.0, so labelled beta. Bump here when publishing.
+const VERSION="0.91";   // user-facing build; pre-1.0, so labelled beta. Bump here when publishing.
 const VLABEL=`Beta · v${VERSION}`;
 /* ============ i18n — Spanish (Venezuelan / Faja terminology). Stage 1: UI shell. ============
    Core glossary: upgrader→mejorador · blending→mezcla · diluent→diluente(nafta) · extra-heavy→extrapesado
@@ -4120,6 +4138,7 @@ const TIPS = {
   hedges:["Price hedges","Lock in part of next year's price. Put options set a floor and keep the upside, for a premium paid now. A zero-cost collar sets a floor and a cap with no premium. A fixed-price swap locks one price: you are paid when Atlantic Light is below it and pay when it is above. Each hedge covers a share of this quarter's net crude for four quarters and settles every quarter in operating cash."],
   fx:["Bolívares","About a third of operating costs are paid in bolívares. Local inflation runs ahead of the crawling devaluation, so those costs cost more dollars every quarter until a maxi-devaluation resets them. Bolívar revenue (home crude and gas, power to the towns, domestic fuel) pays the bolívar costs first; any surplus is trapped in the country. Convert it at the official window (limited each quarter, small haircut) or the parallel market (all of it, large haircut); converted money goes to your capex fund. Trapped balances lose value with every devaluation."],
   contractModel:["Contract model","Chosen at the start of a campaign. Under a CPP (2026 law) you hold the block alone, pay the standard royalty and fund all your capex. Under an empresa mixta a state partner owns 60%: it owes 60% of each cash call and you pay a higher royalty. It pays more of its calls when oil is dear and falls behind when it is cheap; arrears come back slowly into your capex fund, or you can take crude in kind at a discount. Renegotiation is more likely under an empresa mixta."],
+  retail:["Dealer network","Llanero Fuels is your branded station network on the Gulf Coast and in the Caribbean. Dealers own their stations and buy gasoline and diesel from you under your flag; you earn the wholesale margin on what they sell, less a support cost per dealer. Barrels from your own export refinery earn an integration uplift; anything else is bought as spot cargoes at a premium, so without an export refinery the network barely pays. The margin widens when crude is cheap and narrows when it is dear. A weak brand (below 35) loses dealers every quarter; campaigns rebuild it. A large network attracts creditors of the state."],
   aro:["Abandonment liability (ARO)","The cost of plugging every well and removing every facility at the end of their lives, as a liability that grows with each pad, gas well and project and unwinds 1.2% a quarter. It sits on each block, so a stake sale or swap passes the buyer its share, and partners carry theirs. From Year 2 the regulator requires an abandonment fund covering a rising share of the liability at each year end (10%, then 5 points more a year): met +1 approval, short −2. Plugging idle wells retires liability and cuts methane."],
   legacy:["Legacy contamination","Oil pits left on the old blocks from decades of production. Clean them up a few at a time for a little approval, or wait: inspectors can order a clean-up at any time, and contesting the order risks a fine and an approval hit."],
   methane:["Methane","Methane intensity is the methane vented by idle wells and casing gas, plus what slips through flares, as a share of the gas you produce. From Year 2 there is a limit that tightens every year, and each quarter over it is fined. Leak detection and repair halves venting; plugging idle wells removes their share for good."],
@@ -4230,6 +4249,7 @@ const TIPS_ES = {
   hedges:["Coberturas de precio","Asegura parte del precio del próximo año. Las opciones put fijan un piso y conservan el alza, a cambio de una prima pagada ahora. Un collar de costo cero fija un piso y un techo sin prima. Un swap de precio fijo asegura un solo precio: cobras cuando el Atlantic Light está por debajo y pagas cuando está por encima. Cada cobertura cubre una parte del crudo neto de este trimestre durante cuatro trimestres y se liquida cada trimestre en el flujo de caja operativo."],
   fx:["Bolívares","Cerca de un tercio de los costos operativos se paga en bolívares. La inflación local va por delante del deslizamiento cambiario, así que esos costos cuestan más dólares cada trimestre hasta que una maxidevaluación los reajusta. Los ingresos en bolívares (crudo y gas para el país, electricidad a los poblados, combustible interno) pagan primero los costos en bolívares; el excedente queda atrapado en el país. Conviértelo en la ventanilla oficial (limitada cada trimestre, descuento pequeño) o en el mercado paralelo (todo, descuento grande); el dinero convertido va a tu fondo de capex. Los saldos atrapados pierden valor con cada devaluación."],
   contractModel:["Modelo de contrato","Se elige al inicio de la campaña. Con un CPP (ley 2026) operas el bloque solo, pagas la regalía estándar y financias todo tu capex. En una empresa mixta un socio estatal posee 60%: le corresponde 60% de cada aporte de caja y tú pagas una regalía mayor. Paga más de sus aportes cuando el petróleo está caro y se atrasa cuando está barato; los atrasos vuelven poco a poco a tu fondo de capex, o puedes cobrar en crudo con descuento. La renegociación es más probable en una empresa mixta."],
+  retail:["Red de distribuidores","Llanero Fuels es tu red de estaciones con bandera propia en la costa del Golfo y el Caribe. Los distribuidores son dueños de sus estaciones y te compran gasolina y diésel bajo tu bandera; ganas el margen mayorista sobre lo que venden, menos un costo de apoyo por distribuidor. Los barriles de tu refinería de exportación ganan un plus por integración; el resto se compra en cargamentos al contado con recargo, así que sin refinería de exportación la red apenas paga. El margen se amplía cuando el crudo está barato y se estrecha cuando está caro. Una marca débil (bajo 35) pierde distribuidores cada trimestre; las campañas la reconstruyen. Una red grande atrae a los acreedores del Estado."],
   aro:["Pasivo de abandono (ARO)","El costo de taponar cada pozo y retirar cada instalación al final de su vida útil, como un pasivo que crece con cada macolla, pozo de gas y proyecto y se actualiza 1,2% por trimestre. Está asignado a cada bloque, así que una venta de participación o un canje traspasa al comprador su parte, y los socios cargan la suya. Desde el año 2 el regulador exige un fondo de abandono que cubra una parte creciente del pasivo al cierre de cada año (10%, luego 5 puntos más por año): si se cumple +1 de aprobación, si no −2. Taponar pozos inactivos retira pasivo y reduce el metano."],
   legacy:["Contaminación heredada","Fosas petroleras dejadas en los bloques viejos por décadas de producción. Sanéalas de a pocas por un poco de aprobación, o espera: los inspectores pueden ordenar el saneamiento en cualquier momento, y recurrir la orden arriesga una multa y una caída de aprobación."],
   methane:["Metano","La intensidad de metano es el metano venteado por pozos inactivos y gas de revestimiento, más lo que escapa en los mechurrios, como proporción del gas que produces. Desde el año 2 hay un límite que se endurece cada año, y cada trimestre por encima se multa. La detección y reparación de fugas reduce el venteo a la mitad; taponar pozos inactivos elimina su parte para siempre."],
@@ -6554,6 +6574,40 @@ function dsSlateHTML(D){
     <p class="note tnote" style="margin:6px 0 0">${tip("townslate")} Each product is matched on its own, so a plant with the wrong slate leaves the pumps dry while fuel oil piles up.</p>
     <h4 style="margin:10px 0 4px">Imports${tip("town")}</h4>${chips}</div>`;
 }
+
+/* ---- v0.91 Llanero Fuels: a branded dealer network abroad (Gulf Coast and Caribbean) supplied by your export refinery ----
+   Dealers own their stations and carry your brand; you earn the wholesale (rack-to-dealer) margin on what they sell.
+   Barrels from your own export refinery skip the cargo market and earn an integration uplift; the rest is bought as spot cargoes.
+   The margin widens when crude is cheap and narrows when it is dear, so the network cushions a falling oil price. */
+const rtOn = () => !!(CFG.rt && CFG.rt.on && dsOn());
+function rtS(){ return S.rt || (S.rt = {dealers:0, pending:0, brand:CFG.rt.brand0, last:null}); }
+function rtFlows(F, P){ const C = CFG.rt, T = rtS(), dem = T.dealers*C.kbd;
+  const ownAvail = F && F.ds && S.ds && S.ds.sites.exp.tier ? (F.ds.fuelsExp||0) + (F.ds.domSurplus||0) : 0, own = Math.min(dem, Math.max(0, ownAvail)), bought = dem - own;
+  const m = clamp(C.base + C.swing*(70 - P), C.mLo, C.mHi)*(.8 + .4*T.brand/100);
+  return {dem, own, bought, m, mOwn: m + C.uplift, mBuy: m - C.spotPrem}; }
+function rtCash(F, P, R){ const o = {rev:0, cost:0}; if (!rtOn()) return o; const T = rtS(), C = CFG.rt, k = CFG.days/1000; if (!T.dealers) return o;
+  const X = rtFlows(F, P); o.rev = k*(X.own*X.mOwn + X.bought*X.mBuy); o.cost = T.dealers*C.upkeep; R.rt = {dealers:T.dealers, dem:X.dem, own:X.own, bought:X.bought, m:X.m, net:o.rev - o.cost, brand:T.brand}; return o; }
+function rtTick(R, t){ if (!rtOn()) return; const T = rtS(), C = CFG.rt;
+  if (T.pending){ T.dealers += T.pending; R.completed.push(`${f0(T.pending)} more dealers now fly the ${C.name} flag: ${f0(T.dealers)} in the network.`); T.pending = 0; }
+  if (!T.dealers) return;
+  T.brand = clamp(T.brand + (T.brand < 70 ? C.drift : 0), 0, 100);
+  if (T.brand < C.churnBelow){ const lost = Math.round(T.dealers*C.churn); if (lost){ T.dealers -= lost; R.events.push(`${f0(lost)} dealers left the ${C.name} network: the brand is weak.`); } } }
+function rtHTML(F){ const C = CFG.rt, T = rtS(), es = LANG==="es", P = price() + (wxMods().px||0), X = rtFlows(F, P), k = CFG.days/1000;
+  const exp = S.ds && S.ds.sites.exp.tier, L = S.last && S.last.rt, q = ordersOf("rtSign").length, own = X.dem>0 ? X.own/X.dem : 0;
+  const net = k*(X.own*X.mOwn + X.bought*X.mBuy) - T.dealers*C.upkeep;
+  return `<h3 class="ch3">${esc(C.name)}${tip("retail")}</h3>
+    <p class="note" style="margin:0">${es?"Tu red de estaciones con bandera propia en la costa del Golfo y el Caribe: los distribuidores son dueños de sus estaciones y tú les vendes gasolina y diésel con tu marca.":"Your branded station network on the Gulf Coast and in the Caribbean: dealers own their stations and you supply them gasoline and diesel under your brand."}</p>
+    <div class="stats"><div class="stat"><div class="l">${es?"Distribuidores":"Dealers"}</div><div class="v">${f0(T.dealers)}${T.pending?` <small class="muted">+${f0(T.pending)}</small>`:""}</div></div>
+      <div class="stat"><div class="l">${es?"Demanda":"Demand"}</div><div class="v">${f0(X.dem)} kb/d</div></div>
+      <div class="stat"><div class="l">${es?"Margen mayorista":"Wholesale margin"}</div><div class="v">$${f1(X.m)}/bbl</div></div>
+      <div class="stat"><div class="l">${es?"Marca":"Brand"}</div><div class="v ${T.brand<C.churnBelow?"bad":""}">${f0(T.brand)}</div></div></div>
+    ${T.dealers?`<div class="lfl"><span class="ll">${es?"De tu refinería de exportación":"From your export refinery"}</span><span class="lbar"><i class="good" style="width:${(own*100).toFixed(0)}%"></i></span><b class="num">${f0(X.own)}<small> kb/d</small></b></div>
+      <div class="lfl"><span class="ll">${es?"Cargamentos comprados":"Bought cargoes"}</span><span class="lbar"><i class="pow" style="width:${((1-own)*100).toFixed(0)}%"></i></span><b class="num">${f0(X.bought)}<small> kb/d</small></b></div>
+      <p class="note" style="margin:0">${es?`Al precio de hoy la red deja unos <b>${money(net)}</b> por trimestre${L?`; el último trimestre dejó ${money(L.net)}`:""}.`:`At today's price the network makes about <b>${money(net)}</b> a quarter${L?`; last quarter ${money(L.net)}`:""}.`}</p>`:""}
+    ${!exp?`<p class="note bad" style="margin:0">${es?"Sin refinería de exportación todo el producto se compra en cargamentos y el margen apenas cubre los costos. Construye la refinería de exportación para abastecer la red.":"Without an export refinery every barrel is a bought cargo and the margin barely covers costs. Build the export refinery to supply the network."}</p>`:""}
+    <div class="acts">${act(es?`Firmar ${C.pack} distribuidores`:`Sign ${C.pack} dealers`, es?`Incentivos de cambio de bandera; se suman el próximo turno (+${f0(C.pack*C.kbd)} kb/d de demanda). Tope ${f0(C.max)}.`:`Rebranding incentives; they join next turn (+${f0(C.pack*C.kbd)} kb/d of demand). Up to ${f0(C.max)}.`, C.packCost*matK(), T.dealers + T.pending + q*C.pack + C.pack <= C.max && !q, q?(es?"Ya ordenado este turno.":"Already ordered this turn."):(es?"La red está en su tope.":"The network is at its cap."), `data-order="rtSign"`)}
+      ${T.dealers?act(es?"Campaña de marca":"Brand campaign", es?`+${C.camp} de marca. Una marca fuerte sube el margen y retiene distribuidores.`:`+${C.camp} brand. A strong brand lifts the margin and keeps dealers.`, C.campCost, !ordersOf("rtBrand").length && T.brand<100, es?"Ya ordenada.":"Already ordered.", `data-order="rtBrand"`):""}</div>
+    <p class="note" style="margin:0">${es?`El margen se amplía cuando el crudo está barato y se estrecha cuando está caro: la red amortigua una caída del precio. Los barriles de tu refinería ganan $${C.uplift}/bbl extra; los cargamentos comprados cuestan $${C.spotPrem}/bbl más. Cada distribuidor cuesta $${f0(C.upkeep*1000)} mil por trimestre en apoyo.`:`The margin widens when crude is cheap and narrows when it is dear, so the network cushions a falling price. Barrels from your refinery earn $${C.uplift}/bbl more; bought cargoes cost $${C.spotPrem}/bbl more. Each dealer costs $${f0(C.upkeep*1000)}k a quarter in support.`}</p>`; }
 function dsSiteCard(s, F){
   const X = dsS().sites[s], T = X.tier ? CFG.ds.tiers[X.tier] : null, nx = CFG.ds.tiers[X.tier+1], D = F.ds;
   const bP = S.projects.find(p=>p.kind==="refinery" && p.site===s), bO = S.orders.find(o=>o.type==="refinery" && o.site===s);
@@ -6607,7 +6661,7 @@ function dsHTML(F){
   const feedSec = `<h3>Crude to refine${tip("dssplit")}</h3>${split}<p class="note" style="margin:0">Refineries may take up to ${f0(X.split*100)}% of field output (${f0(feedMax)} kb/d) and fill up to ${f0(cap)} kb/d of capacity.</p>
     <h3>Domestic fuel price${tip("dsdial")}</h3>${dial}${dsLocked()?`<p class="note" style="margin:0">Locked at Capped until turn ${X.lock} after the protests.</p>`:""}${X.sanct&&X.sanct.left>0?`<p class="note bad" style="margin:0">Export sanctions: exported fuels sell $${X.sanct.disc}/bbl lower for ${X.sanct.left} more quarter${X.sanct.left>1?"s":""}.</p>`:""}`;
   const priceSec = any ? `${prod}<p class="note" style="margin:0">Spreads move together every quarter. At home you receive the dial price; the subsidy and any leakage cost you the difference.</p>` : `<p class="note">Prices appear once a refinery is built.</p>`;
-  return `<div class="tsum">${sum}</div>` + secTabs("ds",[["dom","Home",dsSiteCard("dom",F)],["exp","Export",dsSiteCard("exp",F)],...(D&&D.prod?[["town","Town",dsSlateHTML(D)]]:[]),["feed","Feed & price",feedSec],["px","Prices",priceSec],["chem","Chem",pcBody]]);
+  return `<div class="tsum">${sum}</div>` + secTabs("ds",[["dom","Home",dsSiteCard("dom",F)],["exp","Export",dsSiteCard("exp",F)],...(D&&D.prod?[["town","Town",dsSlateHTML(D)]]:[]),["feed","Feed & price",feedSec],["px","Prices",priceSec],["chem","Chem",pcBody],...(rtOn()?[["rt", LANG==="es"?"Estaciones":"Stations", rtHTML(F)]]:[])]);
 }
 function renHTML(F){
   const R = CFG.ren, r = renS(), fuel = F.renGen*heatRate();
