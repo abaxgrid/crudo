@@ -5,7 +5,8 @@ Usage:  python3 tools/build_pages.py <artifact.html>
 
 The artifact stays the source of truth. This script writes, next to it in the repo:
   index.html               the game, with the heavy embedded data moved out
-  assets/scene.jpg         the start-screen image
+  assets/scene.*           the start-screen image
+  assets/kit3.glb          the 3D models, fetched when the 3D view first opens
   assets/sf/<name>.json    instrument samples, fetched only when music plays
   assets/music/<name>.mid  the soundtrack, as plain download links
 
@@ -45,10 +46,36 @@ html = replace_once(
     html)
 
 # 2. Start-screen image: a real file instead of base64.
-m = once(r'const SCENE_IMG = "data:image/jpeg;base64,([A-Za-z0-9+/=]+)";', html)
-with open(os.path.join(root, "assets", "scene.jpg"), "wb") as f:
-    f.write(base64.b64decode(m.group(1)))
-html = html[:m.start()] + 'const SCENE_IMG = "assets/scene.jpg";' + html[m.end():]
+m = once(r'const SCENE_IMG = "data:image/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)";', html)
+ext = {"jpeg": "jpg"}.get(m.group(1), m.group(1))
+for old in os.listdir(os.path.join(root, "assets")):
+    if old.startswith("scene."):
+        os.remove(os.path.join(root, "assets", old))
+with open(os.path.join(root, "assets", f"scene.{ext}"), "wb") as f:
+    f.write(base64.b64decode(m.group(2)))
+html = html[:m.start()] + f'const SCENE_IMG = "assets/scene.{ext}";' + html[m.end():]
+
+# 2b. 3D model kit (GLB): a separate file, fetched alongside three.js when the 3D view first opens.
+kit = os.path.join(root, "assets", "kit3.glb")
+m = re.search(r'window\.KIT3_B64="([A-Za-z0-9+/=]+)";', html)
+if m:
+    with open(kit, "wb") as f:
+        f.write(base64.b64decode(m.group(1)))
+    html = html[:m.start()] + html[m.end():]   # the rest of that line (the 2D icons) stays
+    html = replace_once(
+        "const bin = Uint8Array.from(atob(b64), c=>c.charCodeAt(0)), dv",
+        "const bin = b64 instanceof Uint8Array ? b64 : Uint8Array.from(atob(b64), c=>c.charCodeAt(0)), dv",
+        html)
+    html = replace_once(
+        "  function load(){\n    if (window.THREE) return Promise.resolve();",
+        '  let kitP = null;\n'
+        '  function kitLoad(){ return kitP || (kitP = window.KIT3_B64 ? Promise.resolve() : fetch("assets/kit3.glb").then(r=>r.ok ? r.arrayBuffer() : null)'
+        '.then(b=>{ if (b) window.KIT3_B64 = new Uint8Array(b); }).catch(()=>{})); }\n'
+        '  function load(){ return Promise.all([load3(), kitLoad()]); }\n'
+        '  function load3(){\n    if (window.THREE) return Promise.resolve();',
+        html)
+elif os.path.exists(kit):
+    os.remove(kit)
 
 # 3. Soundtrack: write the .mid files and let the Credits buttons link to them
 #    when claude.ai's download feature isn't there.
