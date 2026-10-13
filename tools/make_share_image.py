@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Make assets/share.jpg (1200x630), the preview image WhatsApp and other apps show for the play link."""
+"""Make assets/share-sim.jpg (1200x630), the preview image WhatsApp and other apps show for the play link."""
 import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
@@ -24,18 +24,18 @@ img = Image.composite(Image.new("RGB", (W, H), BG), img, shade)
 
 d = ImageDraw.Draw(img)
 d.text((64, 70), "CRUDO", font=F("barlow-condensed-latin-700-normal.woff", 168), fill=AMBER)
-d.text((70, 262), "Barrels of Venezuela", font=F("ibm-plex-sans-latin-600-normal.woff", 40), fill=FG)
+d.text((70, 262), "Oil value chain simulator", font=F("ibm-plex-sans-latin-600-normal.woff", 40), fill=FG)
 body = F("ibm-plex-sans-latin-500-normal.woff", 26)
-lines = ["Run an oil company, one quarter at a time.",
-         "Drill, upgrade, ship and sell Orinoco crude",
-         "past storms, sanctions and investors."]
+lines = ["A business simulation of Venezuela's oil sector:",
+         "fiscal terms, upgrading bottlenecks, shipping,",
+         "sanctions and capital discipline, quarter by quarter."]
 for i, t in enumerate(lines):
     d.text((70, 336 + i * 40), t, font=body, fill=MUTED)
-bf, label = F("ibm-plex-sans-latin-600-normal.woff", 24), "PLAY FREE IN YOUR BROWSER"
+bf, label = F("ibm-plex-sans-latin-600-normal.woff", 24), "TRY THE SIMULATOR"
 tw = d.textlength(label, font=bf)
 d.rounded_rectangle((70, 494, 70 + tw + 52, 560), radius=10, fill=AMBER)
 d.text((96, 509), label, font=bf, fill=BG)
 
-out = os.path.join(root, "assets", "share.jpg")
+out = os.path.join(root, "assets", "share-sim.jpg")
 img.save(out, "JPEG", quality=84, optimize=True, progressive=True)
 print(out, os.path.getsize(out) // 1024, "KB")
