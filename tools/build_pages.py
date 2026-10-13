@@ -118,6 +118,18 @@ if not os.path.exists(os.path.join(root, "assets", "share-sim.jpg")):
     sys.exit("build stopped: assets/share-sim.jpg is missing (run tools/make_share_image.py)")
 html = replace_once("<head><meta charset=utf8>", "<head><meta charset=utf8>" + meta, html)   # charset stays first
 
+# 5. Leads and statistics (tools/site_config.json): only what is configured is added.
+cfg = json.load(open(os.path.join(root, "tools", "site_config.json")))
+extra = ""
+if cfg.get("goatcounter"):
+    extra += f'<script data-goatcounter="https://{cfg["goatcounter"]}.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>\n'
+if cfg.get("form_url"):
+    js = open(os.path.join(root, "tools", "leads.js"), encoding="utf-8").read().replace("__FORM_URL__", cfg["form_url"])
+    extra += "<script>" + js + "</script>\n"
+if extra:
+    i = html.rfind("</body>")
+    html = (html[:i] + extra + html[i:]) if i >= 0 else html + extra
+
 with open(os.path.join(root, "index.html"), "w", encoding="utf-8") as f:
     f.write(html)
 print(f"index.html {len(html.encode())/1e6:.2f} MB, {len(sf)} instruments, {len(tracks)} tracks")
