@@ -91,6 +91,33 @@ html = replace_once(
     'if (!SHARE.dl){ const a = document.createElement("a"); a.href = `assets/music/crudo-${mName(k).toLowerCase().replace(/\\s+/g,"-")}.mid`; a.download = ""; document.body.appendChild(a); a.click(); a.remove(); if (msg) msg.textContent = es ? `${mName(k)} descargado.` : `${mName(k)} downloaded.`; return; }',
     html)
 
+# 4. Link preview (WhatsApp, Facebook, X, LinkedIn, iMessage): title, summary and assets/share.jpg.
+SITE = "https://dannysimgames.github.io/crudo/"
+TITLE = "CRUDO: Barrels of Venezuela"
+DESC = ("Run an oil company, one quarter at a time. Drill, upgrade, ship and sell Orinoco crude "
+        "past storms, sanctions and impatient investors. Free to play in your browser, in English or Spanish.")
+meta = f"""<title>{TITLE}</title>
+<meta name="description" content="{DESC}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CRUDO">
+<meta property="og:url" content="{SITE}">
+<meta property="og:title" content="{TITLE}">
+<meta property="og:description" content="{DESC}">
+<meta property="og:image" content="{SITE}assets/share.jpg">
+<meta property="og:image:secure_url" content="{SITE}assets/share.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="CRUDO: an oil camp on the Orinoco, with an upgrader, tanks and a tanker terminal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{TITLE}">
+<meta name="twitter:description" content="{DESC}">
+<meta name="twitter:image" content="{SITE}assets/share.jpg">
+"""
+if not os.path.exists(os.path.join(root, "assets", "share.jpg")):
+    sys.exit("build stopped: assets/share.jpg is missing (run tools/make_share_image.py)")
+html = replace_once("<head><meta charset=utf8>", "<head><meta charset=utf8>" + meta, html)   # charset stays first
+
 with open(os.path.join(root, "index.html"), "w", encoding="utf-8") as f:
     f.write(html)
 print(f"index.html {len(html.encode())/1e6:.2f} MB, {len(sf)} instruments, {len(tracks)} tracks")
