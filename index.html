@@ -700,27 +700,38 @@ html,body{margin:0}
 
 /* v24 one-screen start page */
 #app.intropg{padding:0;overflow:visible}
-.intro2{height:100%;width:calc(100% + 32px);margin-inline:-16px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(340px,.85fr);background:var(--bg)}
+.intro2{height:100%;width:calc(100% + 32px);margin-inline:-16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(440px,620px);background:var(--bg)}
 .i2scene{position:relative;background:#17130e 50% 60%/cover no-repeat;min-height:0;overflow:hidden}
 .i2scene::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 55%,var(--bg))}
-.i2call{position:absolute;left:24px;bottom:24px;z-index:1;display:flex;flex-direction:column;gap:8px;width:min(360px,70%)}
-.i2call div{background:rgba(23,19,14,.82);border:1px solid var(--line);border-radius:8px;padding:9px 13px;font-size:14px}
+.i2call{position:absolute;left:24px;bottom:24px;z-index:1;display:flex;flex-direction:column;gap:6px;width:min(420px,72%)}
+.i2call div{background:rgba(23,19,14,.84);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-size:13.5px;line-height:1.35;color:#f1e6d2}
 .i2call b{color:var(--amber);font-family:var(--display);letter-spacing:.06em;text-transform:uppercase;margin-right:4px}
-.i2set{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:20px 32px 20px 12px;overflow:hidden}
-.i2set .hero{font-family:var(--display);font-weight:700;line-height:.85;color:var(--amber);letter-spacing:.04em;font-size:clamp(48px,9vh,76px)}
-.i2set .sub{font-family:var(--display);font-size:18px;margin:0}
-.i2set .pick{gap:6px}
-.i2set .pick h3{font-size:15px;color:var(--muted)}
+.i2tags{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 0}
+.i2tags span{font-size:11.5px;padding:3px 8px;border-radius:999px;background:rgba(23,19,14,.84);border:1px solid rgba(240,180,0,.45);color:#f1e6d2;letter-spacing:.02em}
+.i2set{min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:safe center;gap:10px;padding:14px 28px 14px 12px;overflow-y:auto}
+.i2head{display:flex;align-items:flex-end;gap:6px 16px;flex-wrap:wrap}
+.i2set .hero{font-family:var(--display);font-weight:700;line-height:.85;color:var(--amber);letter-spacing:.04em;font-size:clamp(44px,7.5vh,72px)}
+.i2set .sub{font-family:var(--display);font-size:16px;line-height:1.2;margin:0;flex:1 1 220px;min-width:0}
+.i2set .sub small{display:block;font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.04em;margin-top:2px}
+.i2set .pick{gap:9px}
+.prow{display:flex;flex-direction:column;gap:4px;min-width:0}
+.i2set .pick h3{font-size:13px;color:var(--muted);letter-spacing:.1em}
 .i2set .pgrid,.i2set .pgrid.sc{grid-template-columns:1fr 1fr;gap:6px}
-.i2set .popt{min-height:0;padding:7px 10px;gap:1px}
-.i2set .popt b{font-size:16px}
-.i2set .popt span{font-size:12px;line-height:1.25}
+.i2set .pgrid.dif,.i2set .pgrid.sc,.i2set .pgrid.opts{grid-template-columns:repeat(4,minmax(0,1fr))}
+.i2set .popt{min-height:0;padding:6px 9px;gap:1px}
+.i2set .popt b{font-size:15px;line-height:1.1}
+.i2set .popt span{font-size:11.5px;line-height:1.25}
+.i2set .pgrid.sc .popt span,.i2set .pseg2 .popt span{display:none}
+.i2set .pgrid.sc .popt,.i2set .pseg2 .popt{justify-content:center;min-height:38px}
+.pseg2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.selnote{display:none;margin:0;font-size:12px;line-height:1.35;color:var(--muted)}
+.i2set .selnote{display:block}
 .i2set .pick>.note{display:none}
 .i2btns{display:flex;gap:8px}
 .i2btns .btn{flex:1}
 .i2set .endbtn{font-size:17px;padding:8px 12px;min-height:44px}
-.i2set .i2row .btn{min-height:36px}
-.i2row{display:flex;gap:8px;flex-wrap:wrap}
+.i2set .i2row .btn{min-height:34px}
+.i2row{display:flex;gap:6px;flex-wrap:wrap}
 .i2set .note{font-size:11px;margin:0}
 @media (max-width:860px) and (orientation:portrait),(max-width:700px){
  .intro2{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(80px,24%) minmax(0,1fr)}
@@ -736,7 +747,7 @@ html,body{margin:0}
  .i2set .endbtn{font-size:17px;padding:8px 14px;min-height:44px}
 }
 @media (max-height:520px) and (min-width:700px){
- .i2set{padding:8px 20px 8px 8px;gap:6px;justify-content:center}
+ .i2set{padding:8px 20px 8px 8px;gap:6px;justify-content:safe center}
  .i2set .hero{font-size:36px}
  .i2set .sub,.i2set .pick h3,.i2set .note{display:none}
  .i2set .popt span{display:none}
@@ -1587,8 +1598,15 @@ html[lang=es] .panelbody{gap:10px}
 html[lang=es] .shg .l{letter-spacing:.02em}
 
 /* v0.75 daily challenge, codes, share card, learn locks */
-.dailyc{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.dailyc{display:flex;flex-direction:column;gap:6px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
 .dch{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.dcmore{flex:1 1 100%;display:flex;flex-direction:column;gap:6px}
+.dcmore>summary::-webkit-details-marker{display:none}
+.dcmore>summary::before{content:"▸";margin-right:6px}
+.dcmore[open]>summary::before{content:"▾"}
+.dcmore>summary{cursor:pointer;font-size:12.5px;color:var(--muted);min-height:28px;display:flex;align-items:center}
+.dcmore[open]{gap:6px}
+.dcmore>*:not(summary){margin-top:4px}
 .dcb{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .codebox{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap}
 .codebox input{width:150px;max-width:100%;font:inherit;font-family:var(--mono);text-transform:uppercase;padding:5px 8px;border:1px solid var(--line);border-radius:4px;background:var(--panel2);color:var(--fg)}
@@ -1600,6 +1618,48 @@ ol.lb li.me{color:var(--amber)} ol.lb .lbn{color:var(--muted);font-family:var(--
 .pgrid.mini{grid-template-columns:repeat(4,minmax(0,1fr))} .pgrid.mini.ctrrow{grid-template-columns:repeat(2,minmax(0,1fr))} .pgrid.mini .popt{padding:6px 9px} .pgrid.mini .popt b{font-size:14px} .pgrid.mini .popt span{font-size:11.5px}
 @media (max-width:900px){ .pgrid.mini{grid-template-columns:repeat(2,minmax(0,1fr))} }
 @media (max-width:520px){ .pgrid.mini.ctrrow{grid-template-columns:1fr} }
+.i2set .pseg2 .pgrid.mini.ctrrow{grid-template-columns:1fr 1fr}
+@media (max-width:860px) and (orientation:portrait),(max-width:700px){
+ .i2set .pgrid.dif,.i2set .pgrid.opts{grid-template-columns:1fr 1fr}
+ .i2set .pgrid.sc{grid-template-columns:1fr 1fr}
+ .i2head{gap:2px 12px}
+ .i2set .selnote{font-size:11.5px}
+}
+@media (max-width:420px){ .i2set .pseg2{grid-template-columns:1fr} }
+.i2disc{margin:2px 0 0;font-size:11px;color:#d8cbb4;text-shadow:0 1px 2px #000}
+.i2set>.note.disc{display:none}
+@media (max-width:860px) and (orientation:portrait),(max-width:700px){ .i2set>.note.disc{display:block} }
+@media (max-height:520px) and (min-width:700px){ .i2disc{display:none} }
+@media (min-width:1000px) and (max-height:780px){
+ .i2set{gap:8px;padding-block:10px}
+ .i2set .pick{gap:7px}
+ .prow{display:grid;grid-template-columns:86px minmax(0,1fr);column-gap:10px;row-gap:3px;align-items:center}
+ .prow>h3{grid-column:1;font-size:11.5px!important;line-height:1.2;letter-spacing:.08em!important}
+ .prow>.pgrid,.prow>.pseg2,.prow>.selnote{grid-column:2}
+ .i2set .hero{font-size:clamp(40px,7vh,56px)}
+ .i2set .sub{font-size:14.5px}
+ .dailyc{flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:7px 12px}
+ .dailyc .dch{flex:1 1 220px}
+ .dailyc .dcb{flex:0 1 auto}
+ .dcmore:not([open]){flex:0 1 auto}
+ .dcmore>summary{min-height:30px}
+ .i2call{bottom:16px;gap:5px}
+ .i2call div{padding:5px 10px;font-size:12.5px}
+}
+@media (min-width:1000px) and (max-height:660px){
+ .i2set .hero{font-size:40px}
+ .i2set .sub small{display:inline;margin-left:8px}
+ .i2set .selnote.cn{display:none}
+ .i2set .pgrid.opts .popt span{display:none}
+ .i2set .pgrid.sc .popt,.i2set .pseg2 .popt{min-height:34px}
+ .i2set .popt{padding:5px 8px}
+ .i2set .endbtn{min-height:40px;padding:6px 12px}
+ .i2set .i2row .btn{min-height:32px}
+ .i2tags{display:none}
+}
+
+@media (max-height:520px) and (min-width:700px){ .i2set .selnote,.i2tags{display:none} .i2set .hero{font-size:34px} .i2set .pgrid.sc .popt,.i2set .pseg2 .popt{min-height:30px} }
+@media (min-width:1100px) and (max-height:720px){ .i2set .pgrid.dif .popt span{display:none} .i2set .hero{font-size:44px} .i2set .sub{font-size:14px} .i2set .pick{gap:6px} .i2set{gap:7px} .i2call div{padding:5px 10px;font-size:12.5px} }
 .intro h1{font-size:clamp(34px,10vw,56px)!important;overflow-wrap:anywhere}
 
 /* v0.77 rival technologies */
@@ -3809,7 +3869,7 @@ function finYear(y){
 
 /* ============ persistence ============ */
 const KEY="crudo-prototype-v7";
-const VERSION="0.91";   // user-facing build; pre-1.0, so labelled beta. Bump here when publishing.
+const VERSION="0.93";   // user-facing build; pre-1.0, so labelled beta. Bump here when publishing.
 const VLABEL=`Beta · v${VERSION}`;
 /* ============ i18n — Spanish (Venezuelan / Faja terminology). Stage 1: UI shell. ============
    Core glossary: upgrader→mejorador · blending→mezcla · diluent→diluente(nafta) · extra-heavy→extrapesado
@@ -3924,11 +3984,11 @@ let ES_LAST=null;
 const esNow = el => { esSync(); if (LANG==="es"){ esNode(el); if (ES_OBS) ES_OBS.takeRecords(); } };   // records from this render are already handled
 function esSync(){ try{ document.documentElement.lang = LANG; }catch(e){} if (LANG==="es" || ES_LAST==="es"){ if (LANG!==ES_LAST || LANG==="es" && !ES_OBS) esApply(); } ES_LAST=LANG; }
 const T = {
-  "sub.tagline":{en:"Barrels of Venezuela · 36 quarterly turns", es:"Barriles de Venezuela · 36 turnos trimestrales"},
-  "mnu.build":{en:"Build", es:"Construye"}, "mnu.buildD":{en:"wells, pipelines and a terminal", es:"pozos, oleoductos y una terminal"},
-  "mnu.ship":{en:"Ship", es:"Embarca"}, "mnu.shipD":{en:"crude and LNG past storms and sanctions", es:"crudo y GNL entre tormentas y sanciones"},
-  "mnu.supply":{en:"Supply", es:"Abastece"}, "mnu.supplyD":{en:"the home market with fuel and power", es:"al mercado interno con combustible y energía"},
-  "mnu.hit":{en:"Hit", es:"Alcanza"}, "mnu.hitD":{en:"the export target and keep approval up", es:"la meta de exportación y mantén la aprobación"},
+  "sub.tagline":{en:"Barrels of Venezuela · run an oil company, one quarter at a time", es:"Barriles de Venezuela · dirige una petrolera, trimestre a trimestre"},
+  "mnu.build":{en:"Produce", es:"Produce"}, "mnu.buildD":{en:"8° extra-heavy crude: wells, water, upgrader and your own power", es:"crudo extrapesado de 8°: pozos, agua, mejorador y tu propia energía"},
+  "mnu.ship":{en:"Ship", es:"Embarca"}, "mnu.shipD":{en:"by tanker or pipeline to buyers whose refineries fit your grade", es:"por tanquero u oleoducto a compradores cuyas refinerías aceptan tu grado"},
+  "mnu.supply":{en:"Sell", es:"Vende"}, "mnu.supplyD":{en:"fuel at home through your Llanero Fuels stations", es:"combustible en casa con tus estaciones Llanero Fuels"}, "mnu.fin":{en:"Finance", es:"Financia"}, "mnu.finD":{en:"CPP or empresa mixta, hedges, bolívares and green loans", es:"CPP o empresa mixta, coberturas, bolívares y préstamos verdes"},
+  "mnu.hit":{en:"Deliver", es:"Cumple"}, "mnu.hitD":{en:"the investors' mandate and the export target", es:"el mandato de los inversionistas y la meta de exportación"},
   "mnu.diff":{en:"Difficulty", es:"Dificultad"}, "mnu.scen":{en:"Scenario", es:"Escenario"},
   "mnu.target":{en:"Target", es:"Meta"}, "mnu.rescue1":{en:"rescue", es:"rescate"}, "mnu.rescueN":{en:"rescues", es:"rescates"}, "mnu.norescue":{en:"no rescue", es:"sin rescate"},
   "mnu.continue":{en:"Continue", es:"Continuar"}, "mnu.newgame":{en:"New game", es:"Nueva partida"}, "mnu.start":{en:"Start campaign", es:"Iniciar campaña"},
@@ -8095,24 +8155,31 @@ function savePick(){ try{ localStorage.setItem("crudo-pick", JSON.stringify(UI.p
 const modeLabel = m => { m = m||{diff:"std",scen:"orinoco"}; const es = LANG==="es"; return `${m.daily?(es?"Reto diario":"Daily challenge")+" "+m.daily+" · ":""}${loc(CFG.modes.diff[m.diff],"name")} · ${loc(CFG.modes.scen[m.scen],"name")}${m.sandbox?` · ${TR("mnu.sandbox")}`:m.quick?` · ${es?"Rápida":"Quick"}`:""}${m.ctr==="em"?" · EM":""}${advOf(m)==="core"?(es?" · Básico":" · Core"):""}`; };
 function pickerHTML(){
   if (!UI.pick) UI.pick = loadPick();
-  const M = CFG.modes, p = UI.pick, D = M.diff[p.diff];
+  const M = CFG.modes, p = UI.pick, D = M.diff[p.diff], es = LANG==="es", a = advOf(p), Sc = M.scen[p.scen]||{};
   const resc = v => v.rescues ? `${v.rescues} ${v.rescues>1?TR("mnu.rescueN"):TR("mnu.rescue1")}` : TR("mnu.norescue");
-  return `<div class="pick"><h3>${TR("mnu.diff")}</h3>
-    <div class="pgrid" role="group" aria-label="${TR("mnu.diff")}">${Object.entries(M.diff).map(([k,v])=>`<button class="popt" data-pdiff="${k}" aria-pressed="${p.diff===k}"><b>${loc(v,"name")}</b><span>${TR("mnu.target")} ${f0(v.target)} MMbbl · ${resc(v)}</span></button>`).join("")}</div>
-    <p class="note" style="margin:0">${loc(D,"blurb")}</p>
-    <h3>${TR("mnu.scen")}</h3>
-    <div class="pgrid sc" role="group" aria-label="${TR("mnu.scen")}">${Object.entries(M.scen).map(([k,v])=>`<button class="popt" data-pscen="${k}" aria-pressed="${p.scen===k}"><b>${loc(v,"name")}</b><span>${loc(v,"blurb")}</span></button>`).join("")}</div>
-    <div class="pgrid mini ctrrow" role="group" aria-label="${LANG==="es"?"Contrato":"Contract"}">
-      <button class="popt" data-pctr="cpp" aria-pressed="${p.ctr!=="em"}"><b>${LANG==="es"?"CPP (ley 2026)":"CPP (2026 law)"}</b><span>${LANG==="es"?`Regalía ${f0((CFG0||CFG).royalty*100)}% · financias todo tu capex`:`${f0((CFG0||CFG).royalty*100)}% royalty · you fund all your capex`}</span></button>
-      <button class="popt" data-pctr="em" aria-pressed="${p.ctr==="em"}"><b>Empresa mixta</b><span>${LANG==="es"?`Socio estatal ${f0(CFG.ctr.em.share*100)}% · regalía ${f0(CFG.ctr.em.roy*100)}% · paga tarde`:`${f0(CFG.ctr.em.share*100)}% state partner · ${f0(CFG.ctr.em.roy*100)}% royalty · pays late`}</span></button></div>
-    <div class="pgrid mini ctrrow" role="group" aria-label="${LANG==="es"?"Sistemas":"Systems"}">${(()=>{ const a = advOf(p), es = LANG==="es";
-      return `<button class="popt" data-padv="core" aria-pressed="${a==="core"}"><b>${es?"Sistemas básicos":"Core systems"}</b><span>${es?"Producción, mercados, finanzas y contratos":"Production, markets, finance and contracts"}</span></button>
-      <button class="popt" data-padv="full" aria-pressed="${a==="full"}"><b>${es?"Todos los sistemas":"All systems"}</b><span>${es?"Suma agua, bolívares, coberturas, suministro y ambiente":"Adds water, bolívares, hedging, supply chain and environment"}</span></button>`; })()}</div>
-    <div class="pgrid mini" role="group" aria-label="${LANG==="es"?"Opciones":"Options"}">
-      <button class="popt" data-pquick="0" aria-pressed="${!p.quick||!!p.sandbox}"><b>${LANG==="es"?"Completa":"Full"}</b><span>${LANG==="es"?"36 turnos · ~1 h":"36 turns · ~1 h"}</span></button>
-      <button class="popt" data-pquick="1" aria-pressed="${!!p.quick&&!p.sandbox}"${p.sandbox?" disabled":""}><b>${LANG==="es"?"Rápida":"Quick"}</b><span>${LANG==="es"?`12 turnos · ~15 min · ${f0(Math.round(D.target*QUICK_TGT/10)*10)} MMbbl`:`12 turns · ~15 min · ${f0(Math.round(D.target*QUICK_TGT/10)*10)} MMbbl`}</span></button>
-      <button class="popt" data-plearn="1" aria-pressed="${!!p.learn}" title="${LANG==="es"?"Contratos, servicios, tecnología y refinación se abren por etapas, con una explicación cada vez.":"Contracts, services, tech and refining open in stages, each with a short explanation."}"><b>${LANG==="es"?"Aprende sobre la marcha":"Learn as you go"}</b><span>${p.learn?(LANG==="es"?"activado · sistemas por etapas":"on · systems open in stages"):(LANG==="es"?"desactivado · todo abierto":"off · everything open")}</span></button>
-      <button class="popt" data-psandbox="1" aria-pressed="${!!p.sandbox}" title="${TR("mnu.sandboxD")}"><b>${TR("mnu.sandbox")}</b><span>${p.sandbox?TR("mnu.sandboxOn"):TR("mnu.sandboxOff")} · ${LANG==="es"?"72 turnos, sin meta":"72 turns, no target"}</span></button></div></div>`;
+  const ctrD = p.ctr==="em" ? (es?`Empresa mixta: socio estatal ${f0(CFG.ctr.em.share*100)}%, regalía ${f0(CFG.ctr.em.roy*100)}%, paga tarde`:`Empresa mixta: ${f0(CFG.ctr.em.share*100)}% state partner, ${f0(CFG.ctr.em.roy*100)}% royalty, pays late`)
+                            : (es?`CPP: regalía ${f0((CFG0||CFG).royalty*100)}%, financias todo tu capex`:`CPP: ${f0((CFG0||CFG).royalty*100)}% royalty, you fund all your capex`);
+  const advD = a==="core" ? (es?"Básicos: producción, mercados, finanzas y contratos":"Core: production, markets, finance and contracts")
+                          : (es?"Todos: suma agua, bolívares, coberturas, suministro y ambiente":"All: adds water, bolívares, hedging, supply chain and environment");
+  return `<div class="pick"><div class="prow"><h3>${TR("mnu.diff")}</h3>
+    <div class="pgrid dif" role="group" aria-label="${TR("mnu.diff")}">${Object.entries(M.diff).map(([k,v])=>`<button class="popt" data-pdiff="${k}" aria-pressed="${p.diff===k}" title="${esc(loc(v,"blurb")||"")}"><b>${loc(v,"name")}</b><span>${f0(v.target)} MMbbl<br>${resc(v)}</span></button>`).join("")}</div></div>
+    <div class="prow"><h3>${TR("mnu.scen")}</h3>
+    <div class="pgrid sc" role="group" aria-label="${TR("mnu.scen")}">${Object.entries(M.scen).map(([k,v])=>`<button class="popt" data-pscen="${k}" aria-pressed="${p.scen===k}" title="${esc(loc(v,"blurb")||"")}"><b>${loc(v,"name")}</b><span>${loc(v,"blurb")}</span></button>`).join("")}</div>
+    <p class="selnote">${loc(Sc,"blurb")||""}</p></div>
+    <div class="prow"><h3>${es?"Contrato y sistemas":"Contract and systems"}</h3>
+    <div class="pseg2"><div class="pgrid mini ctrrow" role="group" aria-label="${es?"Contrato":"Contract"}">
+      <button class="popt" data-pctr="cpp" aria-pressed="${p.ctr!=="em"}"><b>${es?"CPP (ley 2026)":"CPP (2026 law)"}</b><span>${es?`Regalía ${f0((CFG0||CFG).royalty*100)}% · financias todo tu capex`:`${f0((CFG0||CFG).royalty*100)}% royalty · you fund all your capex`}</span></button>
+      <button class="popt" data-pctr="em" aria-pressed="${p.ctr==="em"}"><b>Empresa mixta</b><span>${es?`Socio estatal ${f0(CFG.ctr.em.share*100)}% · regalía ${f0(CFG.ctr.em.roy*100)}% · paga tarde`:`${f0(CFG.ctr.em.share*100)}% state partner · ${f0(CFG.ctr.em.roy*100)}% royalty · pays late`}</span></button></div>
+    <div class="pgrid mini ctrrow" role="group" aria-label="${es?"Sistemas":"Systems"}">
+      <button class="popt" data-padv="core" aria-pressed="${a==="core"}"><b>${es?"Sistemas básicos":"Core systems"}</b><span>${es?"Producción, mercados, finanzas y contratos":"Production, markets, finance and contracts"}</span></button>
+      <button class="popt" data-padv="full" aria-pressed="${a==="full"}"><b>${es?"Todos los sistemas":"All systems"}</b><span>${es?"Suma agua, bolívares, coberturas, suministro y ambiente":"Adds water, bolívares, hedging, supply chain and environment"}</span></button></div></div>
+    <p class="selnote cn">${ctrD}. ${advD}.</p></div>
+    <div class="prow"><h3>${es?"Partida":"Game"}</h3>
+    <div class="pgrid mini opts" role="group" aria-label="${es?"Opciones":"Options"}">
+      <button class="popt" data-pquick="0" aria-pressed="${!p.quick||!!p.sandbox}"><b>${es?"Completa":"Full"}</b><span>${es?"36 turnos · ~1 h":"36 turns · ~1 h"}</span></button>
+      <button class="popt" data-pquick="1" aria-pressed="${!!p.quick&&!p.sandbox}"${p.sandbox?" disabled":""}><b>${es?"Rápida":"Quick"}</b><span>${es?"12 turnos · ~15 min":"12 turns · ~15 min"}</span></button>
+      <button class="popt" data-plearn="1" aria-pressed="${!!p.learn}" title="${es?"Contratos, servicios, tecnología y refinación se abren por etapas, con una explicación cada vez.":"Contracts, services, tech and refining open in stages, each with a short explanation."}"><b>${es?"Aprende jugando":"Learn as you go"}</b><span>${p.learn?(es?"activado · por etapas":"on · opens in stages"):(es?"desactivado":"off · all open")}</span></button>
+      <button class="popt" data-psandbox="1" aria-pressed="${!!p.sandbox}" title="${TR("mnu.sandboxD")}"><b>${TR("mnu.sandbox")}</b><span>${p.sandbox?(es?"activado · 72 turnos":"on · 72 turns"):(es?"72 turnos, sin meta":"72 turns, no target")}</span></button></div></div></div>`;
 }
 const SCENE_IMG = "assets/scene.jpg";
 function howtoHTML(){
@@ -8219,10 +8286,11 @@ async function endPost(){
 }
 function dailyCardHTML(){ const es = LANG==="es", day = todayUTC(), m = dailyMode(day), sn = loc(CFG.modes.scen[m.scen],"name");
   return `<div class="dailyc"><div class="dch"><b>${es?"Reto diario":"Daily challenge"}</b><span class="note">${day} · ${esc(sn)} · ${es?"Estándar · 12 turnos":"Standard · 12 turns"}</span></div>
-    <p class="note" style="margin:0">${es?"El mismo campo, los mismos precios y la misma suerte inicial para todos hoy. Tu mejor puntaje entra en la clasificación.":"Same field, same prices and the same starting luck for everyone today. Your best score goes on the leaderboard."}</p>
-    <div data-lbday="${day}" data-lbn="5">${lbListHTML(day,5)}</div>
     <div class="dcb">${(()=>{ const ds = dailySaved(); return ds ? `<button class="btn sm" data-dailycont="1">${es?`Continuar el reto · turno ${ds.turn}`:`Continue the challenge · turn ${ds.turn}`}</button><button class="btn ghost sm" data-daily="1">${es?"Empezar de nuevo":"Start over"}</button>` : `<button class="btn sm" data-daily="1">${es?"Jugar el reto de hoy":"Play today's challenge"}</button>`; })()}
-      <span class="codebox"><input id="codein" type="text" inputmode="latin" autocomplete="off" spellcheck="false" maxlength="16" placeholder="${es?"Código de reto":"Challenge code"}" aria-label="${es?"Código de reto":"Challenge code"}"><button class="btn ghost sm" data-playcode="1">${es?"Jugar código":"Play code"}</button></span></div>
+      <details class="dcmore"${UI.codeErr||UI.dcOpen?" open":""}><summary>${es?"Clasificación y códigos":"Leaderboard and codes"}</summary>
+      <p class="note" style="margin:0">${es?"El mismo campo, los mismos precios y la misma suerte inicial para todos hoy. Tu mejor puntaje entra en la clasificación.":"Same field, same prices and the same starting luck for everyone today. Your best score goes on the leaderboard."}</p>
+      <div data-lbday="${day}" data-lbn="5">${lbListHTML(day,5)}</div>
+      <span class="codebox"><input id="codein" type="text" inputmode="latin" autocomplete="off" spellcheck="false" maxlength="16" placeholder="${es?"Código de reto":"Challenge code"}" aria-label="${es?"Código de reto":"Challenge code"}"><button class="btn ghost sm" data-playcode="1">${es?"Jugar código":"Play code"}</button></span></details></div>
     ${UI.codeErr?`<p class="note bad" style="margin:0">${es?"Código no válido. Tiene la forma CR-SOQ-1F3KZ9.":"That code isn't valid. It looks like CR-SOQ-1F3KZ9."}</p>`:""}</div>`; }
 
 // shareable end card, drawn in The Energy Gazette house style
@@ -8280,17 +8348,17 @@ function introHTML(){
   const saved = loadSaved();
   const canContinue = saved && !saved.over && (saved.turn>1 || (saved.orders||[]).length>0);
   return `<div class="intro2"><div class="i2scene" style="background-image:url(${SCENE_IMG})" role="img" aria-label="The Orinoco camp in 3D">
-      <div class="i2call"><div><b>${TR("mnu.build")}</b> ${TR("mnu.buildD")}</div><div><b>${TR("mnu.ship")}</b> ${TR("mnu.shipD")}</div><div><b>${TR("mnu.supply")}</b> ${TR("mnu.supplyD")}</div><div><b>${TR("mnu.hit")}</b> ${TR("mnu.hitD")}</div></div></div>
+      <div class="i2call">${[["build","buildD"],["ship","shipD"],["supply","supplyD"],["fin","finD"],["hit","hitD"]].map(([a,b])=>`<div><b>${TR("mnu."+a)}</b> ${TR("mnu."+b)}</div>`).join("")}
+        <p class="i2tags">${(LANG==="es"?["Partida rápida de 15 min","Reto diario y códigos","The Energy Gazette","Banda sonora MIDI","English / Español"]:["15-min quick game","Daily challenge & codes","The Energy Gazette","MIDI soundtrack","English / Español"]).map(t=>`<span>${t}</span>`).join("")}</p><p class="i2disc">${TR("mnu.disclaimer")}</p></div></div>
     <div class="i2set">
-      <div class="hero">CRUDO</div>
-      <p class="sub">${TR("sub.tagline")} · ${VLABEL}</p>
+      <div class="i2head"><div class="hero">CRUDO</div><p class="sub">${TR("sub.tagline")}<small>${VLABEL}</small></p></div>
       ${pickerHTML()}
       <div class="i2btns">
         ${canContinue?`<button class="btn endbtn" data-continue="1">${TR("mnu.continue")} · ${TR("mnu.turn")} ${saved.turn}<small style="display:block;font-size:11px;font-weight:500;opacity:.75;letter-spacing:0;text-transform:none">${esc(modeLabel(saved.mode))}</small></button><button class="btn ghost endbtn" data-new="1">${TR("mnu.newgame")}</button>`:`<button class="btn endbtn" data-new="1">${TR("mnu.start")}</button>`}
       </div>
       <div class="i2row"><button class="btn ghost sm" data-lang="1" aria-label="${LANG==="es"?"Cambiar a English":"Switch to Español"}"><b style="font-family:var(--mono);font-size:11px;opacity:.6">${LANG==="es"?"ES":"EN"}</b> → ${TR("mnu.lang")}</button><button class="btn ghost sm" data-demo="1">${TR("mnu.demo")}</button><button class="btn ghost sm" data-howto="1">${TR("mnu.howto")}</button><button class="btn ghost sm" data-credits="1">${TR("mnu.credits")}</button><button class="btn ghost sm" data-sound="1" aria-pressed="${SND.on}" aria-label="Sound effects ${SND.on?"on":"off"}">${SND.on?"♪":"♪ ✕"}</button><button class="btn ghost sm" data-music="1" aria-label="Music: ${MUS.track==="off"?"off":mName(MUS.track)}. Tap to change">${MUS.track==="off"?"♫ ✕":"♫ "+mName(MUS.track)}</button></div>
       ${dailyCardHTML()}
-      <p class="note">${TR("mnu.disclaimer")}</p>
+      <p class="note disc">${TR("mnu.disclaimer")}</p>
     </div>${UI.howto?howtoHTML():""}${UI.credits?creditsHTML():""}${UI.encyOpen?encyHTML():""}</div>`;
 }
 
@@ -8493,6 +8561,7 @@ async function midiSave(k){ const msg = document.getElementById("midimsg"), es =
     if (msg) msg.textContent = res && res.status==="saved" ? (es?`${mName(k)} guardado.`:`${mName(k)} saved.`) : ""; }
   catch(e){ if (msg) msg.textContent = es ? "No se pudo guardar el archivo." : "Couldn't save the file."; } }
 /* ============ events ============ */
+document.addEventListener("toggle", e=>{ const t=e.target; if (t && t.classList && t.classList.contains("dcmore")) UI.dcOpen = t.open; }, true);
 document.addEventListener("click", e=>{
   if (UI.tip && !e.target.closest(".sheet,.qm,.kl")){ UI.tip=null; render(); }
   const el = e.target.closest("button,[data-node],[data-goround],g[data-finov],g[data-tsel]"); if (!el) return;
