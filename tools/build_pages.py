@@ -92,7 +92,16 @@ html = replace_once(
     html)
 
 # 4. Link preview (WhatsApp, Facebook, X, LinkedIn, iMessage): title, summary and assets/share-sim.jpg.
-SITE = "https://dannysimgames.github.io/crudo/"
+cfg = json.load(open(os.path.join(root, "tools", "site_config.json")))
+# Custom domain (e.g. playcrudo.com): set "domain" only once its DNS points at GitHub,
+# otherwise GitHub would redirect visitors to an address that doesn't answer yet.
+DOMAIN = cfg.get("domain", "").strip()
+SITE = f"https://{DOMAIN}/" if DOMAIN else "https://dannysimgames.github.io/crudo/"
+cname = os.path.join(root, "CNAME")
+if DOMAIN:
+    open(cname, "w").write(DOMAIN + "\n")
+elif os.path.exists(cname):
+    os.remove(cname)
 TITLE = "CRUDO: Venezuela Oil Value Chain Simulator"
 DESC = ("A business simulation of Venezuela's oil sector: drill, upgrade, ship and sell Orinoco crude "
         "through fiscal terms, sanctions and investor scrutiny, over 36 quarters. Runs in the browser, in English and Spanish.")
@@ -119,7 +128,6 @@ if not os.path.exists(os.path.join(root, "assets", "share-sim.jpg")):
 html = replace_once("<head><meta charset=utf8>", "<head><meta charset=utf8>" + meta, html)   # charset stays first
 
 # 5. Leads and statistics (tools/site_config.json): only what is configured is added.
-cfg = json.load(open(os.path.join(root, "tools", "site_config.json")))
 extra = ""
 if cfg.get("goatcounter"):
     extra += f'<script data-goatcounter="https://{cfg["goatcounter"]}.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>\n'
