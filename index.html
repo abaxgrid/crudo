@@ -281,6 +281,9 @@ h3 .ic{margin-right:8px;vertical-align:-3px}
 .t3msg{display:grid;place-items:center;height:100%;color:var(--muted)}
 .t3bar{position:absolute;top:10px;right:10px;display:flex;gap:6px;z-index:2}
 .t3bar .chip{background:rgba(20,17,14,.82)}
+.t3bar{flex-wrap:wrap;justify-content:flex-end;max-width:calc(100% - 20px)}
+@media (max-width:640px){.t3bar{gap:4px;top:6px;right:6px;max-width:calc(100% - 12px)}.t3bar .chip{min-height:28px;padding:2px 9px;font-size:12px}}
+@media (max-height:860px){.ctr:has(.t3wrap)>.card.trendc svg{max-height:64px}.ctr:has(.t3wrap)>.card.trendc{padding:5px 12px 3px}}
 
 /* ---- app shell: one screen at any size. The page never scrolls; the operations panel scrolls inside itself. ---- */
 html,body{height:100%}
@@ -313,7 +316,7 @@ body{overflow:hidden;padding-block:0}
 #app.shell .warns{max-height:5.2em}
 #app.shell .queue{max-height:22vh}
 #app.shell .endbtn{padding:8px 22px;min-height:44px;font-size:19px}
-.mapwrap>.t3wrap{height:100%}
+.mapwrap>.t3wrap{height:100%;width:100%;align-self:stretch}
 .t3d{height:100%;min-height:200px}
 .t3hint{position:absolute;left:10px;bottom:8px;z-index:2;font-size:11.5px;color:#efe7da;background:rgba(20,17,14,.66);padding:3px 9px;border-radius:10px;pointer-events:none;animation:t3fade .8s 8s forwards}
 @keyframes t3fade{to{opacity:0}}
@@ -720,6 +723,9 @@ html,body{margin:0}
 .intro2{height:100%;width:calc(100% + 32px);margin-inline:-16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(440px,620px);background:var(--bg)}
 .i2scene{position:relative;background:#17130e 50% 60%/cover no-repeat;min-height:0;overflow:hidden}
 .i2scene::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 55%,var(--bg))}
+.i2scene>.t3host.t3attract{position:absolute;inset:0;z-index:0}
+.i2scene>.t3host.t3attract canvas{width:100%;height:100%;display:block;cursor:grab}
+.i2scene::after{z-index:0;pointer-events:none}
 .i2call{position:absolute;left:24px;bottom:24px;z-index:1;display:flex;flex-direction:column;gap:6px;width:min(420px,72%)}
 .i2call div{background:rgba(23,19,14,.84);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-size:13.5px;line-height:1.35;color:#f1e6d2}
 .i2call b{color:var(--amber);font-family:var(--display);letter-spacing:.06em;text-transform:uppercase;margin-right:4px}
@@ -2389,6 +2395,11 @@ function sandboxInit(){
   S.gtMW = B.gtMW; S.gasPlant = B.gasPlant0; S.gasField = B.gasField0;
   S.sandbox = true;
 }
+// v0.99 the demo camp was saved by an older build: fill any field it lacks from a fresh campaign so every system has its state
+function demoState(){ const keep = S; let base = null; try { newGame({diff:"std", scen:"orinoco", seed:7}); base = S; } finally { S = keep; }
+  const d = JSON.parse(JSON.stringify(DEMO_SAVE)), obj = v => v && typeof v==="object" && !Array.isArray(v);
+  for (const k of Object.keys(base)){ if (d[k]===undefined) d[k] = base[k]; else if (obj(d[k]) && obj(base[k])) for (const j of Object.keys(base[k])) if (d[k][j]===undefined) d[k][j] = base[k][j]; }
+  return d; }
 function newGame(mode){
   mode = mode || {diff:"std", scen:"orinoco"};
   applyMode(mode);
@@ -2781,7 +2792,24 @@ function dwNeighbourHTML(){ const es = LANG==="es", D = CFG.dw.rival, n = dwRiva
     <p class="note" style="margin:0">${es?"Un consorcio de una major estadounidense, otra petrolera internacional y una petrolera estatal asiática desarrolla los hallazgos de aguas profundas al lado, uno o dos FPSO por año. Su crudo liviano compite con tus grados livianos y su éxito reduce el riesgo de tu propio play.":"A consortium of a US major, another international oil company and an Asian national oil company develops the deepwater finds next door, adding an FPSO or two a year. Its light crude competes with your light grades, and its success de-risks your own play."}</p>
     <div class="stats"><div class="stat"><div class="l">FPSO</div><div class="v">${n}</div></div><div class="stat"><div class="l">${es?"Producción":"Output"}</div><div class="v">${f0(dwRivalOut(S.turn))} kb/d</div></div><div class="stat"><div class="l">${es?"Presión en grados livianos":"Light-grade pressure"}</div><div class="v">−$${f1(dwDisc(S.turn))}</div></div></div>`; }
 
+/* ============ v0.98 field tank farm (patio de tanques): extra-heavy crude the upgrader and blending cannot take is stored, not shut in ============ */
+CFG.ftf = {on:true, cap0:1.0, add:1.5, cost:90, turns:2, inMax:260, outMax:90, max:6.0};
+const ftfOn = () => !!(CFG.ftf && CFG.ftf.on);
+function ftfS(){ if (!S.ftf) S.ftf = {cap:CFG.ftf.cap0, stock:0}; return S.ftf; }
+const ftfPeek = () => ftfOn() ? (S.ftf || {cap:CFG.ftf.cap0, stock:0}) : {cap:0, stock:0};
+function ftfHTML(F){ const es = LANG==="es", T = ftfS(), C = CFG.ftf, k = CFG.days/1000, b = S.projects.filter(p=>p.kind==="ftfExp"), q = S.orders.filter(o=>o.type==="ftfExp").length;
+  const into = F.ftfIn||0, out = F.ftfOut||0, room = Math.max(0, T.cap - T.stock), fillPct = T.cap>0 ? T.stock/T.cap : 0;
+  const capAll = T.cap + (b.length + q)*C.add;
+  return `<h3 style="font-size:22px">${ic("tank",22)}${es?"Patio de tanques":"Field tank farm"}${tip("ftf")}</h3>
+    <div class="stats"><div class="stat"><div class="l">${es?"Capacidad":"Capacity"}</div><div class="v">${f1(T.cap)} MMbbl</div></div>
+      <div class="stat"><div class="l">${es?"Almacenado":"Stored"}</div><div class="v">${f1(T.stock)} MMbbl</div></div>
+      <div class="stat"><div class="l">${es?"Entra este trimestre":"In this quarter"}</div><div class="v${into>0.5?" warn":""}">${f0(into)} kb/d</div></div>
+      <div class="stat"><div class="l">${es?"Sale este trimestre":"Out this quarter"}</div><div class="v${out>0.5?" good":""}">${f0(out)} kb/d</div></div></div>
+    <div class="lfl"><span class="ll">${es?"Lleno":"Full"}</span><span class="lbar"><i class="${fillPct>.85?"bad":fillPct>.5?"pow":"good"}" style="width:${f0(fillPct*100)}%"></i></span><b class="num">${f0(fillPct*100)}%</b></div>
+    <p class="note" style="margin:0">${es?`La estación central entre los campos y el mejorador. Cuando el mejorador y la mezcla están llenos (o el mejorador está en parada), el extrapesado entra a los tanques en vez de cerrarse en los pozos, hasta ${f0(C.inMax)} kb/d; cuando sobra capacidad de procesamiento, sale de vuelta, hasta ${f0(C.outMax)} kb/d. Queda espacio para ${f1(room)} MMbbl, unos ${f0(room/k)} kb/d durante un trimestre.`:`The central station between the fields and the upgrader. When the upgrader and blending are full (or the upgrader is down for a turnaround), extra-heavy crude goes into the tanks instead of being shut in at the wells, up to ${f0(C.inMax)} kb/d; when there is spare processing capacity it is drawn back out, up to ${f0(C.outMax)} kb/d. Room left: ${f1(room)} MMbbl, about ${f0(room/k)} kb/d for a quarter.`}</p>
+    <div class="acts">${act(es?"Ampliar el patio de tanques":"Expand the tank farm", es?`+${f1(C.add)} MMbbl en ${C.turns} turnos. Ocupa un cupo de construcción. Máximo ${f1(C.max)} MMbbl.${b.length?` ${b.length} en obra.`:""}`:`+${f1(C.add)} MMbbl after ${C.turns} turns. Uses a construction slot. Up to ${f1(C.max)} MMbbl.${b.length?` ${b.length} under way.`:""}`, C.cost, slotsMax()-slotsBusy()>0 && capAll + C.add <= C.max + 1e-6, capAll + C.add > C.max + 1e-6 ? (es?"Ya está al máximo.":"Already at the maximum.") : (es?"No hay cupo de construcción libre.":"No construction slot free."), `data-order="ftfExp"`)}</div>`; }
 function costOf0(o){
+  if (o.type==="ftfExp") return CFG.ftf.cost;
   if (/^dw/.test(o.type)) return dwCost(o);
   if (o.type==="hedge") return o.kind==="put" ? o.vol*CFG.hedge.putPrem*CFG.hedge.q : 0;
   if (o.type==="fxConv") return 0;
@@ -3150,11 +3178,13 @@ function oilChain(ta, xf, uf){
   const dilCap = ((CFG.dilBase + CFG.dilPer*S.dil)*(m.dil||1) + (m.dilAdd||0))*(hasTech("dru")?1.25:1) + napOwn0;
   const blendXhMax = Math.min(ratio*dilCap, blendCap*ratio/(ratio+1));
   const puCap = (S.pum||0)*CFG.tech.pumCap*uf, conv = upEff + puCap;
+  // v0.98 field tank farm: spare processing capacity draws stored crude back out; crude that cannot be processed goes in
+  const T0 = ftfPeek(), kq = CFG.days/1000, ftfOut = ftfOn() ? Math.max(0, Math.min(T0.stock/kq, conv + blendXhMax - xhR, CFG.ftf.outMax)) : 0, xhR2 = xhR + ftfOut;
   let xhUp, xhBl;
-  if (S.upFirst){ xhUp=Math.min(xhR,conv); xhBl=Math.min(xhR-xhUp, blendXhMax); }
-  else { xhBl=Math.min(xhR, blendXhMax); xhUp=Math.min(xhR-xhBl, conv); }
+  if (S.upFirst){ xhUp=Math.min(xhR2,conv); xhBl=Math.min(xhR2-xhUp, blendXhMax); }
+  else { xhBl=Math.min(xhR2, blendXhMax); xhUp=Math.min(xhR2-xhBl, conv); }
   const xhPU = Math.max(0, xhUp - Math.min(xhUp, upEff)); xhUp -= xhPU;
-  const shut = xhR-xhUp-xhPU-xhBl;
+  const shut0 = Math.max(0, xhR2-xhUp-xhPU-xhBl), ftfIn = ftfOn() ? Math.min(shut0, Math.max(0, T0.cap - T0.stock)/kq, CFG.ftf.inMax) : 0, shut = shut0 - ftfIn;
   const dil = xhBl/ratio, blend = xhBl+dil, sco = xhUp*(CFG.yield*(hasTech("catalyst")?.93/.9:1) + (hasTech("sda")?.04:0)) + xhPU*CFG.tech.pumYield, made = blend+sco+lake;
   // the domestic complex takes its crude at the camp, before the pipeline; the export refinery takes it at the coast, before the terminal.
   // v56 refinery feed line: the made crude the refineries draw rides a feed line of finite capacity (the raw extra-heavy prefeed,
@@ -3229,14 +3259,14 @@ function oilChain(ta, xf, uf){
   else if (refShort>0.5) neck = {node:"reffeed", why:`Refinery feed line is full${worn("reffeed")}: ${f0(refShort)} kb/d sold as crude instead of refined`};
   // v66 export walk-through (kb/d, quarter average): every step from the wellhead to net crude, built from the same figures so it ties exactly:
   // well − shed − choke − unproc − shrink + dil − refin − pipe − ovf − stock − dom = gross;  gross − expDil = crude net
-  const walk = {well:pr0.xh*xm + (pr0.lake||0), shed:(pr0.xh*xm - xh) + ((pr0.lake||0) - lake), choke:gatherShut, unproc:shut,
+  const walk = {well:pr0.xh*xm + (pr0.lake||0), shed:(pr0.xh*xm - xh) + ((pr0.lake||0) - lake), choke:gatherShut, unproc:shut, ftf:ftfIn - ftfOut,
     shrink:(xhUp + xhPU) - sco, dil, refin:xhIn + domCrude + expFeed, pipe:pipeLoss, ovf:overflow, stock:(stored - S.stored)/k, dom,
     gross:exported + xpFlow, xp:xpFlow, expDil:expDil + xpDil, crudeNet:net, refShort,
     unprocWhy: ratio*dilCap < blendCap*ratio/(ratio+1) ? "dil" : "cap",
     ovfWhy: SHP ? (SHP.shutC>=SHP.ovf ? "wx" : SHP.liftShort ? "ships" : "full") : "full", wxd: SHP ? SHP.d : 0};
   return {...pr, tp:{pipe:tpP, term:tpT, pipeUse:tpPipeUse, termUse:tpTermUse}, water:pr0.water||0, waterNeed:pr0.waterNeed||0, waterChoke:pr0.waterChoke||0, up:pr0.up??1, xhG, xhFull:pr0.xh*xm, gatherCapEff, gatherShut, upFull, upEff, blendCapEff:blendCap, pipeCapEff:pipeCap, reffeedCapEff:(dsx?reffeedCapEff:0), reffeedUse, refShort, ratio, dilCap, xhUp, xhBl, shut, dil, blend, sco, made, piped, pipeLoss, term, exported, stored, overflow,
     xhPU, puCap, expB, expS, expL, lake, lakeFull:(pr0.lake||0), net, dom, lost:shut+pipeLoss+overflow+gatherShut, neck, ds:D, ship:SHP, walk,
-    XP, xpFlow, xpB, xpS:xpSc, xpL, xpDil, exportedAll:exported + xpFlow};
+    XP, xpFlow, xpB, xpS:xpSc, xpL, xpDil, exportedAll:exported + xpFlow, ftfIn, ftfOut};
 }
 
 // downstream barrels: sales volumes, domestic market, petrochemical feed; adds refined barrels to net output
@@ -3321,6 +3351,7 @@ function addOrder(o){ o.cost = costOf(o); if (DS_PAY.includes(o.type)) o.pay = o
 function dsTurnsOf(o){ if (o.type==="dwFid"||o.type==="dwGas") return dwTurnsOf(o); if (o.type==="lngTrain") return CFG.ship.lng.turns; if (o.type==="xpBuild") return xpR(o.xp).turns; if (o.type==="refinery") return CFG.ds.tiers[dsNextTier(o.site)].turns; return CFG.ds.pc[{pcComplex:"complex", pcOlef:"olef", pcFert:"fert"}[o.type]].turns; }
 function undoOrder(id){ S.orders = S.orders.filter(o=>o.id!==id); save(); render(); }
 function orderLabel(o){
+  if (o.type==="ftfExp") return LANG==="es" ? "Ampliar el patio de tanques" : "Expand the field tank farm";
   if (/^dw/.test(o.type)){ const es = LANG==="es", p = o.pros && S.dw ? dwPro(o.pros) : null, nm = p ? p.name : "";
     return ({dwLic: es?`Licencia de aguas profundas (${o.terms==="psa"?"CPC":"estándar"})`:`Deepwater licence (${o.terms==="psa"?"PSA":"standard terms"})`, dwSeis: es?`Sísmica 3D en ${nm}`:`3D seismic over ${nm}`, dwExpl: es?`Pozo exploratorio en ${nm}`:`Exploration well at ${nm}`,
       dwAppr: es?`Pozo de delineación en ${nm}`:`Appraisal well at ${nm}`, dwFid: es?`FPSO ${o.mode==="own"?"propio":"arrendado"} para ${nm}`:`${o.mode==="own"?"Owned":"Leased"} FPSO for ${nm}`, dwGas: es?"Gas a electricidad (Deltana)":"Gas to power (Deltana)",
@@ -3399,6 +3430,7 @@ function endTurn(){
     const np = S.projects.length, before = {np, npads:S.pads.length, ngw:S.gasWells.length, nap:S.apprWells.length};
     switch(o.type){
       case "dwLic": case "dwSeis": case "dwExpl": case "dwAppr": case "dwFid": case "dwGas": case "dwBop": case "dwDiplo": dwOrder(o, R); break;
+      case "ftfExp": S.projects.push({kind:"ftfExp", left:CFG.ftf.turns, slot:true}); break;
       case "drillCold": S.pads.push({id:S.nextId++, block:o.block, type:"cold", status:"building", left:2+padExtra(), rate:0, ramp:0}); break;
       case "drillTh": S.pads.push({id:S.nextId++, block:o.block, type:"thermal", status:"building", left:3+padExtra(), rate:0, ramp:0}); break;
       case "drillSagd": S.pads.push({id:S.nextId++, block:o.block, type:"thermal", sagd:true, status:"building", left:CFG.tech.sagdTurns+padExtra(), rate:0, ramp:0}); break;
@@ -3705,6 +3737,8 @@ function endTurn(){
   S.sStreak = gr<.85 ? S.sStreak+1 : 0;
 
   // 7. advance the field: decline, then builds progress
+  if (ftfOn()){ const T = ftfS(); T.stock = clamp(T.stock + ((F.ftfIn||0) - (F.ftfOut||0))*k, 0, T.cap);
+    if (!SIM && (F.ftfIn||0) > 0.5 && T.stock >= T.cap - 1e-6) R.events.push(LANG==="es" ? "El patio de tanques está lleno: el próximo exceso de extrapesado se cerrará en los pozos." : "The field tank farm is full: the next surplus of extra-heavy crude will be shut in at the wells."); }
   S.blocks.forEach(b=>{ b.base *= 1-(b.kind==="mature"?CFG.dMature:CFG.dCold)*declK(b.kind); });
   // v0.78 water cut rises as blocks produce (faster under water and polymer flooding); pumps fail and get serviced
   if (CFG.water && CFG.water.on){ const W = waterS(), byB = production0().byBlock;
@@ -3754,6 +3788,7 @@ function endTurn(){
     if (p.kind==="solar"||p.kind==="wind"||p.kind==="batt"){ renS()[p.kind]++; const X = CFG.ren[p.kind]; R.completed.push(p.kind==="batt" ? `Battery block online: the grid can now take ${f0(renCapShare()*100)}% of its load from solar and wind` : `${p.kind==="solar"?"Solar":"Wind"} block online: ${X.mw} MW, about ${f0(X.mw*X.cf)} MW on average`); }
     if (p.kind==="lngTrain"){ const H = shipS(); H.lng++; H.offGas = (H.offGas||0) + CFG.ship.lng.field; R.completed.push(`Offshore gas field and LNG train online: ${f0(CFG.ship.lng.field)} MMcfd of offshore gas, up to ${f0(lngFeedCap())} MMcfd liquefied for export. It needs LNG carriers.`); }
     if (/^dw/.test(p.kind)) dwDone(p, R);
+    if (p.kind==="ftfExp"){ const T = ftfS(); T.cap = Math.min(CFG.ftf.max, T.cap + CFG.ftf.add); R.completed.push(LANG==="es" ? `Patio de tanques ampliado: ${f1(T.cap)} MMbbl` : `Field tank farm expanded: ${f1(T.cap)} MMbbl`); }
     if (p.kind==="tank"){ S.storageCap+=CFG.tankAdd; R.completed.push(`Storage now ${f0(S.storageCap)} MMbbl`); }
     if (p.kind==="gasPlant"){ renew("gasplant", S.gasPlant, CFG.gasPlantAdd); S.gasPlant+=CFG.gasPlantAdd; R.completed.push(`Gas plant now ${f0(S.gasPlant)} MMcfd`); }
     if (p.kind==="xpBuild"){ const st = xpS()[p.xp], Rt = xpR(p.xp); st.st = "online"; (R.xpOpen = R.xpOpen||[]).push(p.xp); R.completed.push(`${Rt.name} open: up to ${f0(Rt.cap)} kb/d of crude to ${Rt.dest}. Set its nomination on the export pipeline panel.`); }
@@ -4120,7 +4155,7 @@ function finYear(y){
 
 /* ============ persistence ============ */
 const KEY="crudo-prototype-v7";
-const VERSION="0.96";   // user-facing build; pre-1.0, so labelled beta. Bump here when publishing.
+const VERSION="1.01";   // user-facing build; pre-1.0, so labelled beta. Bump here when publishing.
 const VLABEL=`Beta · v${VERSION}`;
 /* ============ i18n — Spanish (Venezuelan / Faja terminology). Stage 1: UI shell. ============
    Core glossary: upgrader→mejorador · blending→mezcla · diluent→diluente(nafta) · extra-heavy→extrapesado
@@ -4371,8 +4406,8 @@ const IC = {
 };
 const ic = (n,sz=16)=>`<svg class="ic" width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IC[n]}"/></svg>`;
 const icMap = (n,x,y,c)=>`<g transform="translate(${x} ${y}) scale(.833)" fill="none" stroke="${c}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IC[n]}"/></g>`;
-const NODEIC = {dw:"anchor",explore:"target",moriche:"derrick",araguaney:"derrick",saman:"derrick",upgrader:"column",blend:"flask",gather:"pipe",reffeed:"pipe",pipe:"pipe",terminal:"anchor",crews:"people",gas:"flame",power:"bolt"};
-const KORD = {"drillCold": "pumpjack", "drillTh": "thermal", "convert": "thermal", "drillSagd": "thermal", "workover": "rig", "buyRig": "rig", "sellRig": "rig", "leaseRig": "rig", "releaseRig": "rig", "exWildcat": "rig", "drillLake": "jackup", "train": "upgrader", "turnaround": "upgrader", "pum": "upgrader", "blendExp": "tankA", "dilContract": "tankA", "tank": "tank", "berth": "tanker", "shipBuy": "tanker", "shipSell": "tanker", "shipTc": "tanker", "gasWell": "thermal", "gasPlant": "gasplant", "lngTrain": "gasplant", "turbine": "turbine", "rentGen": "genset", "returnGen": "genset", "refinery": "refinery", "pcComplex": "refinery", "pcOlef": "olefins", "pcFert": "urea", "solar": "solar", "wind": "wind", "batt": "genset", "training": "cabin", "rtSign": "station", "rtBrand": "station", "fieldFac": "crane", "dwLic": "fpso", "dwSeis": "drillship", "dwExpl": "drillship", "dwAppr": "drillship", "dwFid": "fpso", "dwGas": "gasplant", "dwBop": "drillship"};
+const NODEIC = {ftf:"tank",dw:"anchor",explore:"target",moriche:"derrick",araguaney:"derrick",saman:"derrick",upgrader:"column",blend:"flask",gather:"pipe",reffeed:"pipe",pipe:"pipe",terminal:"anchor",crews:"people",gas:"flame",power:"bolt"};
+const KORD = {"drillCold": "pumpjack", "drillTh": "thermal", "convert": "thermal", "drillSagd": "thermal", "workover": "rig", "buyRig": "rig", "sellRig": "rig", "leaseRig": "rig", "releaseRig": "rig", "exWildcat": "rig", "drillLake": "jackup", "train": "upgrader", "turnaround": "upgrader", "pum": "upgrader", "blendExp": "tankA", "dilContract": "tankA", "tank": "tank", "berth": "tanker", "shipBuy": "tanker", "shipSell": "tanker", "shipTc": "tanker", "gasWell": "thermal", "gasPlant": "gasplant", "lngTrain": "gasplant", "turbine": "turbine", "rentGen": "genset", "returnGen": "genset", "refinery": "refinery", "pcComplex": "refinery", "pcOlef": "olefins", "pcFert": "urea", "solar": "solar", "wind": "wind", "batt": "genset", "training": "cabin", "rtSign": "station", "rtBrand": "station", "fieldFac": "crane", "dwLic": "fpso", "dwSeis": "drillship", "dwExpl": "drillship", "dwAppr": "drillship", "dwFid": "fpso", "dwGas": "gasplant", "dwBop": "drillship", "ftfExp": "tank"};
 const ACTIC = {shipBuy:"anchor",shipSell:"anchor",shipTc:"anchor",lngTrain:"flame",refinery:"column",pcComplex:"column",pcOlef:"flask",pcFert:"flask",dsDefer:"wrench",drillSagd:"derrick",pum:"column",solar:"bolt",wind:"bolt",batt:"bolt",buyRig:"derrick",sellRig:"derrick",exLicense:"doc",exSeismic:"target",exWildcat:"derrick",drillLake:"derrick",drillCold:"derrick",drillTh:"derrick",convert:"derrick",workover:"wrench",leaseRig:"derrick",releaseRig:"derrick",dilContract:"drop",blendExp:"flask",turnaround:"wrench",train:"column",loop:"pipe",gatherExp:"pipe",reffeedExp:"pipe",berth:"anchor",tank:"tank",payBonus:"coins",training:"people",incRelief:"percent",incCredit:"percent",incAccel:"percent",gasWell:"flame",gasPlant:"flame",gasPipe:"pipe",turbine:"bolt",rentGen:"bolt",returnGen:"bolt"};
 
 /* ============ help: tips, glossary, tour ============ */
@@ -4450,6 +4485,7 @@ const TIPS = {
   hedges:["Price hedges","Lock in part of next year's price. Put options set a floor and keep the upside, for a premium paid now. A zero-cost collar sets a floor and a cap with no premium. A fixed-price swap locks one price: you are paid when Atlantic Light is below it and pay when it is above. Each hedge covers a share of this quarter's net crude for four quarters and settles every quarter in operating cash."],
   fx:["Bolívares","About a third of operating costs are paid in bolívares. Local inflation runs ahead of the crawling devaluation, so those costs cost more dollars every quarter until a maxi-devaluation resets them. Bolívar revenue (home crude and gas, power to the towns, domestic fuel) pays the bolívar costs first; any surplus is trapped in the country. Convert it at the official window (limited each quarter, small haircut) or the parallel market (all of it, large haircut); converted money goes to your capex fund. Trapped balances lose value with every devaluation."],
   contractModel:["Contract model","Chosen at the start of a campaign. Under a CPP (2026 law) you hold the block alone, pay the standard royalty and fund all your capex. Under an empresa mixta a state partner owns 60%: it owes 60% of each cash call and you pay a higher royalty. It pays more of its calls when oil is dear and falls behind when it is cheap; arrears come back slowly into your capex fund, or you can take crude in kind at a discount. Renegotiation is more likely under an empresa mixta."],
+  ftf:["Field tank farm","The central tank farm between the fields and the upgrader (in the Orinoco belt, a patio de tanques). It dewaters, measures and buffers extra-heavy crude. When the upgrader and blending are full, or the upgrader is in a turnaround, crude goes into the tanks instead of being shut in; when there is spare processing capacity, it is drawn back out."],
   deepwater:["Deltana deepwater","An Atlantic licence off the Orinoco delta, on trend with the neighbour's giant light-oil finds. Explore with a drillship, appraise, then develop each discovery with an FPSO (a floating production, storage and offloading ship), leased or owned. FPSO crude is lifted by buyers' tankers at sea, so it bypasses your pipeline and terminal, and it counts toward net output and the export target."],
   psa:["Production sharing agreement","Atlantic-style terms: a 2% royalty; costs (capex and opex) go into a pool recovered from up to 75% of block revenue each quarter (cost oil); what is left (profit oil) is split 50/50 with the State, which pays the income tax on your behalf. Generous while the pool is large, tighter once costs are recovered. The block is ring-fenced: its costs do not reduce tax on the rest of your business."],
   boundary:["Unsettled maritime boundary","Part of the Deltana block lies in waters claimed by both countries. Venezuela regards the 1899 award as null and claims the land west of the Essequibo; Guyana regards the award as valid and asked the International Court of Justice to confirm it, a jurisdiction Venezuela rejects. In the game, tension rises while you work in the overlap and falls with talks; naval incidents can halt work there; a court ruling can suspend overlap output unless it is developed jointly."],
@@ -4564,6 +4600,7 @@ const TIPS_ES = {
   hedges:["Coberturas de precio","Asegura parte del precio del próximo año. Las opciones put fijan un piso y conservan el alza, a cambio de una prima pagada ahora. Un collar de costo cero fija un piso y un techo sin prima. Un swap de precio fijo asegura un solo precio: cobras cuando el Atlantic Light está por debajo y pagas cuando está por encima. Cada cobertura cubre una parte del crudo neto de este trimestre durante cuatro trimestres y se liquida cada trimestre en el flujo de caja operativo."],
   fx:["Bolívares","Cerca de un tercio de los costos operativos se paga en bolívares. La inflación local va por delante del deslizamiento cambiario, así que esos costos cuestan más dólares cada trimestre hasta que una maxidevaluación los reajusta. Los ingresos en bolívares (crudo y gas para el país, electricidad a los poblados, combustible interno) pagan primero los costos en bolívares; el excedente queda atrapado en el país. Conviértelo en la ventanilla oficial (limitada cada trimestre, descuento pequeño) o en el mercado paralelo (todo, descuento grande); el dinero convertido va a tu fondo de capex. Los saldos atrapados pierden valor con cada devaluación."],
   contractModel:["Modelo de contrato","Se elige al inicio de la campaña. Con un CPP (ley 2026) operas el bloque solo, pagas la regalía estándar y financias todo tu capex. En una empresa mixta un socio estatal posee 60%: le corresponde 60% de cada aporte de caja y tú pagas una regalía mayor. Paga más de sus aportes cuando el petróleo está caro y se atrasa cuando está barato; los atrasos vuelven poco a poco a tu fondo de capex, o puedes cobrar en crudo con descuento. La renegociación es más probable en una empresa mixta."],
+  ftf:["Patio de tanques","La estación central de tanques entre los campos y el mejorador (en la Faja, un patio de tanques). Deshidrata, mide y amortigua el crudo extrapesado. Cuando el mejorador y la mezcla están llenos, o el mejorador está en parada, el crudo entra a los tanques en vez de cerrarse; cuando sobra capacidad de procesamiento, sale de vuelta."],
   deepwater:["Aguas profundas de Deltana","Una licencia en el Atlántico frente al delta del Orinoco, en la tendencia de los grandes hallazgos de crudo liviano del vecino. Explora con un buque de perforación, delinea y luego desarrolla cada descubrimiento con un FPSO (unidad flotante de producción, almacenamiento y descarga), arrendado o propio. El crudo del FPSO lo cargan en el mar los tanqueros de los compradores: no pasa por tu oleoducto ni tu terminal, y cuenta para la producción neta y la meta de exportación."],
   psa:["Contrato de producción compartida","Términos al estilo del Atlántico: regalía de 2%; los costos (capex y opex) van a un fondo que se recupera con hasta 75% del ingreso del bloque cada trimestre (petróleo de costo); lo que queda (petróleo de ganancia) se reparte 50/50 con el Estado, que paga el impuesto sobre la renta por ti. Generoso mientras el fondo es grande, más ajustado cuando se recuperan los costos. El bloque está aislado: sus costos no reducen el impuesto del resto del negocio."],
   boundary:["Límite marítimo sin resolver","Parte del bloque Deltana está en aguas que ambos países reclaman. Venezuela considera nulo el laudo de 1899 y reclama el territorio al oeste del Esequibo; Guyana considera válido el laudo y pidió a la Corte Internacional de Justicia confirmarlo, jurisdicción que Venezuela rechaza. En el juego, la tensión sube mientras trabajas en la zona superpuesta y baja con conversaciones; los incidentes navales pueden detener el trabajo allí; un fallo puede suspender la producción de esa zona salvo desarrollo conjunto."],
@@ -4885,6 +4922,7 @@ function exportWalkHTML(D){
     ["shed","Power shed","Deslastre por energía",-1,"opt"],
     ["choke","Gathering lines full","Recolección llena",-1,"opt"],
     ["unproc","Upgrader and blending full","Mejorador y mezcla llenos",-1,"opt"],
+    ["ftf","Into (−) or from (+) field tanks","A (−) o desde (+) el patio de tanques",-1,"opt"],
     ["shrink","Upgrading shrink","Merma del mejorador",-1,"opt"],
     ["dil","Diluent blended in","Diluente mezclado",1,"opt"],
     ["refin","Sent to refineries","Enviado a refinerías",-1,"opt"],
@@ -5349,6 +5387,68 @@ const T3 = (()=>{
       if (U.rm) U.rm.rotation.y += dt*(fly*28+3); if (U.rt) U.rt.rotation.z += dt*(fly*40+5); });
     if (heliCam){ const h = LIFE.helis[0]; if (h && h.pos){ const want = h.pos.clone().addScaledVector(h.dir, -2.4).add(new THREE.Vector3(0,1.0,0));
       camS = camS ? camS.lerp(want, .12) : want.clone(); cam.position.copy(camS); cam.lookAt(h.pos.clone().addScaledVector(h.dir, 3.2).add(new THREE.Vector3(0,-1.9,0))); } } }
+
+  /* ---------- v0.99 subsurface: fade the ground, show formations, reservoirs and the wells that reach them ---------- */
+  let SUB = false; const WREF = {land:null, flats:[], inst:[], lake:null};
+  const SUBD = {top:-2.0, bot:-2.5, dwSea:-1.7, dwTop:-3.7, dwBot:-4.1};   // world units; depths exaggerated about 2×
+
+  /* ---------- v1.00 illustrative soil textures for the subsurface view (painted on canvases, nothing downloaded) ---------- */
+  const STRAT_D = 3.1;   // depth the stratigraphic wall spans, world units
+  const STRAT = [  // [top, bottom, kind, base colour, labelEN, labelES]
+    [0, .22, "soil", "#5a3a22", "Topsoil and laterite", "Suelo y laterita"],
+    [.22, 1.72, "sand", "#c8a46a", "Mesa and Las Piedras sands", "Arenas de Mesa y Las Piedras"],
+    [1.72, 2.0, "shale", "#6f747a", "Freites shale (seal)", "Lutitas de Freites (sello)"],
+    [2.0, 2.5, "oil", "#3a2614", "Oficina Fm, Morichal member (oil sand)", "Fm. Oficina, mbro. Morichal (arena petrolífera)"],
+    [2.5, 2.9, "cong", "#8a6e52", "Merecure Fm (coarse sandstone)", "Fm. Merecure (arenisca gruesa)"],
+    [2.9, 3.1, "base", "#7d6f6a", "Guayana Shield basement", "Basamento del Escudo de Guayana"]];
+  let TEXC = null;
+  function soilPaint(x, kind, base, X, Y, W, Hh, rr){
+    x.fillStyle = base; x.fillRect(X, Y, W, Hh);
+    const dot = (cx, cy, r, c, a)=>{ x.globalAlpha = a; x.fillStyle = c; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.fill(); x.globalAlpha = 1; };
+    const n = Math.round(W*Hh/40);
+    if (kind==="soil"){ for (let i=0;i<n;i++) dot(X+rr()*W, Y+rr()*Hh, .8+rr()*2.2, rr()<.5?"#3b2414":"#8a5a32", .55);
+      x.strokeStyle = "#2a1a0e"; x.globalAlpha = .55; x.lineWidth = 1.2; for (let i=0;i<W/14;i++){ let cx = X+rr()*W, cy = Y; x.beginPath(); x.moveTo(cx, cy); for (let k=0;k<5;k++){ cx += (rr()-.5)*8; cy += Hh*.18; x.lineTo(cx, cy); } x.stroke(); } x.globalAlpha = 1; }
+    else if (kind==="sand"){ for (let i=0;i<n*1.4;i++) dot(X+rr()*W, Y+rr()*Hh, .6+rr()*1.3, rr()<.5?"#e2c690":"#9a7a48", .6);
+      x.strokeStyle = "#8a6a3a"; x.globalAlpha = .35; x.lineWidth = 1; for (let b=0;b<Hh/26;b++){ const y0 = Y+b*26+rr()*8; for (let i=0;i<W/30;i++){ const cx = X+i*30+rr()*10; x.beginPath(); x.moveTo(cx, y0); x.quadraticCurveTo(cx+12, y0+10, cx+28, y0+18); x.stroke(); } } x.globalAlpha = 1; }
+    else if (kind==="shale"){ x.strokeStyle = "#4e5358"; x.lineWidth = 1; for (let y = Y+2; y < Y+Hh; y += 3+rr()*3){ x.globalAlpha = .4+rr()*.4; x.beginPath(); x.moveTo(X, y); x.lineTo(X+W, y+(rr()-.5)*2); x.stroke(); } x.globalAlpha = 1;
+      for (let i=0;i<n*.3;i++) dot(X+rr()*W, Y+rr()*Hh, .6, "#9aa0a6", .5); }
+    else if (kind==="oil"){ for (let i=0;i<n*1.5;i++) dot(X+rr()*W, Y+rr()*Hh, .7+rr()*1.4, rr()<.6?"#7a5a34":"#b08850", .7);
+      for (let i=0;i<n*.35;i++) dot(X+rr()*W, Y+rr()*Hh, 1.2+rr()*3.2, "#0d0805", .75); }
+    else if (kind==="cong"){ for (let i=0;i<n*.9;i++) dot(X+rr()*W, Y+rr()*Hh, .7+rr()*1.2, "#b89a74", .55);
+      for (let i=0;i<n*.12;i++){ x.globalAlpha = .85; x.fillStyle = rr()<.5?"#d8cbb4":"#5a4a3a"; x.beginPath(); x.ellipse(X+rr()*W, Y+rr()*Hh, 2+rr()*4, 1.5+rr()*3, rr()*3, 0, 7); x.fill(); x.strokeStyle = "#2a2018"; x.lineWidth = .6; x.stroke(); } x.globalAlpha = 1; }
+    else { for (let i=0;i<n*1.6;i++) dot(X+rr()*W, Y+rr()*Hh, .8+rr()*1.8, ["#c9a9a0","#3a3436","#e8e0d8","#8a7a76"][Math.floor(rr()*4)], .7); } }
+  function soilTex(){ if (TEXC) return TEXC; let sd = 99; const rr = ()=> (sd = (sd*16807)%2147483647)/2147483647;
+    const c = document.createElement("canvas"); c.width = 512; c.height = 1024; const x = c.getContext("2d"), k = c.height/STRAT_D;
+    STRAT.forEach(([a,b,kind,col])=>{ soilPaint(x, kind, col, 0, Math.round(a*k), c.width, Math.round((b-a)*k)+1, rr);
+      x.globalAlpha = .55; x.fillStyle = "#1a120c"; x.fillRect(0, Math.round(b*k)-1, c.width, 2); x.globalAlpha = 1; });
+    const wall = new THREE.CanvasTexture(c); wall.encoding = THREE.sRGBEncoding; wall.wrapS = THREE.RepeatWrapping; wall.anisotropy = 4;
+    const mk = (kind, col, size, rep)=>{ const cc = document.createElement("canvas"); cc.width = cc.height = size; soilPaint(cc.getContext("2d"), kind, col, 0, 0, size, size, rr);
+      const t = new THREE.CanvasTexture(cc); t.encoding = THREE.sRGBEncoding; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rep, rep); return t; };
+    TEXC = {wall, oil:mk("oil","#8a6a40",256,2), shale:mk("shale","#7a7f86",256,8), lake:mk("sand","#b8c49a",256,2), gas:mk("sand","#a8c8d8",256,2)};
+    return TEXC; }
+  const TMAT = {}; function tmat(key, map, tint, op){ const k = key+tint+op; return TMAT[k] || (TMAT[k] = Object.assign(new THREE.MeshStandardMaterial({map, color:SRGB(tint), transparent:op<1, opacity:op, roughness:1, depthWrite:op>=1, side:THREE.DoubleSide}), {userData:{kit:true}})); }
+  function subApply(){ const on = SUB;
+    if (WREF.land) WREF.land.material.forEach(m=>{ m.transparent = on; m.opacity = on ? .14 : 1; m.depthWrite = !on; m.needsUpdate = true; });
+    WREF.flats.forEach(f=>{ f.visible = !on; }); WREF.inst.forEach(i=>{ i.visible = !on; });
+    if (sea) sea.visible = !on;
+    if (WREF.lake){ WREF.lake.material.transparent = true; WREF.lake.material.opacity = on ? .3 : 1; WREF.lake.material.depthWrite = !on; WREF.lake.material.needsUpdate = true; }
+    if (LIFE) LIFE.g.visible = !on;
+    if (host && host.isConnected && S) mood(); }
+  const RMAT = {}; const rmat = (hex, op) => RMAT[hex+op] || (RMAT[hex+op] = Object.assign(new THREE.MeshStandardMaterial({color:SRGB(hex), transparent:true, opacity:op, roughness:.9, depthWrite:false, side:THREE.DoubleSide}), {userData:{kit:true}}));
+  function subSlab(p, x, z, w, d, y0, y1, hex, op, edge, tk){ const T = tk ? soilTex()[tk] : null; const m = new THREE.Mesh(GB, T ? tmat(tk, T, hex, op) : rmat(hex, op)); m.position.set(x, y1, z); m.scale.set(w, y0-y1, d); m.renderOrder = 2; p.add(m);
+    if (edge){ const e = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w, y0-y1, d)), new THREE.LineBasicMaterial({color:edge, transparent:true, opacity:.75})); e.material.userData.own = true; e.position.set(x+w/2, (y0+y1)/2, z+d/2); p.add(e); } return m; }
+  function subTube(p, a, b, r, hex){ const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), d = B.clone().sub(A), L = d.length(); if (L<1e-4) return;
+    const m = new THREE.Mesh(GC, new THREE.MeshBasicMaterial({color:hex})); m.material.userData.own = true; m.position.copy(A); m.scale.set(r, L, r); m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), d.normalize()); m.renderOrder = 3; p.add(m); }
+  function subWell(p, x, z, kind, on, dir){ const top = SUBD.top, mid = (SUBD.top+SUBD.bot)/2, s = dir||1, cas = "#d8cdb8", oil = on ? "#1b1712" : "#6b6358";
+    if (kind==="lake"){ subTube(p,[x,-.14,z],[x,-2.15,z],.02,"#bfe3d9"); return; }
+    if (kind==="gas"){ subTube(p,[x,0,z],[x,-1.8,z],.02,"#7fc6e0"); return; }
+    subTube(p,[x,0,z],[x,top+.3,z],.024,cas);
+    if (kind==="base"){ subTube(p,[x,top+.3,z],[x,mid,z],.024,oil); return; }
+    subTube(p,[x,top+.3,z],[x+s*.28,mid,z],.024,cas);
+    if (kind==="th"){ subTube(p,[x+s*.28,mid+.09,z],[x+s*1.2,mid+.09,z],.02, on ? "#ff7a2a" : "#8a5a3a"); subTube(p,[x+s*.28,mid-.06,z],[x+s*1.2,mid-.06,z],.024, oil);
+      if (on){ const ch = new THREE.Mesh(GS, rmat("#ff9a3a", .24)); ch.position.set(x+s*.74, mid+.04, z); ch.scale.set(.55,.15,.17); ch.renderOrder = 2; p.add(ch); } }
+    else [[0,0],[.13,.18],[-.13,.18]].forEach(([dz,sh],i)=> subTube(p,[x+s*.28,mid,z],[x+s*(1.25-sh), mid + (i ? .02 : 0), z+dz],.02, oil)); }
+  const resCol = life => life>14 ? "#b0641e" : life>8 ? "#c98a3a" : life>4 ? "#dcb070" : "#ecdcbc";
   function setHeli(on){ heliCam = !!on && !!LIFE; camS = null; cam.fov = heliCam ? 55 : 30; cam.near = heliCam ? .1 : 1; cam.updateProjectionMatrix(); if (lbl) lbl.visible = !heliCam && UI.lab3!==false; if (!heliCam) placeCam(); }
   const still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   const css = n => (getComputedStyle(document.documentElement).getPropertyValue(n)||"").trim() || "#ffffff";
@@ -5441,7 +5541,7 @@ const T3 = (()=>{
       for (let s=0;s<L;s+=2.4){ const q = a.clone().add(d.clone().multiplyScalar(s/L)); const sp = new THREE.Mesh(GB, M("#6b6358")); sp.position.set(q.x-.03,0,q.z-.03); sp.scale.set(.06,y-r,.06); g.add(sp); }
       tot += L; cum.push(tot); }
     P.forEach(v=>{ const j = new THREE.Mesh(GS, mt); j.position.copy(v); j.scale.setScalar(r*1.18); g.add(j); });
-    if (flow>.5 && tot>.2){ const n = Math.min(16, Math.max(2, Math.round(tot/1.0))), dm = new THREE.MeshBasicMaterial({color:"#fff3d6", transparent:true, opacity:.9});
+    if (false && flow>.5 && tot>.2){ const n = Math.min(16, Math.max(2, Math.round(tot/1.0))), dm = new THREE.MeshBasicMaterial({color:"#fff3d6", transparent:true, opacity:.9});
       for (let i=0;i<n;i++){ const m = new THREE.Mesh(GS, dm); m.scale.setScalar(r*.72); g.add(m); A.flows.push({m, P, cum, tot, u0:i/n, sp:.45+Math.min(1.4,flow/220)}); } }
   }
   function along(f, s){ const P = f.P, c = f.cum; let i = 0; while (i<c.length-2 && s>c[i+1]) i++;
@@ -5465,9 +5565,9 @@ const T3 = (()=>{
     const uv = geo.attributes.uv, pos = geo.attributes.position, nrm = geo.attributes.normal;
     for (let i=0;i<uv.count;i++){ if (Math.abs(nrm.getY(i))>.5) uv.setXY(i, pos.getX(i)/4, pos.getZ(i)/4); else uv.setXY(i, (pos.getX(i)+pos.getZ(i))/3, -pos.getY(i)/1.3); } uv.needsUpdate = true;
     const land = new THREE.Mesh(geo, [new THREE.MeshStandardMaterial({map:noiseTex("#665540",["#54442f","#7a6648","#4b5a2c","#3f4f26","#867358"],2600,256,7,3), roughness:1}), new THREE.MeshStandardMaterial({map:strataTex(), roughness:1})]);
-    land.receiveShadow = true; scene.add(land);
+    land.receiveShadow = true; scene.add(land); WREF.land = land;
     const grassM = new THREE.MeshStandardMaterial({map:noiseTex("#4a5f2c",["#3a4d22","#5d7334","#6b6a36"],1800,256,5,9), roughness:1});
-    const flat = (m,x0,z0,x1,z1,y)=>{ const g = new THREE.Mesh(new THREE.PlaneGeometry(x1-x0,z1-z0), m); g.rotation.x = -Math.PI/2; g.position.set((x0+x1)/2,y,(z0+z1)/2); g.receiveShadow = true; scene.add(g); return g; };
+    const flat = (m,x0,z0,x1,z1,y)=>{ const g = new THREE.Mesh(new THREE.PlaneGeometry(x1-x0,z1-z0), m); g.rotation.x = -Math.PI/2; g.position.set((x0+x1)/2,y,(z0+z1)/2); g.receiveShadow = true; scene.add(g); WREF.flats.push(g); return g; };
     flat(grassM,-9.8,-10.2,-7.6,S0,.004); flat(grassM,-7.6,S0-1.6,E2,S0,.004); flat(grassM,-7.6,-10.2,E1,-9.6,.004); flat(grassM,4.92,-.9,7.95,14.6,.004);
     if (!dsL) flat(grassM,E1+.2,13.6,E2,S0,.004);
     const road = new THREE.MeshStandardMaterial({color:SRGB("#9a8a70"), roughness:1}), dirt = new THREE.MeshStandardMaterial({color:SRGB("#8a7656"), roughness:1});
@@ -5475,10 +5575,10 @@ const T3 = (()=>{
     const sg = new THREE.PlaneGeometry(130, 110, 52, 44); sg.rotateX(-Math.PI/2);
     sea = new THREE.Mesh(sg, M("#1f5566",{roughness:.42, metalness:.05, flatShading:false, transparent:true, opacity:.95})); sea.position.set(9, -.32, 6); sea.receiveShadow = true; scene.add(sea);
     const lg = new THREE.ShapeGeometry(new THREE.Shape(hole.getPoints())); lg.rotateX(Math.PI/2);
-    const lk = new THREE.Mesh(lg, M("#2a5a52",{roughness:.25, metalness:.1, flatShading:false, side:THREE.DoubleSide})); lk.position.y = -.14; scene.add(lk);
+    const lk = new THREE.Mesh(lg, M("#2a5a52",{roughness:.25, metalness:.1, flatShading:false, side:THREE.DoubleSide})); lk.position.y = -.14; scene.add(lk); WREF.lake = lk;
     // jungle: moriche palms, broadleaf trees and shrubs, instanced; the belt between the fields and the plant keeps its pipe and road corridors clear
     let sd = 7; const rnd = ()=> (sd = (sd*16807)%2147483647)/2147483647, F = {palm:[], tree:[], shrub:[]};
-    const keep = [[-1.0,-9.5,4.72,14.7],[8.15,-1.6,E1+.2,9.45],[8.15,9.45,E2+.2,15.0]].concat(dsL?[[8.2,14.9,23.0,22.3]]:[]);
+    const keep = [[4.5,6.4,8.2,9.95],[-1.0,-9.5,4.72,14.7],[8.15,-1.6,E1+.2,9.45],[8.15,9.45,E2+.2,15.0]].concat(dsL?[[8.2,14.9,23.0,22.3]]:[]);
     const ok = (x,z,m)=> PIP(OUT,x,z) && PIP(OUT,x+m,z) && PIP(OUT,x-m,z) && PIP(OUT,x,z+m) && PIP(OUT,x,z-m) && !PIP(LAKE,x,z) && !PIP(LAKE,x+m,z) && !PIP(LAKE,x-m,z) && !PIP(LAKE,x,z+m) && !PIP(LAKE,x,z-m);
     const add3 = (x,z)=>{ const k = rnd(); F[k<.45?"palm":k<.8?"tree":"shrub"].push([x,z,k<.45?.5+rnd()*.3:.55+rnd()*.35,rnd()*6]); };
     const nOut = lowGfx ? 260 : 620;
@@ -5486,11 +5586,11 @@ const T3 = (()=>{
     for (let i=0;i<40;i++){ const a = rnd()*6.28, x = -4.2+Math.cos(a)*(3.7+rnd()*.5), z = 3.3+Math.sin(a)*(4.0+rnd()*.5); if (ok(x,z,.12)) F.palm.push([x,z,.5+rnd()*.3,rnd()*6]); }
     const corr = [-.62,-.45,1.95,4.05,6.15,10.35,10.6,11.4,RX.north,RX.south];
     for (let i=0;i<(lowGfx?120:260);i++){ const x = 5.05+rnd()*2.7, z = -.7+rnd()*15.2;
-      if (corr.some(c=>Math.abs(z-c)<.4) || PADS3.some(([px,pz])=>Math.hypot(x-px,z-pz)<.8)) continue; add3(x,z); }
+      if (corr.some(c=>Math.abs(z-c)<.4) || PADS3.some(([px,pz])=>Math.hypot(x-px,z-pz)<.8) || (z>6.45 && z<9.9)) continue; add3(x,z); }
     if (KIT) Object.entries(F).forEach(([nm, L])=>{ const src = KIT[nm]; if (!src || !L.length) return; src.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(src.matrixWorld).invert();
       src.traverse(m=>{ if (!m.isMesh) return; const local = new THREE.Matrix4().multiplyMatrices(inv, m.matrixWorld), im = new THREE.InstancedMesh(m.geometry, m.material, L.length);
         im.castShadow = !lowGfx; im.receiveShadow = true; const q = new THREE.Quaternion(), e = new THREE.Euler(), M4 = new THREE.Matrix4();
-        L.forEach(([x,z,sc,ry],i)=>{ q.setFromEuler(e.set(0,ry,0)); M4.compose(new THREE.Vector3(x,0,z), q, new THREE.Vector3(sc,sc,sc)); im.setMatrixAt(i, M4.clone().multiply(local)); }); scene.add(im); }); });
+        L.forEach(([x,z,sc,ry],i)=>{ q.setFromEuler(e.set(0,ry,0)); M4.compose(new THREE.Vector3(x,0,z), q, new THREE.Vector3(sc,sc,sc)); im.setMatrixAt(i, M4.clone().multiply(local)); }); scene.add(im); WREF.inst.push(im); }); });
     lifeInit();
   }
 
@@ -5508,9 +5608,19 @@ const T3 = (()=>{
     const condSmoke = (p,x,y,z,f)=>{ const c = condEff(f); if (c>=50 && !tripped(f)) return; smoke(p,x,y,z,true, c<35||tripped(f)?3:2); };
     const beacon = (p,x,y,z,f)=>{ if (!tripped(f)) return; const b = new THREE.Mesh(GS, new THREE.MeshBasicMaterial({color:"#ff4a3a"})); b.position.set(x,y,z); b.scale.setScalar(.12); p.add(b); A.pulses.push({m:b, kind:"beacon"}); };
     const iw = v => Math.max(2, Math.min(8, 2+v/120));
-    const lab = (lines, x, y, z) => label(lines.filter(Boolean), x, y, z);
+    const lab = (lines, x, y, z) => SUB ? null : label(lines.filter(Boolean), x, y, z);
     const night = nightF;
 
+    // ---- v0.99 formations under the camp (subsurface view)
+    if (SUB){ const es = LANG==="es", sg = new THREE.Group(); dyn.add(sg); curDX = 0;
+      const TX = soilTex(), X0 = -1.2, Z0 = -9.9, W = 28, Dz = 26.6;
+      const wall = (w, rot, x, z)=>{ const t = TX.wall.clone(); t.needsUpdate = true; t.repeat.set(w/5, 1); const m = new THREE.Mesh(new THREE.PlaneGeometry(w, STRAT_D), new THREE.MeshStandardMaterial({map:t, roughness:1, side:THREE.DoubleSide}));
+        m.material.userData.own = true; m.rotation.y = rot; m.position.set(x, -STRAT_D/2 - .02, z); sg.add(m); };
+      wall(W, 0, X0 + W/2, Z0); wall(Dz, Math.PI/2, X0, Z0 + Dz/2);
+      { const f = new THREE.Mesh(new THREE.PlaneGeometry(W, Dz), tmat("base", TX.wall, "#5a4e4a", 1)); f.rotation.x = -Math.PI/2; f.position.set(X0+W/2, -STRAT_D-.02, Z0+Dz/2); sg.add(f); }
+      subSlab(sg, X0, Z0, W, Dz, SUBD.top+.08, SUBD.top+.02, "#b8bec4", .5, null, "shale");
+      STRAT.forEach(([a,b,,,en,esn])=>{ label([[es?esn:en, "#efe7da"]], X0+.9, Z0+.3, (-(a+b)/2 - .35)*H); });
+      label([[es?"Profundidades exageradas ~2×: el yacimiento está a unos 900 m":"Depths exaggerated ~2×: the reservoir sits about 900 m down", "#cfc4b2"]], 4.0, -9.6, (-2.95-.35)*H); }
     // ---- fields
     const GPOS = GPOS6;
     const drawBlock = (b, ox, oy, green) => {
@@ -5520,12 +5630,12 @@ const T3 = (()=>{
       const cells = [...pads.map(p=>({k:p.status==="online"?(padReady(p)?"on":"idle"):"build", th:p.type==="thermal"})), ...planned.map(o=>({k:"plan", th:o.type==="drillTh"}))];
       while (cells.length<b.slots) cells.push({k:"empty"});
       const out = b.base + S.pads.filter(p=>p.block===b.id&&p.status==="online"&&padReady(p)).reduce((a,p)=>a+p.rate,0);
-      box(g,ox,oy,4.4,3.9,2.2,green?"#2a2c1d":"#2e261d");
+      if (!SUB) box(g,ox,oy,4.4,3.9,2.2,green?"#2a2c1d":"#2e261d");
       if (!green){ const bw = Math.max(1,Math.min(4,Math.round(b.base/60)+1)); for (let i=0;i<bw;i++) pump(g,ox+.4,oy+.5+i*.9,out>0,1.5,2.2); }
       else {
-        if (b.ready){ box(g,ox+.15,oy+.4,.6,.9,30,"#6a5a48",2.2); cyl(g,ox+.45,oy+2.0,.22,36,"#8b857a",null,2.2); }
+        if (b.ready){ if (KIT){ kit(g,"gasplant",ox+.62,2.2/H,oy+1.05,.5,Math.PI/2); kit(g,"tank",ox+.45,2.2/H,oy+2.1,.7); } else { box(g,ox+.15,oy+.4,.6,.9,30,"#6a5a48",2.2); cyl(g,ox+.45,oy+2.0,.22,36,"#8b857a",null,2.2); } }
         else if (S.projects.some(p=>p.kind==="fieldFac"&&p.block===b.id)||S.orders.some(o=>o.type==="fieldFac"&&o.block===b.id)){ quadLine(g,ox+.15,oy+.4,.6,.9,2.2,cols.amber,true); crane(g,ox+.45,oy+.85,2.2); }
-        if (S.apprWells.some(w=>w.block===b.id)||S.orders.some(o=>o.type==="appraise"&&o.block===b.id)) box(g,ox+.3,oy+3.0,.14,.14,16,"#d6b27a",2.2);
+        if (S.apprWells.some(w=>w.block===b.id)||S.orders.some(o=>o.type==="appraise"&&o.block===b.id)){ if (KIT) kit(g,"rig",ox+.4,2.2/H,oy+3.1,.45); else box(g,ox+.3,oy+3.0,.14,.14,16,"#d6b27a",2.2); }
       }
       cells.slice(0,20).forEach((c,n)=>{ const col = n%5, row = Math.floor(n/5), gx = ox+1.0+col*.68, gy = oy+.25+row*.88;
         if (c.k==="empty") quadLine(g,gx,gy,.5,.6,2.2,"#4a4036",false);
@@ -5534,7 +5644,11 @@ const T3 = (()=>{
         else if (c.th){ if (KIT) kit(g,"thermal",gx+.25,2.2/H,gy+.3,.62); else { box(g,gx,gy,.5,.5,10,c.k==="idle"?"#5b5b5b":"#8a5a3a",2.2); cyl(g,gx+.25,gy+.25,.07,14,"#a09484",null,12); } if (c.k==="on") smoke(g,gx+.25,2.2/H+.45,gy+.25,false,2); }
         else pump(g,gx+.25,gy+.3,c.k==="on",1,2.2); });
       const nm = b.name.replace("Bloque ","");
-      if (!green) lab([[nm],[`${f0(out)} kb/d`],[`${padsIn(b.id)}/${b.slots} pads`]], ox+2.2, oy+4.3, 2);
+      if (SUB){ const R0 = blockReserves(b); subSlab(g, ox+.1, oy+.1, 4.2, 3.7, SUBD.top, SUBD.bot, b.known===false ? "#8a8278" : resCol(R0.life), .86, "#e8a93b", "oil");
+        if (!green){ const bw = Math.max(1,Math.min(4,Math.round(b.base/60)+1)); for (let i=0;i<bw;i++) subWell(g, ox+.4, oy+.5+i*.9, "base", out>0); }
+        cells.slice(0,20).forEach((c,n)=>{ if (c.k==="empty" || c.k==="plan") return; const gx = ox+1.0+(n%5)*.68, gy = oy+.25+Math.floor(n/5)*.88; subWell(g, gx+.25, gy+.3, c.th ? "th" : "cold", c.k==="on", n%2 ? -1 : 1); });
+        const es = LANG==="es"; label([[`${nm} · ${es?"Fm. Oficina":"Oficina Fm"}`],[b.known===false ? (es?"sin delinear":"unappraised") : `${f0(R0.res)} MMbbl · ${f1(R0.life)} ${es?"años":"years"}`, R0.life<5?cols.bad:null]], ox+2.2, oy+2.0, (SUBD.bot-.2)*H); }
+      if (!green) lab([[nm],[`${f0(out)} kb/d`],[`${padsIn(b.id)}/${b.slots} pads`]], ox+2.4, oy+1.95, 14);
       else lab([[nm],[`${f0(out)} kb/d · ${padsIn(b.id)}/${b.slots} pads`, b.ready?null:cols.amber],[b.ready?"greenfield":"no field facilities yet", b.ready?null:cols.amber]], ox+2.2, oy+1.95, 18);
       if (green && !b.known){ label([["?  unappraised", cols.amber]], ox+.45, oy+3.2, 40); }
       return out; };
@@ -5570,6 +5684,9 @@ const T3 = (()=>{
           else if (c==="build"){ if (KIT) kit(g,"jackup",gx+.15,-.14,gy+.15,.42); else { box(g,gx-.1,gy-.05,.5,.35,4,"#6a5a48",W0); box(g,gx+.1,gy+.08,.08,.08,26,cols.amber,W0+4); } }
           else if (KIT){ kit(g,"lakewell",gx+.15,-.14,gy+.15,.9); if (c==="on") smoke(g,gx+.15,.2,gy+.15,false,1); }
           else { box(g,gx+.08,gy+.08,.14,.14,9,c==="on"?"#d9b86c":"#6b6358",W0); box(g,gx,gy,.3,.3,2,"#5a5248",W0+9); } });
+        if (SUB){ subSlab(g, ox+.1, oy+.1, 2.4, 2.8, -1.9, -2.35, b.known===false ? "#8a8278" : "#dfe8c8", .86, "#9fd3c7", "lake");
+          cells.slice(0,8).forEach((c,n)=>{ if (c==="empty"||c==="plan") return; subWell(g, ox+.35+(n%4)*.55+.15, oy+1.6+Math.floor(n/4)*.7+.15, "lake", c==="on"); });
+          label([[LANG==="es"?"Fm. Misoa · crudo liviano":"Misoa Fm · light crude"]], ox+1.3, oy+1.5, (-2.55-.35)*H); }
         lab([[b.name.replace("Bloque ","")],[`${f0(out)} kb/d light · ${padsIn(b.id)}/${b.slots} wells`, b.ready?null:cols.amber],[b.ready?"Lake Maracaibo":"no platform yet", b.ready?null:cols.amber]], ox+1.3, oy+1.5, 34);
         if (!b.known) label([["?  unappraised", cols.amber]], ox+2.2, oy+2.4, 20); });
       leads.forEach(L=>{ if (k>=LPOS.length) return; const [ox,oy] = LPOS[k++], g = bld("explore",[ox,oy,2.6,3.0],null,1.2);
@@ -5642,6 +5759,7 @@ const T3 = (()=>{
       for (let i=0;i<Math.min(shown+bl,10);i++){ const gx = 6.4+(i%4)*.45, gy = 12.6+Math.floor(i/4)*.7;
         if (i>=shown){ quadLine(g,gx-.15,gy-.15,.3,.3,0,cols.amber,true); crane(g,gx,gy,0); }
         else if (KIT) kit(g,"thermal",gx,0,gy,.35); else { cyl(g,gx,gy,.07,12*1.3,"#9fb8c8",null,0); box(g,gx-.15,gy-.04,.3,.08,2,"#ec6a50",6); } }
+      if (SUB){ subSlab(g, 6.1, 12.3, 1.9, 2.2, -1.62, -1.85, "#e8f4fa", .8, "#7fc6e0", "gas"); for (let i=0;i<Math.min(shown,10);i++) subWell(g, 6.4+(i%4)*.45, 12.6+Math.floor(i/4)*.7, "gas", true); }
       lab([["Gas supply"],[`${f0(F.gasRaw)} MMcfd · ${wells} wells`]], 8.0, 14.4, 6); }
     hexPipe([[7.9,12.9],[8.4,12.9]],cols.gas,iw(F.gasField),F.gasField);
     hexPipe([[4.4,11.4],[8.4,11.4]],cols.gas,iw(F.gasAssoc*8),F.gasAssoc);
@@ -5718,6 +5836,13 @@ const T3 = (()=>{
       for (let i=0;i<n;i++){ if (KIT) kit(g,"cabin",5.25+(i%2)*.6,.6/H,12.0+Math.floor(i/2)*.4,.9); else box(g,5.0+(i%2)*.6,11.85+Math.floor(i/2)*.4,.45,.3,3.5*1.5,"#a08a66",.6); }
       lab([["Crew camp"],[`skill ${f0(S.skill)}`]], 4.9, 13.4, 4); }
 
+    // ---- v0.98 field tank farm in the jungle belt
+    if (KIT && ftfOn()){ const T = ftfS(), n = clamp(Math.ceil(T.cap/.5), 2, 9), fill = T.cap>0 ? T.stock/T.cap : 0, g = bld("ftf",[4.55,6.62,2.9,3.0],null,1.4);
+      box(g,4.95,6.75,2.6,2.75,1.0,"#7d7262");
+      for (let i=0;i<n;i++){ const tx = 5.35+(i%3)*.82, tz = 7.15+Math.floor(i/3)*.85; kit(g,"tank",tx,1/H,tz,1.0); gauge(g,tx,tz,.3,.36,fill); }
+      if (S.projects.some(p=>p.kind==="ftfExp")) crane(g,7.3,9.2,1);
+      hexPipe([[4.4,8.0],[4.62,8.0]], cols.xh, 2, 0); hexPipe([[4.62,7.0],[5.2,7.0]], cols.xh, iw(Math.max(F.ftfIn||0, F.ftfOut||0)), Math.max(F.ftfIn||0, F.ftfOut||0));
+      lab([[LANG==="es"?"Patio de tanques":"Field tank farm"],[`${f1(T.stock)} / ${f1(T.cap)} MMbbl`, fill>.85?cols.bad:null], (F.ftfIn||0)>.5 ? [LANG==="es"?`entra ${f0(F.ftfIn)} kb/d`:`in ${f0(F.ftfIn)} kb/d`, cols.amber] : (F.ftfOut||0)>.5 ? [LANG==="es"?`sale ${f0(F.ftfOut)} kb/d`:`out ${f0(F.ftfOut)} kb/d`, cols.good] : null].filter(Boolean), 6.2, 8.0, 24); }
     // ---- v0.96 Deltana deepwater: FPSOs at sea, the drillship, the gas line to a coastal plant, the neighbour on the horizon
     if (KIT && typeof dwOn==="function" && dwOn() && dwVisible()){ const X = dwS(), W = F.dw || {rows:[]}, es = LANG==="es";
       const g = bld("dw",[21.0,-11.0,10.0,8.0],null,1.4);
@@ -5727,6 +5852,11 @@ const T3 = (()=>{
       S.projects.filter(p=>p.kind==="dwFpso").forEach((p,j)=>{ const [x,z] = spots[(X.ph.length+j)%spots.length]; quadLine(g,x-1.9,z-.6,3.8,1.2,0,cols.amber,true);
         if (p.left<=3){ const f = kit(g,"fpso",x,-.3,z,1.05,.35); if (f) A.bob.push({g:f, ph:j, y:-.3}); } });
       if (X.pros.some(p=>p.st==="drilling"||p.st==="appr")){ const d = kit(g,"drillship",29.2,-.3,-9.6,1.0,-.4); if (d) A.bob.push({g:d, ph:2.2, y:-.3}); }
+      if (SUB){ subSlab(g, 21.2, -11.2, 10.2, 8.4, SUBD.dwSea, SUBD.dwSea-.04, "#1d2a30", .55, null);
+        X.ph.forEach((ph,i)=>{ const [x,z] = spots[i%spots.length]; subSlab(g, x-1.3, z-.9, 2.6, 1.8, SUBD.dwTop, SUBD.dwBot, "#f0d8a0", .88, "#e8a93b", "oil");
+          for (let w=0; w<4; w++){ const wx = x-.6+w*.4, wz = z+(w%2?.35:-.35); subTube(g,[x+1.2,-.3,z+.2],[wx,SUBD.dwSea,wz],.015,"#9aa4a8"); subTube(g,[wx,SUBD.dwSea,wz],[wx,(SUBD.dwTop+SUBD.dwBot)/2,wz],.02,"#1b1712"); } });
+        X.pros.forEach((p,i)=>{ if (!["drilling","appr","found","known"].includes(p.st)) return; const x = 29.2-2.2*i, z = -9.6+1.2*(i%2); subSlab(g, x-.9, z-.6, 1.8, 1.2, SUBD.dwTop-.05, SUBD.dwBot+.05, p.found ? "#5a4a1c" : "#4a4a4a", .45, p.found ? "#e8a93b" : "#8a8a8a"); });
+        label([[LANG==="es"?"Agua de 1.700 m · arenas turbidíticas del Cretácico tardío":"1,700 m of water · Upper Cretaceous turbidite sands", "#cfc4b2"]], 26, -6.2, (SUBD.dwBot-.4)*H); }
       // the neighbour's FPSOs far out to sea
       const n = dwRival(S.turn); for (let i=0;i<n;i++){ const f = kit(g,"fpso",40+(i%5)*3.2,-.3,-12+Math.floor(i/5)*5.5+(i%2)*1.6,1.05,.6+i*.2); if (f) A.bob.push({g:f, ph:i, y:-.3}); }
       label([[es?`${CFG.dw.rival.name} (vecino)`:`${CFG.dw.rival.name} (neighbour)`],[`${n} FPSO · ${f0(dwRivalOut(S.turn))} kb/d`]], 46, -7, 60);
@@ -5747,7 +5877,7 @@ const T3 = (()=>{
       P.forEach(v=>{ const p = new THREE.Mesh(GB, M("#7a6a52")); p.position.set(v.x-.04,0,v.z-.04); p.scale.set(.08,z+.1,.08); add(g,p);
         const arm = new THREE.Mesh(GB, M("#7a6a52")); arm.position.set(v.x-.25,z-.02,v.z-.03); arm.scale.set(.5,.05,.06); g.add(arm); });
       const act = F.demand>0.5, n = Math.max(2, Math.round(tot/1.2));
-      if (act) for (let i=0;i<n;i++){ const m = new THREE.Mesh(GS, new THREE.MeshBasicMaterial({color:"#fff6a8"})); m.scale.setScalar(.085); g.add(m); A.flows.push({m, P, cum, tot, u0:i/n, sp:1.4}); } }
+      if (false && act) for (let i=0;i<n;i++){ const m = new THREE.Mesh(GS, new THREE.MeshBasicMaterial({color:"#fff6a8"})); m.scale.setScalar(.085); g.add(m); A.flows.push({m, P, cum, tot, u0:i/n, sp:1.4}); } }
 
     // ---- selection and bottleneck frames
     const frame = (fp, hex, key) => { const t = .07, y = .02;
@@ -5761,11 +5891,12 @@ const T3 = (()=>{
   }
 
   /* ---------- lighting by quarter (a campaign year is one day) ---------- */
-  function mood(){
-    const P = MOODS3[qOf(S.turn)]||MOODS3[2]; nightF = P.n; host.style.background = `linear-gradient(180deg, ${P.sky[0]} 0%, ${P.sky[1]} 100%)`;
+  function mood(qf){
+    const P = MOODS3[qf || qOf(S.turn)]||MOODS3[2]; nightF = P.n; host.style.background = `linear-gradient(180deg, ${P.sky[0]} 0%, ${P.sky[1]} 100%)`;
     sunL.color.set(P.sun); sunL.intensity = P.si; sunL.position.set(9.5+P.pos[0], P.pos[1], 6+P.pos[2]);
     hemi.color.set(P.hs); hemi.groundColor.set(P.hg); hemi.intensity = P.hi; R.toneMappingExposure = P.exp;
-    if (scene.fog) scene.fog.color.set(P.sky[1]);
+    if (scene.fog) scene.fog.color.set(SUB ? "#120d09" : P.sky[1]);
+    if (SUB) host.style.background = "linear-gradient(180deg, #241d24 0%, #17110c 45%, #0b0806 100%)";
     if (KMAT.window){ KMAT.window.emissive = new THREE.Color("#ffcf7a"); KMAT.window.emissiveIntensity = P.n>.5 ? 1.1 : P.n*.3; } }
 
   /* ---------- init ---------- */
@@ -5792,10 +5923,19 @@ const T3 = (()=>{
   }
   function resize(){ if (!R || !host) return; const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return;
     R.setSize(w,h,false); R.domElement.style.width = "100%"; R.domElement.style.height = "100%"; cam.aspect = w/h; cam.updateProjectionMatrix();
-    const asp = w/h; DEF.dist = 34*Math.pow(Math.max(1, 1.3/asp),.8); const pt = asp<.9 ? .95 : .62; if (pt!==DEF.pitch){ DEF.pitch = pt; if (cv.auto) cv.pitch = pt; } autoFrame(); placeCam(); }
+    const asp = w/h; DEF.dist = 34*Math.pow(Math.max(1, 1.3/asp),.8); const pt = asp<.9 ? .95 : .62; if (pt!==DEF.pitch){ DEF.pitch = pt; if (cv.auto) cv.pitch = pt; } if (!ATTR) autoFrame(); placeCam(); }
   function fitLabels(){ if (!lbl) return; const k = clamp(cv.dist/34,.55,1.9)*1.3; lbl.children.forEach(s=>s.scale.set(s.userData.bw*k, s.userData.bh*k, 1)); }
-  function autoFrame(){ if (!cv.auto || !S) return; const top = landPlots().length>0 || (S.round && S.round.turn===S.turn); cv.tx = 9.4; cv.tz = top?3.3:4.8; cv.dist = DEF.dist*1.12*(top?1.1:1);
-    if (dsOn() && (dsAnyTier()>0 || dsBuilding("dom") || dsBuilding("exp") || S.ds.pc.complex)){ cv.tx = 11.8; cv.tz += 5.4; cv.dist *= 1.4; } }
+  // v1.01 frame the whole camp for the card's real aspect: binary-search the distance at which every corner of the camp's box fits the view
+  function fitDist(x0, x1, z0, z1){ const c = cam.clone(), cs = [];
+    for (const x of [x0,x1]) for (const z of [z0,z1]) for (const y of [0, 3.4]) cs.push(new THREE.Vector3(x, y, z));
+    const tx = (x0+x1)/2, tz = (z0+z1)/2, cp = Math.cos(cv.pitch), v = new THREE.Vector3(); let lo = 8, hi = 160;
+    for (let i=0;i<22;i++){ const d = (lo+hi)/2; c.position.set(tx+Math.sin(cv.yaw)*cp*d, cv.ty+Math.sin(cv.pitch)*d, tz+Math.cos(cv.yaw)*cp*d); c.lookAt(tx, cv.ty, tz); c.updateMatrixWorld(); c.updateProjectionMatrix();
+      const ok = cs.every(p=>{ v.copy(p).project(c); return Math.abs(v.x) < .93 && v.y < .78 && v.y > -.93 && v.z < 1; }); if (ok) hi = d; else lo = d; }
+    return hi; }
+  function autoFrame(){ if (!cv.auto || !S || !cam) return; const top = landPlots().length>0 || (S.round && S.round.turn===S.turn);
+    const ds = dsOn() && (dsAnyTier()>0 || dsBuilding("dom") || dsBuilding("exp") || (S.ds && S.ds.pc && S.ds.pc.complex));
+    const x0 = -1.4, x1 = 21.0, z0 = top ? -6.6 : -1.4, z1 = ds ? 22.2 : 15.2;
+    cv.tx = (x0+x1)/2; cv.tz = (z0+z1)/2; cv.dist = clamp(fitDist(x0, x1, z0, z1), 14, 120); }
   function placeCam(){ const cp = Math.cos(cv.pitch); cam.position.set(cv.tx+Math.sin(cv.yaw)*cp*cv.dist, cv.ty+Math.sin(cv.pitch)*cv.dist, cv.tz+Math.cos(cv.yaw)*cp*cv.dist); cam.lookAt(cv.tx,cv.ty,cv.tz); fitLabels(); dirty = true; }
 
   /* ---------- input: drag = orbit, right-drag or two fingers = pan, wheel and pinch = zoom, tap = open the building ---------- */
@@ -5810,15 +5950,15 @@ const T3 = (()=>{
       for (const h of hits){ let o = h.object; while (o && !o.userData.node) o = o.parent; if (o) return o.userData; } return fb; };
     el.addEventListener("pointerdown", e=>{ el.setPointerCapture(e.pointerId); ptr.set(e.pointerId,{x:e.clientX,y:e.clientY,b:e.button}); moved = 0; cv.spin = false; if (ptr.size===2){ const [a,b] = [...ptr.values()]; pinch = Math.hypot(a.x-b.x,a.y-b.y); } });
     el.addEventListener("pointermove", e=>{ const p = ptr.get(e.pointerId);
-      if (!p){ const n = performance.now(); if (n-hoverT>90){ hoverT = n; el.style.cursor = pickAt(e.clientX,e.clientY) ? "pointer" : "grab"; } return; }
+      if (!p){ const n = performance.now(); if (n-hoverT>90){ hoverT = n; el.style.cursor = !ATTR && pickAt(e.clientX,e.clientY) ? "pointer" : "grab"; } return; }
       const dx = e.clientX-p.x, dy = e.clientY-p.y; moved += Math.abs(dx)+Math.abs(dy); if (heliCam){ p.x = e.clientX; p.y = e.clientY; return; }
       if (ptr.size===2){ const o = [...ptr.entries()].find(([id])=>id!==e.pointerId)[1], d0 = Math.hypot(p.x-o.x,p.y-o.y);
         p.x = e.clientX; p.y = e.clientY; const d1 = Math.hypot(p.x-o.x,p.y-o.y); if (pinch>0) cv.dist = clamp(cv.dist*(d0/Math.max(20,d1)), 9, 80); cv.auto = false; pan(dx/2,dy/2); }
       else if (p.b===2 || e.shiftKey){ pan(dx,dy); p.x = e.clientX; p.y = e.clientY; }
-      else { cv.yaw -= dx*.0062; cv.pitch = clamp(cv.pitch + dy*.0045, .28, 1.3); p.x = e.clientX; p.y = e.clientY; }
+      else { cv.yaw -= dx*.0062; cv.pitch = clamp(cv.pitch + dy*.0045, SUB ? .05 : .28, 1.3); p.x = e.clientX; p.y = e.clientY; }
       placeCam(); });
     const up = e=>{ const p = ptr.get(e.pointerId); ptr.delete(e.pointerId); if (!p) return;
-      if (moved<8 && ptr.size===0){ const h = pickAt(e.clientX,e.clientY); if (h) choose(h); } };
+      if (moved<8 && ptr.size===0 && !ATTR){ const h = pickAt(e.clientX,e.clientY); if (h) choose(h); } };
     el.addEventListener("pointerup", up); el.addEventListener("pointercancel", e=>{ ptr.delete(e.pointerId); });
     el.addEventListener("wheel", e=>{ e.preventDefault(); if (heliCam) return; cv.dist = clamp(cv.dist*Math.exp(e.deltaY*.0012), 9, 80); cv.auto = false; placeCam(); }, {passive:false});
   }
@@ -5844,7 +5984,7 @@ const T3 = (()=>{
     flareL.intensity = flareBase*(.92+.08*Math.sin(t*17)+.05*Math.sin(t*29));
     if (cv.spin && !heliCam){ cv.yaw += dt*.12; placeCam(); } }
   function loop(){
-    raf = 0; if (!R || !host || !host.isConnected || UI.view!=="3d") return;
+    raf = 0; if (!R || !host || !host.isConnected || (UI.view!=="3d" && !(ATTR && UI.screen==="intro"))) return;
     raf = requestAnimationFrame(loop);
     const dt = Math.min(.1, clock.getDelta()), t = clock.elapsedTime;
     if (still){ if (!dirty) return; step(1.4,0); } else step(t,dt);
@@ -5860,19 +6000,35 @@ const T3 = (()=>{
       load().then(()=>{ ready = true; if (UI.view==="3d") render(); }).catch(()=> fall("3D view could not be loaded (needs a network connection). Showing the tactical view.")); return; }
     if (!R){ try { init(); } catch (err){ console.warn("3D init failed", err); fall("3D view is not supported by this browser. Showing the tactical view."); return; } }
     if (host.parentNode!==slot){ slot.innerHTML = ""; slot.appendChild(host); }
+    if (ATTR){ ATTR = false; host.classList.remove("t3attract"); Object.assign(cv, DEF, {auto:true, spin:false}); }
     resize(); mood(); build(F); start(); }
+  // v0.97 start screen: the live diorama of a demo camp, orbiting slowly at golden hour; the player's own save is never touched
+  let ATTR = false, attractBuilt = false;
+  function attract(el){
+    if (!el || failed || typeof DEMO_SAVE==="undefined") return;
+    if (!ready){ load().then(()=>{ ready = true; if (UI.screen==="intro") attract(document.querySelector(".i2scene")); }).catch(()=>{ failed = true; }); return; }
+    if (!R){ try { init(); } catch (err){ failed = true; return; } }
+    ATTR = true; host.classList.add("t3attract"); if (SUB){ SUB = false; subApply(); attractBuilt = false; }
+    if (host.parentNode!==el) el.prepend(host);
+    if (!attractBuilt){ const keep = S; try {
+        S = demoState(); S.demo = true; applyMode(S.mode);
+        Object.assign(cv, {tx:9.8, ty:.4, tz:5.0, yaw:.55, pitch:.52, dist:29, spin:true, auto:false});
+        mood(3); build(flows(taOrdered())); if (lbl) lbl.visible = false; attractBuilt = true;
+      } catch (err){ console.warn("attract", err); } finally { S = keep; if (S && S.mode) applyMode(S.mode); } }
+    cv.spin = true; cv.auto = false; resize(); placeCam(); start(); }
   function act(a){
     if (a==="labels"){ UI.lab3 = UI.lab3===false; render(); }
     else if (a==="reset"){ setHeli(false); Object.assign(cv, DEF, {auto:true}); autoFrame(); placeCam(); }
     else if (a==="spin"){ cv.spin = !cv.spin; render(); }
-    else if (a==="heli"){ setHeli(!heliCam); render(); } }
+    else if (a==="heli"){ setHeli(!heliCam); render(); }
+    else if (a==="sub"){ SUB = !SUB; subApply(); if (!heliCam){ cv.ty = SUB ? -1.5 : .4; cv.pitch = SUB ? .12 : DEF.pitch; if (SUB) cv.dist = Math.min(cv.dist, 26); placeCam(); } render(); } }
   const info = () => ({ready, failed, meshes:dyn?dyn.children.length:0, cv:Object.assign({},cv), life:LIFE?{cars:LIFE.cars.length, people:LIFE.people.length, helis:LIFE.helis.length}:null, anim:{pumps:A.pumps?.length, flows:A.flows?.length, smokes:A.smokes?.length, flames:A.flames?.length, cranes:A.cranes?.length}, picks:picks.length, spin:cv.spin});
   const screenOf = id => { const fp = foots[id] && foots[id][0]; if (!fp) return null; const v = new THREE.Vector3(fp[0]+fp[2]/2,.8,fp[1]+fp[3]/2).project(cam), r = R.domElement.getBoundingClientRect(); return {x:r.left+(v.x+1)/2*r.width, y:r.top+(1-v.y)/2*r.height}; };
   const setCam = (o)=>{ Object.assign(cv,o); if (cam) placeCam(); };
-  return {mount, act, info, setCam, screenOf, get spin(){ return cv.spin; }, get heli(){ return heliCam; }, get kit(){ return !!KIT; }};
+  return {mount, attract, act, info, setCam, screenOf, get spin(){ return cv.spin; }, get heli(){ return heliCam; }, get sub(){ return SUB; }, get kit(){ return !!KIT; }};
 })();
 
-function t3HTML(){ return `<div class="t3wrap"><div class="t3d" id="t3d"></div><div class="t3hint">${T3.heli?(LANG==="es"?"Vuelas con el helicóptero de patrulla · toca un edificio para abrirlo":"Riding with the patrol helicopter · tap a building to open it"):(LANG==="es"?"Arrastra para girar · pellizca o desplaza para acercar · toca un edificio":"Drag to rotate · pinch or scroll to zoom · tap a building")}</div><div class="t3bar"><button class="chip" aria-pressed="${UI.lab3!==false}" data-t3="labels">Labels</button><button class="chip" aria-pressed="${T3.spin}" data-t3="spin">Orbit</button><button class="chip" aria-pressed="${T3.heli}" data-t3="heli">${LANG==="es"?"Helicóptero":"Helicopter"}</button><button class="chip" data-t3="reset">Reset view</button></div></div>`; }
+function t3HTML(){ return `<div class="t3wrap"><div class="t3d" id="t3d"></div><div class="t3hint">${T3.sub?(LANG==="es"?"Subsuelo: pozos, formaciones y yacimientos; el color muestra cuántos años de reservas quedan":"Subsurface: wells, formations and reservoirs; colour shows years of reserves left"):T3.heli?(LANG==="es"?"Vuelas con el helicóptero de patrulla · toca un edificio para abrirlo":"Riding with the patrol helicopter · tap a building to open it"):(LANG==="es"?"Arrastra para girar · pellizca o desplaza para acercar · toca un edificio":"Drag to rotate · pinch or scroll to zoom · tap a building")}</div><div class="t3bar"><button class="chip" aria-pressed="${UI.lab3!==false}" data-t3="labels">Labels</button><button class="chip" aria-pressed="${T3.spin}" data-t3="spin">Orbit</button><button class="chip" aria-pressed="${T3.heli}" data-t3="heli">${LANG==="es"?"Helicóptero":"Helicopter"}</button><button class="chip" aria-pressed="${T3.sub}" data-t3="sub">${LANG==="es"?"Subsuelo":"Subsurface"}</button><button class="chip" data-t3="reset">Reset view</button></div></div>`; }
 
 const DEMO_SAVE = {"seed":-1726411319,"turn":15,"approval":90.56021848522282,"cash":200,"upName":200,"blendCap":600,"pipeCap":800,"berths":3,"storageCap":4,"stored":4,"dil":3,"dilPending":0,"leased":2,"leasedPending":0,"blocks":[{"id":"moriche","name":"Bloque Moriche","kind":"mature","field":"brown","base":158.87467038346196,"start":220,"slots":12,"lastWO":4},{"id":"araguaney","name":"Bloque Araguaney","kind":"mature","field":"brown","base":104.22029991906224,"start":130,"slots":10,"lastWO":4},{"id":"saman","name":"Bloque Sam\u00e1n","kind":"cold","field":"brown","base":35.077983875073,"start":50,"slots":18,"lastWO":0},{"id":"g74","name":"Bloque Jabillo","kind":"cold","field":"green","base":0,"start":0,"slots":10,"lastWO":0,"q":1.35,"est":"Promising","known":true,"ready":true,"commit":{"pads":4,"by":15,"done":10},"won":7,"bonus":450},{"id":"g114","name":"Bloque Mijao","kind":"cold","field":"green","base":0,"start":0,"slots":9,"lastWO":0,"q":0.6,"est":"Moderate","known":true,"ready":true,"commit":{"pads":4,"by":19,"done":0},"won":11,"bonus":360}],"pads":[{"id":19,"block":"saman","type":"cold","status":"online","left":0,"rate":11.069975187399763,"ramp":0},{"id":20,"block":"saman","type":"cold","status":"online","left":0,"rate":11.069975187399763,"ramp":0},{"id":30,"block":"saman","type":"cold","status":"online","left":0,"rate":11.353820705025399,"ramp":0},{"id":31,"block":"saman","type":"cold","status":"online","left":0,"rate":11.353820705025399,"ramp":0},{"id":42,"block":"saman","type":"cold","status":"online","left":0,"rate":11.644944312846564,"ramp":0},{"id":43,"block":"saman","type":"cold","status":"online","left":0,"rate":11.644944312846564,"ramp":0},{"id":50,"block":"saman","type":"cold","status":"online","left":0,"rate":11.943532628560579,"ramp":0},{"id":51,"block":"saman","type":"cold","status":"online","left":0,"rate":11.943532628560579,"ramp":0},{"id":59,"block":"saman","type":"cold","status":"online","left":0,"rate":12.249777054933928,"ramp":0},{"id":60,"block":"saman","type":"cold","status":"online","left":0,"rate":12.249777054933928,"ramp":0},{"id":69,"block":"saman","type":"cold","status":"online","left":0,"rate":12.563873902496336,"ramp":0},{"id":70,"block":"saman","type":"cold","status":"online","left":0,"rate":12.563873902496336,"ramp":0},{"id":81,"block":"saman","type":"cold","status":"online","left":0,"rate":12.886024515380859,"ramp":0},{"id":82,"block":"saman","type":"cold","status":"online","left":0,"rate":12.886024515380859,"ramp":0},{"id":90,"block":"saman","type":"cold","status":"online","left":0,"rate":13.216435400390624,"ramp":0},{"id":101,"block":"g74","type":"cold","status":"online","left":0,"rate":18.29967978515625,"ramp":0},{"id":102,"block":"g74","type":"cold","status":"online","left":0,"rate":18.29967978515625,"ramp":0},{"id":103,"block":"g74","type":"cold","status":"online","left":0,"rate":18.29967978515625,"ramp":0},{"id":110,"block":"g74","type":"cold","status":"online","left":0,"rate":18.76890234375,"ramp":0},{"id":123,"block":"g74","type":"cold","status":"online","left":0,"rate":19.25015625,"ramp":0},{"id":124,"block":"g74","type":"cold","status":"online","left":0,"rate":19.25015625,"ramp":0},{"id":125,"block":"g74","type":"cold","status":"online","left":0,"rate":19.25015625,"ramp":0},{"id":142,"block":"g74","type":"cold","status":"online","left":0,"rate":20.25,"ramp":0},{"id":143,"block":"g74","type":"cold","status":"online","left":0,"rate":20.25,"ramp":0},{"id":144,"block":"g74","type":"cold","status":"online","left":0,"rate":20.25,"ramp":0},{"id":145,"block":"saman","type":"cold","status":"online","left":0,"rate":15,"ramp":0}],"nextId":157,"projects":[],"active":[],"offers":[{"id":151,"buyer":"Marlin Bay Refining","grade":"G16","vol":9,"turns":5,"factor":0.7,"bonus":1.0499999999999998},{"id":152,"buyer":"Puerto Sereno Refining","grade":"C32","vol":18,"turns":6,"factor":0.7,"bonus":2.0999999999999996}],"obligations":[{"id":146,"amount":150,"due":15,"thr":600,"paid":true}],"bonusHit":[true,false,false],"guidance":460,"guidanceLocked":true,"letter":{"year":4,"goal":"cost"},"hist":[{"turn":1,"year":1,"q":1,"net":329.07509157509156,"gross":438.76678876678875,"xh":400,"lost":82.22222222222223,"ta":true,"gr":1.1347416950865226,"cost":1193.9387022222222,"rev":2328.2477777777776,"distr":519.7796365333332,"capex":560,"tax":231.70466124444442,"royalty":232.82477777777777,"skill":50,"gnet":329.07509157509156,"gas":88,"flare":0,"mw":177.6,"shed":0,"town":0,"ev":null,"approval":58.25,"grade":"C"},{"turn":2,"year":1,"q":2,"net":357.9027345775013,"gross":418.6111111111111,"xh":386.5,"lost":10.055555555555543,"ta":false,"gr":1.1844445278492979,"cost":1036.6745856222221,"rev":2379.0436816398824,"distr":781.3967203834236,"capex":300,"tax":188.06800747024857,"royalty":237.90436816398824,"skill":64,"gnet":357.9027345775013,"gas":84.78,"flare":0,"mw":292.543,"shed":0,"town":0,"ev":null,"approval":64.0125,"grade":"C"},{"turn":3,"year":1,"q":3,"net":353.46,"gross":411.28,"xh":403.46,"lost":0,"ta":false,"gr":1.2131469266121757,"cost":1058.1504412759998,"rev":2467.6868579999996,"distr":1000.0517024098397,"capex":550,"tax":132.71602851415986,"royalty":246.76868579999996,"skill":78,"gnet":368.46,"gas":85.2792,"flare":0,"mw":299.54652,"shed":0,"town":0,"ev":"Ministry asks for domestic supply","approval":68.91062500000001,"grade":"B"},{"turn":4,"year":1,"q":4,"net":400.7808791666667,"gross":476.3745055555556,"xh":420.1142125,"lost":0,"ta":false,"gr":1.2553609528614307,"cost":1127.4835753050315,"rev":2678.514855923472,"distr":1012.7286647172216,"capex":290,"tax":258.45113030887177,"royalty":267.8514855923472,"skill":76,"gnet":400.7808791666667,"gas":85.8031455,"flare":0,"mw":302.77380834166667,"shed":0,"town":0,"ev":null,"approval":81.07403125,"grade":"A"},{"turn":5,"year":2,"q":1,"net":417.7994780833334,"gross":501.0659707777778,"xh":436.46614475,"lost":0,"ta":false,"gr":1.1291877786036038,"cost":1166.7340532689502,"rev":2802.8587391665505,"distr":1065.371601660372,"capex":300,"tax":260.9490069159493,"royalty":279.8040773212786,"skill":74,"gnet":417.7994780833334,"gas":86.34979977,"flare":0,"mw":305.8794326578334,"shed":0,"town":44.12056734216662,"ev":"Fertiliser plant restarts","approval":84.4129265625,"grade":"A"},{"turn":6,"year":2,"q":2,"net":452.85137379672483,"gross":550,"xh":472.5193611290625,"lost":2.025814838749966,"ta":false,"gr":1.176555205243322,"cost":1289.1134663863422,"rev":3054.800935746853,"distr":1323.372509864539,"capex":800,"tax":77.19189902112618,"royalty":305.1230604748459,"skill":72,"gnet":452.85137379672483,"gas":89.31723123948748,"flare":0,"mw":317.30466118686434,"shed":0,"town":32.69533881313566,"ev":null,"approval":86.250987578125,"grade":"A"},{"turn":7,"year":2,"q":3,"net":444.80702273665065,"gross":543.8888888888889,"xh":487.577476648725,"lost":31.103302198299843,"ta":false,"gr":1.1850971843393774,"cost":1333.4713489196602,"rev":3009.8048119363343,"distr":1277.9750820709846,"capex":690,"tax":67.7068604608103,"royalty":300.6515204848791,"skill":78,"gnet":444.80702273665065,"gas":89.819608785687,"flare":0,"mw":319.8753929712126,"shed":0,"town":30.12460702878741,"ev":null,"approval":88.81333944140626,"grade":"A"},{"turn":8,"year":2,"q":4,"net":200.52083333333331,"gross":267.3611111111111,"xh":502.36865079621975,"lost":378.47976190733084,"ta":true,"gr":1.0920534625788574,"cost":1427.1379155993657,"rev":1424.471763722363,"distr":0,"capex":440,"tax":0,"royalty":141.6827763722363,"skill":76,"gnet":300.78125,"gas":90.34213721987277,"flare":0,"mw":219.49304308770888,"shed":0,"town":70,"ev":"Leak on the export pipeline","approval":79.99133852519532,"grade":"B"},{"turn":9,"year":3,"q":1,"net":472.81961294087466,"gross":573.3333333333334,"xh":516.8957242027973,"lost":0,"ta":false,"gr":1.1257609831925588,"cost":1362.6726198886568,"rev":3185.418102827992,"distr":1253.7048822462848,"capex":530,"tax":0,"royalty":318.1916724438117,"skill":74,"gnet":472.81961294087466,"gas":90.883070063689,"flare":0,"mw":346.6155539295158,"shed":0,"town":32.0639046691884,"ev":null,"approval":82.49263774641602,"grade":"A"},{"turn":10,"year":3,"q":2,"net":462.85239708489553,"gross":563.3333333333334,"xh":536.1616006355334,"lost":50.12038916173033,"ta":false,"gr":1.113895250030679,"cost":1410.2248642393445,"rev":3123.3089686465555,"distr":1073.8802090330837,"capex":150,"tax":232.18828950189163,"royalty":312.0156058722353,"skill":72,"gnet":462.85239708489553,"gas":92.0407519092432,"flare":0,"mw":354.630331451493,"shed":0,"town":28.872801503686972,"ev":"Investor conference invitation","approval":87.61874208445361,"grade":"A"},{"turn":11,"year":3,"q":3,"net":450.7677922850522,"gross":553.3333333333334,"xh":580.594240723628,"lost":135.08861726113366,"ta":false,"gr":1.1003490494530337,"cost":1535.1332765602942,"rev":3053.8603831686883,"distr":1148.6582968833018,"capex":840,"tax":0,"royalty":305.0688097250923,"skill":78,"gnet":450.7677922850522,"gas":96.26461432649539,"flare":0,"mw":372.0523223515592,"shed":0,"town":29.050237342171613,"ev":"Turbine trip at Central Pauj\u00ed","approval":89.97593077178557,"grade":"A"},{"turn":12,"year":3,"q":4,"net":441.10618996682365,"gross":543.3333333333334,"xh":583.5180310058806,"lost":151.87589319302606,"ta":false,"gr":1.0878249954033608,"cost":1556.3352258329803,"rev":2993.1636162032587,"distr":1078.0744038890214,"capex":650,"tax":0,"royalty":299.00398648125713,"skill":76,"gnet":441.10618996682365,"gas":95.55173694277931,"flare":0,"mw":369.5264552955779,"shed":0,"town":28.605781966002596,"ev":"Union dispute at Mejorador Cardonal","approval":89.97954115601773,"grade":"A"},{"turn":13,"year":4,"q":1,"net":482.93519055989685,"gross":600,"xh":626.9671239105651,"lost":156.03023928816083,"ta":false,"gr":1.0498591099128192,"cost":1497.1310404091216,"rev":2471.1233841073786,"distr":697.2239343344545,"capex":790,"tax":0,"royalty":246.76840936380245,"skill":78,"gnet":482.93519055989685,"gas":99.74444516245849,"flare":0,"mw":384.1065208751331,"shed":0,"town":31.495333968443916,"ev":null,"approval":89.48260998261507,"grade":"A"},{"turn":14,"year":4,"q":2,"net":481.57894736842104,"gross":600,"xh":628.6749429638382,"lost":160.89716518606048,"ta":false,"gr":1.0483849325307804,"cost":1509.948116243796,"rev":2466.18047724165,"distr":499.9576241557488,"capex":50,"tax":0,"royalty":246.27473684210528,"skill":76,"gnet":481.57894736842104,"gas":98.96904783712364,"flare":0,"mw":380.9323071913386,"shed":0,"town":31.438725463343197,"ev":"Fast-track permits offered","approval":90.56021848522282,"grade":"A"}],"recentNets":[4,7,7,15,8,7,8,-3,7,10,8,6,5.5,7],"cumNet":523.1824364562492,"dStreak":0,"sStreak":0,"upFirst":true,"offSpec":false,"orders":[],"over":null,"last":{"turn":14,"year":4,"q":2,"P":55,"gradeStart":"A","ceiling":1360,"events":["Fast-track permits offered: you chose \u201cAccept the pledge\u201d.","Concession bid round open next turn: Bloque Chaguaramo and Bloque Merecure. See Contracts."],"appr":[{"v":2,"why":"Production bonus paid on time"},{"v":2,"why":"Guidance met: year-to-date 482 vs 460 kb/d"},{"v":3,"why":"After-tax cash margin 28%"}],"completed":["Cold pad #142 online at 20.3 kb/d","Cold pad #143 online at 20.3 kb/d","Cold pad #144 online at 20.3 kb/d","Cold pad #145 online at 15.0 kb/d","New export berth: terminal 900 kb/d","New gas turbine block: Central Pauj\u00ed now 550 MW","Gas plant repaired: condition 95%"],"gr":1.0483849325307804,"F":{"mature":272.63727492489556,"cold":356.03766803894274,"th":0,"xh":628.6749429638382,"xhFull":628.6749429638382,"upFull":177.77777777777777,"upEff":177.77777777777777,"blendCapEff":600,"pipeCapEff":736.6666666666666,"ratio":3,"dilCap":260,"xhUp":177.77777777777777,"xhBl":450,"shut":0.8971651860604766,"dil":150,"blend":600,"sco":160,"made":760,"piped":736.6666666666666,"pipeLoss":23.33333333333337,"term":600,"exported":600,"stored":4,"overflow":136.66666666666663,"expB":473.6842105263158,"expS":126.3157894736842,"net":481.57894736842104,"dom":0,"lost":160.89716518606048,"neck":{"node":"blend","why":"Upgrader and blending capacity are both full (condition 80% limits it)"},"xhAssoc":628.6749429638382,"shed":0,"upShed":0,"gasAssoc":75.44099315566059,"gasField":23.528054681463054,"gasRaw":98.96904783712364,"gasProc":98.96904783712364,"gasFuel":98.96904783712363,"gasExp":0,"gasDom":0,"flare":0,"gasNeck":null,"loadField":157.16873574095956,"loadUp":106.66666666666666,"loadMid":117.09690478371238,"demand":380.9323071913386,"gtCap":415.27777777777777,"gtGen":412.3710326546818,"dsCap":0,"dsGen":0,"short":0,"townMW":31.438725463343197,"gasShortPw":false,"short0":0},"rev":2466.18047724165,"cbon":0,"lift":392.8765028945867,"dilc":819,"other":298.07161334920926,"payments":150,"cpen":0,"ocf":499.9576241557488,"opMargin":0.2757128403336731,"capex":50,"fund":50,"cashpre":200,"distr":499.9576241557488,"ytd":482.257068964159,"gains":7,"losses":0,"mult":1,"drift":-5.922391497392261,"net":7,"before":89.48260998261507,"after":90.56021848522282,"fmNet":0,"crudeRev":2462.7473684210527,"gasRev":0,"townRev":3.4331088205970772,"powerCost":4.503091676589126,"gasCost":2.701855005953475,"royalty":246.27473684210528,"rRate":0.1,"allowance":517.5,"tax":0,"credit":0,"claw":0,"training":0,"fees":0,"evCost":30,"evInfo":{"title":"Fast-track permits offered","good":true,"label":"Accept the pledge"},"pretax":-17.542375844251183,"skillStart":76,"maintCost":30,"commitCost":0,"skillEnd":77,"next":"towns"},"delivered":[{"year":1},{"year":2},{"year":3}],"skill":77,"skillAdj":0,"inc":{"relief":{"start":9,"end":16,"pads":11,"received":1727.323220728304},"credit":{"start":10,"end":17},"accel":false},"depr":[{"per":55,"left":1},{"per":66.25,"left":2},{"per":18.75,"left":3},{"per":105,"left":4},{"per":81.25,"left":5},{"per":98.75,"left":6},{"per":6.25,"left":7}],"lossCF":17.542375844251183,"creditPool":387.8797440636955,"ev":{"id":"towns","choice":null},"evUsed":["decree","fert","leak","roadshow","power","strike","permits","towns"],"fwd":0,"taxPaid":1448.975883437502,"royPaid":3739.9339727156566,"gasField":22.586932494204532,"gasWells":[],"gasPlant":120,"gasPipe":false,"domGasAdd":40,"domGasPx":3,"gtMW":550,"gens":0,"gensPending":0,"pwFirst":"upgrader","gasSold":0,"townMWh":0,"cond":{"upgrader":77,"power":84.9090909090909,"pipe":81.375,"terminal":94.66666666666667,"blend":90.5,"gasplant":95},"trip":{},"maint":"std","apprWells":[],"round":{"turn":15,"offers":[{"id":153,"name":"Bloque Chaguaramo","key":"g154","slots":10,"est":"Moderate","q":1.35,"ref":300,"rivals":1},{"id":155,"name":"Bloque Merecure","key":"g156","slots":12,"est":"Moderate","q":0.6,"ref":320,"rivals":3}]},"namesUsed":["Bloque Cedral","Bloque Caoba","Bloque Jabillo","Bloque Guatacaro","Bloque Mijao","Bloque Apamate","Bloque Chaguaramo","Bloque Merecure"],"bids":{},"fin":{"rows":[{"turn":1,"year":1,"q":1,"P":70,"net":329.07509157509156,"gross":438.76678876678875,"crude":2315.811111111111,"gasp":12.436666666666667,"cbon":0,"royalty":232.82477777777777,"lift":282.09999999999997,"dil":750.75,"other":161.08870222222222,"maint":60,"training":60,"items":30,"tax":231.70466124444442,"pretax":681.4842977777777,"allowance":70,"capex":560,"ceiling":880,"distr":519.7796365333332,"cash":200,"sens":25.78409155555556,"lost":82.22222222222223,"gas":88,"assets":{"moriche":220,"araguaney":130,"saman":50},"rev":2328.2477777777776,"opex":1313.9387022222222,"ocfPre":751.4842977777776,"ocf":519.7796365333331,"fcf":-40.22036346666687,"ni":449.77963653333325},{"turn":2,"year":1,"q":2,"P":70,"net":357.9027345775013,"gross":418.6111111111111,"crude":2369.3870649732157,"gasp":9.656616666666666,"cbon":0,"royalty":237.90436816398824,"lift":272.4995,"dil":424.28749999999997,"other":339.88758562222216,"maint":55,"training":60,"items":20,"tax":188.06800747024857,"pretax":861.9647278536722,"allowance":107.5,"capex":300,"ceiling":960,"distr":781.3967203834236,"cash":200,"sens":28.20428236888889,"lost":10.055555555555543,"gas":84.78,"assets":{"moriche":212.29999999999998,"araguaney":125.45,"saman":48.75},"rev":2379.0436816398824,"opex":1151.6745856222221,"ocfPre":969.464727853672,"ocf":781.3967203834234,"fcf":481.39672038342337,"ni":673.8967203834236},{"turn":3,"year":1,"q":3,"P":70,"net":353.46,"gross":411.28,"crude":2461.9358399999996,"gasp":5.751018000000001,"cbon":0,"royalty":246.76868579999996,"lift":279.6081925,"dil":462.8714999999999,"other":315.67074877600004,"maint":30,"training":0,"items":0,"tax":132.71602851415986,"pretax":956.5177309239996,"allowance":176.25,"capex":550,"ceiling":1120,"distr":1000.0517024098397,"cash":200,"sens":27.3318626672,"lost":0,"gas":85.2792,"assets":{"moriche":204.8695,"araguaney":121.05925,"saman":77.53125},"rev":2467.6868579999996,"opex":1088.1504412759998,"ocfPre":1132.7677309239996,"ocf":1000.0517024098397,"fcf":450.05170240983966,"ni":823.8017024098397},{"turn":4,"year":1,"q":4,"P":70,"net":400.7808791666667,"gross":476.3745055555556,"crude":2672.644640322222,"gasp":5.87021560125,"cbon":18,"royalty":267.8514855923472,"lift":286.6252263875,"dil":515.9265001041666,"other":324.931848813365,"maint":30,"training":0,"items":0,"tax":258.45113030887177,"pretax":1058.6797950260934,"allowance":212.5,"capex":290,"ceiling":1190,"distr":1012.7286647172216,"cash":200,"sens":31.943955341247445,"lost":0,"gas":85.8031455,"assets":{"moriche":197.69906749999998,"araguaney":116.82217625,"saman":105.59296875},"rev":2696.514855923472,"opex":1157.4835753050315,"ocfPre":1271.1797950260934,"ocf":1012.7286647172216,"fcf":722.7286647172216,"ni":800.2286647172216},{"turn":5,"year":2,"q":1,"P":70,"net":417.7994780833334,"gross":501.0659707777778,"crude":2797.506193765111,"gasp":5.352545401439597,"cbon":0,"royalty":279.8040773212786,"lift":293.5498810733125,"dil":568.2938126395834,"other":304.8903595560543,"maint":30,"training":0,"items":0,"tax":260.9490069159493,"pretax":1076.3206085763215,"allowance":250,"capex":300,"ceiling":1320,"distr":1065.371601660372,"cash":200,"sens":33.46005217150555,"lost":0,"gas":86.34979977,"assets":{"moriche":190.77960013749998,"araguaney":112.73340008125,"saman":132.95314453125},"rev":2802.858739166551,"opex":1196.7340532689502,"ocfPre":1326.320608576322,"ocf":1065.3716016603726,"fcf":765.3716016603726,"ni":815.3716016603722},{"turn":6,"year":2,"q":2,"P":70,"net":452.85137379672483,"gross":550,"crude":3049.7790006200785,"gasp":5.021935126774498,"cbon":0,"royalty":305.1230604748459,"lift":314.94155940488713,"dil":665.4815465686172,"other":308.690360412838,"maint":30,"training":30,"items":0,"tax":77.19189902112618,"pretax":1050.5644088856652,"allowance":350,"capex":800,"ceiling":1340,"distr":1323.372509864539,"cash":200,"sens":36.17191271241844,"lost":2.025814838749966,"gas":89.31723123948748,"assets":{"moriche":194.10231413268747,"araguaney":118.78773107840624,"saman":159.62931591796877},"rev":3054.800935746853,"opex":1349.1134663863422,"ocfPre":1400.5644088856652,"ocf":1323.372509864539,"fcf":523.3725098645391,"ni":973.3725098645391},{"turn":7,"year":2,"q":3,"P":70,"net":444.80702273665065,"gross":543.8888888888889,"crude":3004.926451650298,"gasp":4.878360286036134,"cbon":0,"royalty":300.6515204848791,"lift":321.1701808906282,"dil":714.9054260425158,"other":297.39574198651593,"maint":30,"training":0,"items":0,"tax":67.7068604608103,"pretax":909.4319425317949,"allowance":436.25,"capex":690,"ceiling":1350,"distr":1277.9750820709846,"cash":200,"sens":35.012427652766455,"lost":31.103302198299843,"gas":89.819608785687,"assets":{"moriche":187.3087331380434,"araguaney":114.63016049066202,"saman":185.63858302001955,"g74":0},"rev":3009.8048119363343,"opex":1363.4713489196602,"ocfPre":1345.681942531795,"ocf":1277.9750820709846,"fcf":587.9750820709846,"ni":841.7250820709846},{"turn":8,"year":2,"q":4,"P":70,"net":200.52083333333331,"gross":267.3611111111111,"crude":1411.1319444444443,"gasp":13.33981927791858,"cbon":13.5,"royalty":141.6827763722363,"lift":327.3228112227455,"dil":979.1979166666665,"other":120.61718770995364,"maint":30,"training":0,"items":30,"tax":0,"pretax":-682.098928249239,"allowance":491.25,"capex":440,"ceiling":1360,"distr":0,"cash":9.151071750761076,"sens":8.840902777777778,"lost":378.47976190733084,"gas":90.34213721987277,"assets":{"moriche":180.7529274782119,"araguaney":110.61810487348885,"saman":210.99761844451905,"g74":0},"rev":1437.971763722363,"opex":1457.1379155993657,"ocfPre":-190.84892824923895,"ocf":-190.84892824923895,"fcf":-630.848928249239,"ni":-682.098928249239},{"turn":9,"year":3,"q":1,"P":70,"net":472.81961294087466,"gross":573.3333333333334,"crude":3181.9167244381165,"gasp":3.5013783898753736,"cbon":0,"royalty":318.1916724438117,"lift":333.3985598266565,"dil":720.9377725613638,"other":308.3362875006365,"maint":30,"training":0,"items":30,"tax":0,"pretax":957.0538104955237,"allowance":487.5,"capex":530,"ceiling":1320,"distr":1253.7048822462848,"cash":200,"sens":37.34349636584848,"lost":0,"gas":90.883070063689,"assets":{"moriche":174.42657501647446,"araguaney":106.74647120291674,"saman":235.72267798340604,"g74":0},"rev":3185.418102827992,"opex":1392.6726198886568,"ocfPre":1444.5538104955235,"ocf":1444.5538104955235,"fcf":914.5538104955235,"ni":957.0538104955237},{"turn":10,"year":3,"q":2,"P":70,"net":462.85239708489553,"gross":563.3333333333334,"crude":3120.156058722353,"gasp":3.1529099242026173,"cbon":0,"royalty":312.0156058722353,"lift":345.7666560545129,"dil":764.7676414458386,"other":299.6905667389929,"maint":30,"training":30,"items":35,"tax":232.18828950189163,"pretax":837.3184985349753,"allowance":468.75,"capex":150,"ceiling":1330,"distr":1073.8802090330837,"cash":200,"sens":35.94009811405549,"lost":50.12038916173033,"gas":92.0407519092432,"assets":{"moriche":178.32164489089786,"araguaney":113.01034471081465,"saman":244.82961103382092,"g74":0},"rev":3123.3089686465555,"opex":1470.2248642393445,"ocfPre":1306.0684985349756,"ocf":1073.880209033084,"fcf":923.8802090330839,"ni":605.1302090330837},{"turn":11,"year":3,"q":3,"P":70,"net":450.7677922850522,"gross":553.3333333333334,"crude":3050.688097250923,"gasp":3.17228591776514,"cbon":0,"royalty":305.0688097250923,"lift":368.17109276884963,"dil":870.9074532018092,"other":296.05473058963554,"maint":30,"training":0,"items":35,"tax":0,"pretax":643.6582968833018,"allowance":505,"capex":840,"ceiling":1350,"distr":1148.6582968833018,"cash":200,"sens":33.705900623975865,"lost":135.08861726113366,"gas":96.26461432649539,"assets":{"moriche":172.08038731971644,"araguaney":109.05498264593614,"saman":238.70887075797538,"g74":60.75,"g114":0},"rev":3053.8603831686883,"opex":1565.1332765602942,"ocfPre":1148.6582968833018,"ocf":1148.6582968833018,"fcf":308.6582968833018,"ni":643.6582968833018},{"turn":12,"year":3,"q":4,"P":70,"net":441.10618996682365,"gross":543.3333333333334,"crude":2990.039864812571,"gasp":3.123751390687483,"cbon":20.25,"royalty":299.00398648125713,"lift":367.9766499562784,"dil":892.7257427606008,"other":295.632833116101,"maint":30,"training":0,"items":50,"tax":0,"pretax":528.0744038890214,"allowance":550,"capex":650,"ceiling":1360,"distr":1078.0744038890214,"cash":200,"sens":32.59599009652533,"lost":151.87589319302606,"gas":95.55173694277931,"assets":{"moriche":166.05757376352636,"araguaney":105.23805825332836,"saman":232.741148989026,"g74":79.48124999999999,"g114":0},"rev":3013.4136162032587,"opex":1586.3352258329803,"ocfPre":1078.0744038890214,"ocf":1078.0744038890214,"fcf":428.07440388902137,"ni":528.0744038890214},{"turn":13,"year":4,"q":1,"P":55,"net":482.93519055989685,"gross":600,"crude":2467.6840936380245,"gasp":3.4392904693540753,"cbon":0,"royalty":246.76840936380245,"lift":389.9717015062887,"dil":805.3912766283395,"other":301.7680622744936,"maint":30,"training":0,"items":0,"tax":0,"pretax":85.9739343344545,"allowance":611.25,"capex":790,"ceiling":1360,"distr":697.2239343344545,"cash":200,"sens":35.71681205619434,"lost":156.03023928816083,"gas":99.74444516245849,"assets":{"moriche":160.24555868180292,"araguaney":101.55472621446184,"saman":226.9226202643003,"g74":138.24421874999996,"g114":0},"rev":2471.1233841073786,"opex":1527.1310404091216,"ocfPre":697.2239343344547,"ocf":697.2239343344547,"fcf":-92.77606566554527,"ni":85.9739343344545},{"turn":14,"year":4,"q":2,"P":55,"net":481.57894736842104,"gross":600,"crude":2462.7473684210527,"gasp":3.4331088205970772,"cbon":0,"royalty":246.27473684210528,"lift":392.8765028945867,"dil":819,"other":298.07161334920926,"maint":30,"training":0,"items":180,"tax":0,"pretax":-17.542375844251183,"allowance":517.5,"capex":50,"ceiling":1360,"distr":499.9576241557488,"cash":200,"sens":35.49,"lost":160.89716518606048,"gas":98.96904783712364,"assets":{"moriche":164.63696412793982,"araguaney":108.00031079695567,"saman":221.24955475769275,"g74":134.78811328125,"g114":0},"rev":2466.18047724165,"opex":1539.948116243796,"ocfPre":499.9576241557488,"ocf":499.9576241557488,"fcf":449.9576241557488,"ni":-17.542375844251183}],"budgets":{"1":{"status":"locked","capexQ":480,"rows":[{"turn":1,"year":1,"q":1,"P":70,"net":290,"gross":386.66666666666663,"crude":2040.8266666666666,"gasp":12.436666666666667,"cbon":0,"lift":248.60283289272294,"dil":661.6043133435369,"other":151.52469091872672,"maint":60,"training":60,"items":30,"capex":480,"ceiling":880,"allowance":60,"distr":null,"cash":null,"royalty":205.32633333333334,"sens":22.722432485914386,"lost":82.22222222222223,"pretax":576.2051628450134,"tax":195.90975536730457,"rev":2053.2633333333333,"opex":1181.7318371549866,"ocfPre":636.2051628450133,"ocf":440.29540747770875,"fcf":-39.70459252229125,"ni":380.29540747770886},{"turn":2,"year":1,"q":2,"P":70,"net":290,"gross":339.19054115507043,"crude":1919.8574988631194,"gasp":11.931616666666667,"cbon":0,"lift":220.79980778377575,"dil":343.78998289926676,"other":320.2748635985582,"maint":30,"training":0,"items":0,"capex":480,"ceiling":960,"allowance":120,"distr":null,"cash":null,"royalty":193.17891155297863,"sens":22.730361541517677,"lost":10.055555555555543,"pretax":703.7455496952069,"tax":239.27348689637037,"rev":1931.7891155297862,"opex":914.8646542816008,"ocfPre":823.7455496952067,"ocf":584.4720627988363,"fcf":104.4720627988363,"ni":464.47206279883653},{"turn":3,"year":1,"q":3,"P":70,"net":290,"gross":341.29035623011526,"crude":1925.2078276743337,"gasp":5.751018000000001,"cbon":0,"lift":211.4598023913837,"dil":350.05668127053667,"other":286.7910677393796,"maint":30,"training":0,"items":0,"capex":480,"ceiling":1100,"allowance":180,"distr":null,"cash":null,"royalty":193.09588456743336,"sens":23.14786463643666,"lost":0,"pretax":679.5554097056003,"tax":231.0488392999041,"rev":1930.9588456743336,"opex":878.3075514013,"ocfPre":859.5554097056003,"ocf":628.5065704056962,"fcf":148.50657040569615,"ni":448.50657040569615},{"turn":4,"year":1,"q":4,"P":70,"net":290,"gross":342.3988533249546,"crude":1928.0322782719845,"gasp":5.051215601249998,"cbon":0,"lift":211.11468067430425,"dil":357.622173942815,"other":278.5726071812353,"maint":30,"training":0,"items":0,"capex":480,"ceiling":1180,"allowance":240,"distr":null,"cash":null,"royalty":193.30834938732346,"sens":23.167030212588553,"lost":0,"pretax":622.4656826875566,"tax":211.63833211376928,"rev":1933.0834938732346,"opex":877.3094617983545,"ocfPre":862.4656826875566,"ocf":650.8273505737874,"fcf":170.82735057378738,"ni":410.8273505737874}],"locked":1},"2":{"status":"locked","capexQ":430,"rows":[{"turn":5,"year":2,"q":1,"P":70,"net":370,"gross":443.7401646317984,"crude":2477.449939481822,"gasp":5.352545401439597,"cbon":0,"lift":259.96551382829114,"dil":503.276623612024,"other":287.44945689351863,"maint":30,"training":0,"items":0,"capex":430,"ceiling":1320,"allowance":266.25,"distr":null,"cash":null,"royalty":247.85346787056136,"sens":29.63196450185063,"lost":0,"pretax":888.0074226788663,"tax":215.2933366095724,"rev":2482.802484883262,"opex":1080.6915943338338,"ocfPre":1154.2574226788668,"ocf":938.9640860692944,"fcf":508.96408606929435,"ni":672.7140860692939},{"turn":6,"year":2,"q":2,"P":70,"net":370,"gross":449.37480987160865,"crude":2491.807015552859,"gasp":5.021935126774498,"cbon":0,"lift":257.32146068770743,"dil":543.7284426587935,"other":285.90329009637094,"maint":30,"training":0,"items":0,"capex":430,"ceiling":1340,"allowance":320,"distr":null,"cash":null,"royalty":249.3910755357646,"sens":29.554084359700838,"lost":2.025814838749966,"pretax":810.484681700997,"tax":275.56479177833904,"rev":2496.8289506796336,"opex":1116.953193442872,"ocfPre":1130.484681700997,"ocf":854.9198899226581,"fcf":424.91988992265806,"ni":534.9198899226581},{"turn":7,"year":2,"q":3,"P":70,"net":370,"gross":452.4184165321351,"crude":2499.562125323881,"gasp":4.878360286036134,"cbon":0,"lift":267.1562292304181,"dil":594.673631743305,"other":283.3788704868148,"maint":30,"training":0,"items":0,"capex":430,"ceiling":1350,"allowance":373.75,"distr":null,"cash":null,"royalty":250.1703223333267,"sens":29.124086557404464,"lost":31.103302198299843,"pretax":705.3114318160528,"tax":239.80588681745797,"rev":2504.4404856099172,"opex":1175.2087314605378,"ocfPre":1079.0614318160528,"ocf":839.2555449985948,"fcf":409.2555449985948,"ni":465.50554499859487},{"turn":8,"year":2,"q":4,"P":70,"net":370,"gross":452.736626177587,"crude":2500.3729235004917,"gasp":5.1152900891359065,"cbon":0,"lift":263.2679051604034,"dil":588.8396630742236,"other":279.91930899812166,"maint":30,"training":0,"items":0,"capex":430,"ceiling":1350,"allowance":427.5,"distr":null,"cash":null,"royalty":250.1836128874749,"sens":29.227934176288063,"lost":22.880423283848586,"pretax":665.7777234694038,"tax":226.3644259795973,"rev":2505.488213589628,"opex":1162.0268772327486,"ocfPre":1093.2777234694045,"ocf":866.9132974898072,"fcf":436.9132974898072,"ni":439.4132974898065}],"locked":5},"3":{"status":"locked","capexQ":560,"rows":[{"turn":9,"year":3,"q":1,"P":70,"net":420,"gross":509.2851341386967,"crude":2826.4585217853987,"gasp":3.5013783898753736,"cbon":0,"lift":296.15394813308205,"dil":640.4003898916873,"other":291.11385962786716,"maint":30,"training":0,"items":30,"capex":560,"ceiling":1320,"allowance":491.25,"distr":null,"cash":null,"royalty":282.6849237738249,"sens":33.17178062073676,"lost":0,"pretax":768.356778748813,"tax":0,"rev":2829.959900175274,"opex":1257.6681976526365,"ocfPre":1259.6067787488128,"ocf":1259.6067787488128,"fcf":699.6067787488128,"ni":768.356778748813},{"turn":10,"year":3,"q":2,"P":70,"net":420,"gross":511.17808072322305,"crude":2831.281749682772,"gasp":3.1529099242026173,"cbon":0,"lift":313.7544419290521,"dil":693.962938142325,"other":291.53964774893376,"maint":30,"training":0,"items":0,"capex":560,"ceiling":1330,"allowance":523.75,"distr":null,"cash":null,"royalty":283.1573361779097,"sens":32.61264563600096,"lost":50.12038916173033,"pretax":698.2702956087537,"tax":237.41190050697628,"rev":2834.4346596069745,"opex":1329.257027820311,"ocfPre":1222.020295608754,"ocf":984.6083951017777,"fcf":424.60839510177766,"ni":460.85839510177743},{"turn":11,"year":3,"q":3,"P":70,"net":420,"gross":515.5647851899702,"crude":2842.4590726640436,"gasp":3.17228591776514,"cbon":0,"lift":343.04105486119613,"dil":811.4624349945807,"other":291.74614447438984,"maint":30,"training":0,"items":0,"capex":560,"ceiling":1340,"allowance":525,"distr":null,"cash":null,"royalty":284.2675376593984,"sens":31.40525677379746,"lost":135.08861726113366,"pretax":560.1141865922436,"tax":190.43882344136287,"rev":2845.631358581809,"opex":1476.2496343301668,"ocfPre":1085.1141865922436,"ocf":894.6753631508808,"fcf":334.6753631508808,"ni":369.6753631508808},{"turn":12,"year":3,"q":4,"P":70,"net":420,"gross":515.7480588418197,"crude":2842.9260539289567,"gasp":2.951269990687482,"cbon":0,"lift":338.79915552419953,"dil":803.6718414499368,"other":287.9557147865186,"maint":30,"training":0,"items":0,"capex":560,"ceiling":1340,"allowance":558.75,"distr":null,"cash":null,"royalty":284.3075743711288,"sens":31.52414146647921,"lost":124.87589319302593,"pretax":542.3930377878607,"tax":184.41363284787266,"rev":2845.8773239196444,"opex":1460.426711760655,"ocfPre":1101.1430377878605,"ocf":916.7294049399878,"fcf":356.72940493998783,"ni":357.97940493998806}],"locked":9},"4":{"status":"locked","capexQ":540,"rows":[{"turn":13,"year":4,"q":1,"P":55,"net":460,"gross":571.5052565956438,"crude":2350.4907185526467,"gasp":3.4392904693540753,"cbon":0,"lift":371.4514622239856,"dil":767.1422470156206,"other":294.60239268937573,"maint":30,"training":0,"items":0,"capex":540,"ceiling":1360,"allowance":580,"distr":null,"cash":null,"royalty":235.06538273883262,"sens":34.020576398256225,"lost":156.03023928816083,"pretax":75.66852435418582,"tax":0,"rev":2353.930009022001,"opex":1463.196101928982,"ocfPre":655.668524354186,"ocf":655.668524354186,"fcf":115.66852435418605,"ni":75.66852435418582},{"turn":14,"year":4,"q":2,"P":55,"net":460,"gross":573.1147540983607,"crude":2352.394754098361,"gasp":3.4331088205970772,"cbon":0,"lift":375.27220057909153,"dil":782.3016393442623,"other":291.3935061648827,"maint":30,"training":0,"items":0,"capex":540,"ceiling":1360,"allowance":547.5,"distr":null,"cash":null,"royalty":235.2548373242257,"sens":33.89973770491804,"lost":160.89716518606048,"pretax":94.10567950649602,"tax":0,"rev":2355.827862918958,"opex":1478.9673460882364,"ocfPre":641.605679506496,"ocf":641.605679506496,"fcf":101.60567950649602,"ni":94.10567950649602},{"turn":15,"year":4,"q":3,"P":55,"net":460,"gross":574.2384105960265,"crude":2353.724039735099,"gasp":4.146378885034112,"cbon":0,"lift":316.1455531776936,"dil":612.9385759771508,"other":297.6943751468644,"maint":30,"training":0,"items":0,"capex":540,"ceiling":1350,"allowance":528.75,"distr":null,"cash":null,"royalty":235.4765900260226,"sens":36.81448289486205,"lost":95.53725219604883,"pretax":336.8653242924015,"tax":0,"rev":2357.870418620133,"opex":1256.7785043017088,"ocfPre":865.6153242924015,"ocf":865.6153242924015,"fcf":325.6153242924015,"ni":336.8653242924015},{"turn":16,"year":4,"q":4,"P":55,"net":460,"gross":575.0646430578977,"crude":2354.7014727374926,"gasp":3.833859607776114,"cbon":0,"lift":332.0416990554965,"dil":655.9786681867483,"other":290.5107230761797,"maint":30,"training":0,"items":0,"capex":540,"ceiling":1360,"allowance":541.25,"distr":null,"cash":null,"royalty":235.54291373841207,"sens":36.164816463329345,"lost":88.0900934103447,"pretax":273.211328288432,"tax":76.08297643490639,"rev":2358.5353323452687,"opex":1308.5310903184245,"ocfPre":814.461328288432,"ocf":738.3783518535256,"fcf":198.3783518535256,"ni":197.12835185352563}],"locked":13}}}};
 /* ============ rendering ============ */
@@ -5888,7 +6044,7 @@ function fitTabs(){
 window.addEventListener("resize", ()=>{ try{ fitTabs(); }catch(e){} });
 function render(){
   const app = $("#app");
-  if (UI.screen==="intro"){ app.className = "page intropg"; app.innerHTML = introHTML(); esNow(app); requestAnimationFrame(()=>{ lbInit(); fillLB(); cloudInit(); }); return; }
+  if (UI.screen==="intro"){ app.className = "page intropg"; app.innerHTML = introHTML(); esNow(app); requestAnimationFrame(()=>{ lbInit(); fillLB(); cloudInit(); try { T3.attract(document.querySelector(".i2scene")); } catch (e){} }); return; }
   if (S.over && UI.modal!=="report"){ app.className = "page"; app.innerHTML = endHTML() + (UI.modal==="gz" ? gzHTML() : ""); esNow(app); requestAnimationFrame(()=>{ rateInit(); fillRateDOM(); lbInit(); endPost(); fillLB(); drawShare(); }); return; }
   app.className = "shell"; if (!CLOUD.kicked) cloudInit();
   const pbOld = document.querySelector(".panelbody"), yOld = pbOld ? pbOld.scrollTop : 0, pk = UI.tab+"|"+(UI.tab==="build"?UI.node:"");
@@ -6518,7 +6674,9 @@ function railInner(F, opt){
 `;
 }
 const gdPending = () => S.turn<=CFG.turns && !S.over && ((qOf(S.turn)===1 && !S.guidanceLocked) || gdOpen());
-const yrNet = g => `<small class="yr">${f0(g*4*CFG.days/1000)} MMbbl a year</small>`, yrCap = v => `<small class="yr">${money(v*4)} a year</small>`;
+const yrNet = g => { const es = LANG==="es", yr = g*4*CFG.days/1000, left = Math.max(0, CFG.turns - S.turn + 1), Y = yearOf(CFG.turns), proj = (S.cumNet||0) + g*CFG.days/1000*left;
+  const end = S.sandbox ? "" : (es ? ` · ≈${f0(proj)} / ${f0(CFG.target)} al año ${Y}` : ` · ≈${f0(proj)} / ${f0(CFG.target)} by Y${Y}`);
+  return `<small class="yr" title="${es?`Proyección al cierre del año ${Y}: exportado hasta ahora ${f0(S.cumNet||0)} MMbbl + ${f0(g)} kb/d × ${left} trimestres restantes ≈ ${f0(proj)} MMbbl, frente a una meta de ${f0(CFG.target)} MMbbl`:`Projection to the end of Year ${Y}: exported so far ${f0(S.cumNet||0)} MMbbl + ${f0(g)} kb/d × ${left} quarters left ≈ ${f0(proj)} MMbbl, against a target of ${f0(CFG.target)} MMbbl`}">${f0(yr)} ${es?"MMbbl al año":"MMbbl a year"}${end}</small>`; }, yrCap = v => `<small class="yr">${money(v*4)} a year</small>`;
 // Advisors' suggested guidance. Built from the committed outlook and the usual capex envelope, then
 // pushed off by an error that is fixed for the year and quarter, so pressing the button again never rerolls it.
 function advisorSuggest(){
@@ -7238,8 +7396,8 @@ function condHTML(f){
       : act(`Turnaround (repair)`,`The upgrader's repair: it goes offline this turn and comes back at ${CFG.repairTo}% next turn. Uses a construction slot.${tip("repair")}`,COST.turnaround, !taOrdered() && slotFree>0, taOrdered()?"Turnaround already ordered.":"No construction slot free.", `data-order="turnaround"`)}
   </div>`;
 }
-function nodeGroupOf(id){ return id==="power" ? "power" : id==="crews" ? "crews" : (id==="gather"||id==="reffeed") ? "midstream" : /^(ref|pc)/.test(id) ? "downstream" : ["upgrader","blend","pipe","terminal","gas"].includes(id) ? "midstream" : "upstream"; }
-const PROJ_NAME = {waterExp:"Water handling",xpBuild:"Export pipeline route", workover:"Workover",repair:"Repair",fieldFac:"Field facilities",blendExp:"Blending expansion",train:"Upgrader train",loop:"Pipeline loop",gatherExp:"Gathering expansion",reffeedExp:"Refinery feed expansion",berth:"Export berth",tank:"Storage tank",turbine:"Gas turbine block",gasPlant:"Gas plant expansion",gasPipe:"Gas export pipeline"};
+function nodeGroupOf(id){ return id==="power" ? "power" : id==="crews" ? "crews" : (id==="gather"||id==="reffeed"||id==="ftf") ? "midstream" : /^(ref|pc)/.test(id) ? "downstream" : ["upgrader","blend","pipe","terminal","gas"].includes(id) ? "midstream" : "upstream"; }
+const PROJ_NAME = {ftfExp:"Field tank farm",waterExp:"Water handling",xpBuild:"Export pipeline route", workover:"Workover",repair:"Repair",fieldFac:"Field facilities",blendExp:"Blending expansion",train:"Upgrader train",loop:"Pipeline loop",gatherExp:"Gathering expansion",reffeedExp:"Refinery feed expansion",berth:"Export berth",tank:"Storage tank",turbine:"Gas turbine block",gasPlant:"Gas plant expansion",gasPipe:"Gas export pipeline"};
 function buildQueueHTML(){
   if (S.turn>CFG.turns || S.over) return "";
   const free = slotsMax()-slotsBusy(), items = S.projects.map(p=>{ const b = p.block && S.blocks.find(x=>x.id===p.block);
@@ -7256,7 +7414,7 @@ function upstreamSummary(){
 }
 const rigsOpen = () => UI.rigsOpen==null ? innerHeight>=900 : UI.rigsOpen;
 function buildHTML(F, grp){
-  const all = [...S.blocks.map(b=>[b.id,b.name.replace("Bloque ","")]),...(dwVisible()?[["dw", LANG==="es"?"Aguas profundas":"Deepwater"]]:[]),...(CFG.ex&&CFG.ex.on?[["explore","Exploration"]]:[]),["gather","Gathering"],["upgrader","Upgrader"],["blend","Blending"],["pipe","Pipeline"],...(reffeedLive()?[["reffeed","Refinery feed"]]:[]),["terminal","Terminal"],["gas","Gas"],["crews","Crews & upkeep"],["power","Power"]];
+  const all = [...S.blocks.map(b=>[b.id,b.name.replace("Bloque ","")]),...(dwVisible()?[["dw", LANG==="es"?"Aguas profundas":"Deepwater"]]:[]),...(CFG.ex&&CFG.ex.on?[["explore","Exploration"]]:[]),["gather","Gathering"],...(ftfOn()?[["ftf", LANG==="es"?"Patio de tanques":"Tank farm"]]:[]),["upgrader","Upgrader"],["blend","Blending"],["pipe","Pipeline"],...(reffeedLive()?[["reffeed","Refinery feed"]]:[]),["terminal","Terminal"],["gas","Gas"],["crews","Crews & upkeep"],["power","Power"]];
   const exOn = !!(CFG.ex&&CFG.ex.on), ups = (UI.ups==="expl" && exOn) ? "expl" : "prod";
   const nodes = grp ? all.filter(([id])=>nodeGroupOf(id)===grp && (grp!=="upstream" || ((id==="explore") === (ups==="expl")))) : [];
   const NODE = !grp ? null : (nodes.some(n=>n[0]===UI.node) ? UI.node : (nodes[0]||[null])[0]);
@@ -7376,6 +7534,7 @@ function buildHTML(F, grp){
     <div class="acts">${act("Pipeline loop","+250 kb/d after 4 turns.",COST.loop, slotFree>0, "No construction slot free.", `data-order="loop"`)}</div>`;
     const tpTab = tpOn() ? [["tp", LANG==="es"?"Acceso de terceros":"Third-party access", tpHTML(F), !!(F.walk && (F.walk.pipe>8 || F.walk.ovf>8) && !tpLive("pipe") && !tpLive("term") && S.turn>=CFG.tp.from)]] : [];
     h += xpOn() || tpOn() ? secTabs("pp", [["st", LANG==="es"?"Estado":"Status", pA], ...(xpOn()?[["rt", LANG==="es"?"Rutas de exportación":"Export routes", xpPanelHTML(F), xpAlert(F)]]:[]), ...tpTab]) : pA;
+  } else if (NODE==="ftf"){ h += ftfHTML(F);
   } else if (NODE==="gather"){
     const gBuild = S.projects.filter(p=>p.kind==="gatherExp");
     h += `<h3 style="font-size:22px">${ic("pipe",22)}Gathering lines${tip("gather")}</h3>`; let gh = `    <div class="stats"><div class="stat"><div class="l">Nameplate</div><div class="v">${f0(S.gatherCap)} kb/d XH</div></div>
@@ -9034,7 +9193,7 @@ document.addEventListener("click", e=>{
     if (d.tour!=="skip" && d.tour!=="done" && d.tour!=="end") UI.fov = false;
     if (UI.tour!=null && TOUR[UI.tour]){ const st = TOUR[UI.tour]; if (st.enter) st.enter(); if (st.sel){ if (st.sel===".tabs") UI.mview="panel"; else if (st.sel==="#t-map") UI.mview="map"; } }
     render(); return; }
-  if (d.demo){ S = JSON.parse(JSON.stringify(DEMO_SAVE)); S.demo = true; applyMode(S.mode); UI = {tab:"build", node:"upgrader", modal:null, screen:"game", view:"3d"}; render(); window.scrollTo(0,0); return; }
+  if (d.demo){ S = demoState(); S.demo = true; applyMode(S.mode); UI = {tab:"build", node:"upgrader", modal:null, screen:"game", view:"3d"}; render(); window.scrollTo(0,0); return; }
   if (d.menu){ UI.modal="menu"; UI.menuConfirm=null; UI.menuSaved=false; UI.status=false; UI.tip=null; render(); return; }
   if (d.menusave){ save(); cloudFlush(); UI.menuSaved=true; render(); return; }
   if (d.menuask){ UI.menuConfirm=d.menuask; render(); return; }
