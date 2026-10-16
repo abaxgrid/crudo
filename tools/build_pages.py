@@ -109,7 +109,7 @@ html = replace_once(
     'if (!SHARE.dl){ const a = document.createElement("a"); a.href = `assets/music/crudo-${mName(k).toLowerCase().replace(/\\s+/g,"-")}.mid`; a.download = ""; document.body.appendChild(a); a.click(); a.remove(); if (msg) msg.textContent = es ? `${mName(k)} descargado.` : `${mName(k)} downloaded.`; return; }',
     html)
 
-# 4. Link preview (WhatsApp, Facebook, X, LinkedIn, iMessage): title, summary and assets/share-sim.jpg.
+# 4. Link preview (WhatsApp, Facebook, X, LinkedIn, iMessage): title, summary and assets/share-firstoil.jpg.
 cfg = json.load(open(os.path.join(root, "tools", "site_config.json")))
 # Custom domain (e.g. playcrudo.com): set "domain" only once its DNS points at GitHub,
 # otherwise GitHub would redirect visitors to an address that doesn't answer yet.
@@ -130,8 +130,8 @@ meta = f"""<title>{TITLE}</title>
 <meta property="og:url" content="{SITE}">
 <meta property="og:title" content="{TITLE}">
 <meta property="og:description" content="{DESC}">
-<meta property="og:image" content="{SITE}assets/share-sim.jpg">
-<meta property="og:image:secure_url" content="{SITE}assets/share-sim.jpg">
+<meta property="og:image" content="{SITE}assets/share-firstoil.jpg">
+<meta property="og:image:secure_url" content="{SITE}assets/share-firstoil.jpg">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -139,10 +139,10 @@ meta = f"""<title>{TITLE}</title>
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{TITLE}">
 <meta name="twitter:description" content="{DESC}">
-<meta name="twitter:image" content="{SITE}assets/share-sim.jpg">
+<meta name="twitter:image" content="{SITE}assets/share-firstoil.jpg">
 """
-if not os.path.exists(os.path.join(root, "assets", "share-sim.jpg")):
-    sys.exit("build stopped: assets/share-sim.jpg is missing (run tools/make_share_image.py)")
+if not os.path.exists(os.path.join(root, "assets", "share-firstoil.jpg")):
+    sys.exit("build stopped: assets/share-firstoil.jpg is missing (run tools/make_share_image.py)")
 html = replace_once("<head><meta charset=utf8>", "<head><meta charset=utf8>" + meta, html)   # charset stays first
 
 # 5. Leads and statistics (tools/site_config.json): only what is configured is added.
