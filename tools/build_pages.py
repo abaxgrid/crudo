@@ -45,15 +45,33 @@ html = replace_once(
     'const set = MIDI_SF[name] || await fetch("assets/sf/"+name+".json").then(r=>r.ok?r.json():{}).catch(()=>({})), out = {};',
     html)
 
-# 2. Start-screen image: a real file instead of base64.
-m = once(r'const SCENE_IMG = "data:image/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)";', html)
-ext = {"jpeg": "jpg"}.get(m.group(1), m.group(1))
+# 2. Images: the start-screen image (older versions) and every large embedded picture
+#    (newspaper plates, scenario cards) become real files, loaded only when shown.
 for old in os.listdir(os.path.join(root, "assets")):
     if old.startswith("scene."):
         os.remove(os.path.join(root, "assets", old))
-with open(os.path.join(root, "assets", f"scene.{ext}"), "wb") as f:
-    f.write(base64.b64decode(m.group(2)))
-html = html[:m.start()] + f'const SCENE_IMG = "assets/scene.{ext}";' + html[m.end():]
+m = re.search(r'const SCENE_IMG = "data:image/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)";', html)
+if m:
+    ext = {"jpeg": "jpg"}.get(m.group(1), m.group(1))
+    with open(os.path.join(root, "assets", f"scene.{ext}"), "wb") as f:
+        f.write(base64.b64decode(m.group(2)))
+    html = html[:m.start()] + f'const SCENE_IMG = "assets/scene.{ext}";' + html[m.end():]
+imgdir = os.path.join(root, "assets", "img")
+os.makedirs(imgdir, exist_ok=True)
+for old in os.listdir(imgdir):
+    os.remove(os.path.join(imgdir, old))
+seen = set()
+def _img(mm):
+    key, kind, b64 = mm.group(1), mm.group(2), mm.group(3)
+    if key in seen:
+        sys.exit(f"build stopped: two embedded images are both named {key!r}")
+    seen.add(key)
+    ext = {"jpeg": "jpg"}.get(kind, kind)
+    with open(os.path.join(imgdir, f"{key}.{ext}"), "wb") as f:
+        f.write(base64.b64decode(b64))
+    return f'"{key}": "assets/img/{key}.{ext}"'
+# KIT3_B64 is left alone here (step 2b); only "name": "data:image/..." pairs of 15 kB or more move out.
+html = re.sub(r'"(\w+)":\s*"data:image/(jpeg|png|webp);base64,([A-Za-z0-9+/=]{20000,})"', _img, html)
 
 # 2b. 3D model kit (GLB): a separate file, fetched alongside three.js when the 3D view first opens.
 kit = os.path.join(root, "assets", "kit3.glb")
@@ -102,7 +120,7 @@ if DOMAIN:
     open(cname, "w").write(DOMAIN + "\n")
 elif os.path.exists(cname):
     os.remove(cname)
-TITLE = "CRUDO: Venezuela Oil Value Chain Simulator"
+TITLE = "CRUDO: First Oil · Venezuela Oil Value Chain Simulator"
 DESC = ("A business simulation of Venezuela's oil sector: drill, upgrade, ship and sell Orinoco crude "
         "through fiscal terms, sanctions and investor scrutiny, over 36 quarters. Runs in the browser, in English and Spanish.")
 meta = f"""<title>{TITLE}</title>

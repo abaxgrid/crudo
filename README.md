@@ -1,4 +1,4 @@
-# CRUDO: Barrels of Venezuela
+# CRUDO: First Oil
 
 A turn-based strategy game about building Venezuela's oil and gas supply chain, from the wellhead to the export terminal.
 

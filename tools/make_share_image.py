@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 F = lambda n, s: ImageFont.truetype(os.path.join(root, "tools", "fonts", n), s)
-scene = next(os.path.join(root, "assets", f) for f in os.listdir(os.path.join(root, "assets")) if f.startswith("scene."))
+scene = os.path.join(root, "tools", "share_scene.webp")   # background of the link-preview image
 W, H = 1200, 630
 AMBER, FG, MUTED, BG = (232, 169, 59), (239, 231, 218), (190, 178, 160), (20, 17, 14)
 
