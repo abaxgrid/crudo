@@ -2,7 +2,7 @@
 
 A turn-based strategy game about building Venezuela's oil and gas supply chain, from the wellhead to the export terminal.
 
-**Play in your browser:** https://dannysimgames.github.io/crudo/
+**Play in your browser:** https://abaxgrid.com/playcrudo/
 
 ## The game
 
