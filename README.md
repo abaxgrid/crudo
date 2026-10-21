@@ -33,4 +33,4 @@ This repository is public so the game can be played and followed, but it is not 
 
 ---
 
-Made by Danny Peña · [dannysimgames](https://github.com/dannysimgames)
+CRUDO: First Oil, an AbaxGrid simulator · [abaxgrid.com](https://abaxgrid.com) · Made by Danny Peña

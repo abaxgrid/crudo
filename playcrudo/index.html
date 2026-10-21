@@ -5209,13 +5209,14 @@ function creditsHTML(){
     <div class="hero" style="font-size:44px;line-height:1">CRUDO</div>
     <p class="sub" style="margin:0">${es?"Primer petróleo":"First Oil"} · ${VLABEL}</p>
     <div style="display:flex;flex-direction:column;gap:16px;margin-top:4px;align-items:center">
+      <div><div class="note">${es?"Un simulador de":"A simulator by"}</div><div style="font-size:21px;font-weight:600;margin-top:2px"><a href="https://abaxgrid.com" style="color:inherit">AbaxGrid</a></div></div>
       <div><div class="note">${es?"Creado por":"Created by"}</div><div style="font-size:21px;font-weight:600;margin-top:2px">Danny Peña</div></div>
       <div><div class="note">${es?"Diseñado y construido con":"Designed and built with"}</div><div style="font-weight:600;margin-top:2px">Claude · Anthropic</div></div>
       <p class="note" style="margin:0;max-width:460px">${es?"Terminología del sector petrolero y de la Faja del Orinoco tomada del uso venezolano de la industria. Las empresas, lugares y personas son ficticios; las cifras están ajustadas para el juego.":"Oil-sector and Faja del Orinoco terminology drawn from Venezuelan industry usage. Companies, places and people are fictional; figures are scaled for play."}</p>
       <div><div class="note">${es?"Enciclopedia del petróleo venezolano":"Venezuela Oil Encyclopedia"}</div><div style="font-weight:600;margin-top:2px">${es?"Curada por Danny Peña":"Curated by Danny Peña"} · The Energy Gazette: Venezuela Edition</div><button class="btn ghost sm" data-ency="1" style="margin-top:6px">${TR("mnu.ency")}</button></div>
       <div><div class="note">${es?"Banda sonora (MIDI)":"Soundtrack (MIDI)"}</div><div class="mdl">${MTRK.map(([k,n])=>`<button class="btn ghost sm" data-midi="${k}">${esc(n)} · .mid</button>`).join("")}</div><p class="note" style="margin:4px 0 0">${es?"Instrumentos General MIDI del banco FluidR3 GM de Frank Wen (CC BY 3.0).":"General MIDI instruments from Frank Wen's FluidR3 GM soundfont (CC BY 3.0)."}</p><p class="note" id="midimsg" aria-live="polite" style="margin:0"></p></div>
       <p style="margin:0;font-style:italic;font-size:15px;max-width:460px">${es?"Dedicado a Venezuela — a su gente trabajadora, honesta y resiliente.":"Dedicated to Venezuela — to its hardworking, honest, and resilient people."}</p>
-      <div class="note">© 2026</div>
+      <div class="note">© 2026 AbaxGrid</div>
     </div>
   </div></div>`;
 }
